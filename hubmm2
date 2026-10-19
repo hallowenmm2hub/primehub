@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Cleaned: removed remote HttpGet/loadstring and replaced with local Anti-AFK
--- Added: Coin/h tracking system + Custom Image Button
+-- Added: Coin/h tracking system + Custom Image Button + Improved Coin Detection
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -29,7 +29,7 @@ MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 0, 45)
 MainFrame.BackgroundTransparency = 0.25
 MainFrame.BorderSizePixel = 0
-MainFrame.Size = UDim2.new(0, 500, 0, 360) -- Aumentado para caber o painel de stats
+MainFrame.Size = UDim2.new(0, 500, 0, 360)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 
@@ -103,7 +103,7 @@ Instance.new("UICorner", MiscTab).CornerRadius = UDim.new(0, 6)
 
 -- // Content container
 local ContentContainer = Instance.new("Frame", MainFrame)
-ContentContainer.Size = UDim2.new(0, 280, 0, 250) -- Aumentado para caber o painel de stats
+ContentContainer.Size = UDim2.new(0, 280, 0, 250)
 ContentContainer.Position = UDim2.new(0.43, 0, 0.22, 0)
 ContentContainer.BackgroundColor3 = Color3.fromRGB(40, 0, 60)
 ContentContainer.BackgroundTransparency = 0.35
@@ -152,7 +152,7 @@ local autoFarmEnabled = false
 local farming = false
 local bag_full = false
 local start_position
-local farmSpeed = 20 -- default (1–50)
+local farmSpeed = 20
 local autoResetEnabled = false
 local resetting = false
 
@@ -168,7 +168,7 @@ local coinStats = {
 }
 
 local MAX_RECENT_SAMPLES = 50
-local CoinRateLabel -- declarado antes para uso no evento
+local CoinRateLabel
 
 -- // AutoFarm Toggle
 local AutoFarmToggle = Instance.new("TextButton")
@@ -306,7 +306,6 @@ SpeedBox.FocusLost:Connect(function(enterPressed)
 			if value > 50 then value = 50 end
 			farmSpeed = value
 			SpeedBox.Text = tostring(farmSpeed)
-			-- Change warning color
 			if farmSpeed > 25 then
 				WarningText.TextColor3 = Color3.fromRGB(255, 50, 50)
 			else
@@ -412,17 +411,20 @@ local function getHRP()
 	return getCharacter():WaitForChild("HumanoidRootPart")
 end
 
+-- 🌟 PROCURA DE DOCES MELHORADA
 local function get_nearest_coin()
 	local hrp = getHRP()
 	local closest, dist = nil, math.huge
-	for _, m in pairs(workspace:GetChildren()) do
-		if m:FindFirstChild("CoinContainer") then
-			for _, coin in pairs(m.CoinContainer:GetChildren()) do
-				if coin:IsA("BasePart") and coin:FindFirstChild("TouchInterest") then
-					local d = (hrp.Position - coin.Position).Magnitude
-					if d < dist then
-						closest, dist = coin, d
-					end
+	
+	-- Procura em toda a workspace
+	for _, m in pairs(workspace:GetDescendants()) do
+		if m:IsA("BasePart") and m:FindFirstChild("TouchInterest") then
+			local name = string.lower(m.Name)
+			-- Procura por objetos com nome de moeda/doce
+			if string.find(name, "coin") or string.find(name, "candy") or string.find(name, "sweet") then
+				local d = (hrp.Position - m.Position).Magnitude
+				if d < dist then
+					closest, dist = m, d
 				end
 			end
 		end
@@ -449,7 +451,6 @@ end)
 local CoinCollected = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Gameplay"):WaitForChild("CoinCollected")
 
 CoinCollected.OnClientEvent:Connect(function(_, current, max)
-    -- Tracking de moedas
     local now = tick()
     coinStats.totalCollected = coinStats.totalCollected + 1
     coinStats.sessionCoins = coinStats.sessionCoins + 1
@@ -481,7 +482,6 @@ CoinCollected.OnClientEvent:Connect(function(_, current, max)
         )
     end
 
-    -- Auto Reset Logic
     if current == max and not resetting and autoResetEnabled then
         resetting = true
         bag_full = true
@@ -512,7 +512,6 @@ task.spawn(function()
 				if dist > 150 then
 					hrp.CFrame = coin.CFrame
 				else
-					-- Speed control (lower = faster)
 					local tween = TweenService:Create(hrp, TweenInfo.new(dist / farmSpeed, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
 					tween:Play()
 					repeat
@@ -532,7 +531,6 @@ end)
 local antiAfkEnabled = false
 local antiAfkConn
 
--- // Anti-AFK Toggle (one-time activation)
 local AntiAFKToggle = Instance.new("TextButton")
 AntiAFKToggle.Parent = MiscContent
 AntiAFKToggle.Size = UDim2.new(0, 230, 0, 35)
@@ -574,15 +572,12 @@ AntiAFKToggle.MouseButton1Click:Connect(function()
 		AntiAFKLabel.Text = "⏰ Anti-AFK ✓"
 		AntiAFKLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
 
-		-- Local Anti-AFK using Idled event (no external code)
 		antiAfkConn = Player.Idled:Connect(function()
-			-- simulate a short input to prevent idling
 			VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 			task.wait(0.5)
 			VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 		end)
 
-		-- disable button after activation
 		AntiAFKToggle.AutoButtonColor = false
 		AntiAFKToggle.Active = false
 	end
@@ -681,11 +676,11 @@ ToggleButton.Position = UDim2.new(0.06, 0, 0.12, 0)
 ToggleButton.AnchorPoint = Vector2.new(0.5, 0.5)
 ToggleButton.BackgroundTransparency = 1
 ToggleButton.AutoButtonColor = false
-ToggleButton.Image = "rbxassetid://128203049764602" -- ID da sua logo Prime Hub
+ToggleButton.Image = "rbxassetid://128203049764602"
 ToggleButton.ScaleType = Enum.ScaleType.Fit
 
 local ButtonCorner = Instance.new("UICorner", ToggleButton)
-ButtonCorner.CornerRadius = UDim.new(1, 0) -- Deixa redondo
+ButtonCorner.CornerRadius = UDim.new(1, 0)
 
 local ButtonStroke = Instance.new("UIStroke", ToggleButton)
 ButtonStroke.Color = Color3.fromRGB(200, 100, 255)
