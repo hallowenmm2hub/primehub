@@ -1,6 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Cleaned: removed remote HttpGet/loadstring and replaced with local Anti-AFK
+-- Added: Coin/h tracking system
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -28,7 +29,7 @@ MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(30, 0, 45)
 MainFrame.BackgroundTransparency = 0.25
 MainFrame.BorderSizePixel = 0
-MainFrame.Size = UDim2.new(0, 500, 0, 280)
+MainFrame.Size = UDim2.new(0, 500, 0, 360)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 
@@ -102,7 +103,7 @@ Instance.new("UICorner", MiscTab).CornerRadius = UDim.new(0, 6)
 
 -- // Content container
 local ContentContainer = Instance.new("Frame", MainFrame)
-ContentContainer.Size = UDim2.new(0, 280, 0, 180)
+ContentContainer.Size = UDim2.new(0, 280, 0, 250)
 ContentContainer.Position = UDim2.new(0.43, 0, 0.22, 0)
 ContentContainer.BackgroundColor3 = Color3.fromRGB(40, 0, 60)
 ContentContainer.BackgroundTransparency = 0.35
@@ -154,6 +155,20 @@ local start_position
 local farmSpeed = 20 -- default (1–50)
 local autoResetEnabled = false
 local resetting = false
+
+-- // Coin tracking system
+local coinStats = {
+    totalCollected = 0,
+    sessionStart = tick(),
+    lastCoinTime = tick(),
+    recentCoins = {},
+    coinsPerHour = 0,
+    coinsPerMinute = 0,
+    sessionCoins = 0
+}
+
+local MAX_RECENT_SAMPLES = 50
+local CoinRateLabel -- declarado antes para uso no evento
 
 -- // AutoFarm Toggle
 local AutoFarmToggle = Instance.new("TextButton")
@@ -304,6 +319,89 @@ SpeedBox.FocusLost:Connect(function(enterPressed)
 end)
 
 -------------------------------------------------------------------
+-- 📊 COIN STATS PANEL
+-------------------------------------------------------------------
+local StatsPanel = Instance.new("Frame")
+StatsPanel.Parent = MainContent
+StatsPanel.Size = UDim2.new(0, 230, 0, 60)
+StatsPanel.Position = UDim2.new(0, 20, 0, 165)
+StatsPanel.BackgroundColor3 = Color3.fromRGB(45, 0, 70)
+StatsPanel.BackgroundTransparency = 0.3
+StatsPanel.BorderSizePixel = 0
+Instance.new("UICorner", StatsPanel).CornerRadius = UDim.new(0, 8)
+
+local StatsStroke = Instance.new("UIStroke", StatsPanel)
+StatsStroke.Color = Color3.fromRGB(200, 100, 255)
+StatsStroke.Thickness = 1.2
+StatsStroke.Transparency = 0.4
+
+local StatsTitle = Instance.new("TextLabel", StatsPanel)
+StatsTitle.BackgroundTransparency = 1
+StatsTitle.Position = UDim2.new(0.05, 0, 0.04, 0)
+StatsTitle.Size = UDim2.new(0.6, 0, 0, 15)
+StatsTitle.Font = Enum.Font.GothamBold
+StatsTitle.Text = "📊 Taxa de Coleta"
+StatsTitle.TextColor3 = Color3.fromRGB(255, 180, 255)
+StatsTitle.TextSize = 12
+StatsTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+local ResetStatsBtn = Instance.new("TextButton")
+ResetStatsBtn.Parent = StatsPanel
+ResetStatsBtn.Size = UDim2.new(0, 50, 0, 15)
+ResetStatsBtn.Position = UDim2.new(0.72, 0, 0.05, 0)
+ResetStatsBtn.BackgroundColor3 = Color3.fromRGB(80, 20, 110)
+ResetStatsBtn.BorderSizePixel = 0
+ResetStatsBtn.Text = "Reset"
+ResetStatsBtn.TextColor3 = Color3.fromRGB(255, 200, 255)
+ResetStatsBtn.Font = Enum.Font.GothamBold
+ResetStatsBtn.TextSize = 10
+Instance.new("UICorner", ResetStatsBtn).CornerRadius = UDim.new(0, 4)
+
+CoinRateLabel = Instance.new("TextLabel", StatsPanel)
+CoinRateLabel.Name = "CoinRateLabel"
+CoinRateLabel.BackgroundTransparency = 1
+CoinRateLabel.Position = UDim2.new(0.05, 0, 0.33, 0)
+CoinRateLabel.Size = UDim2.new(0.9, 0, 0, 16)
+CoinRateLabel.Font = Enum.Font.GothamBold
+CoinRateLabel.Text = "💰 0/h  •  0/min  •  0 total"
+CoinRateLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+CoinRateLabel.TextSize = 12
+CoinRateLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local SessionLabel = Instance.new("TextLabel", StatsPanel)
+SessionLabel.Name = "SessionLabel"
+SessionLabel.BackgroundTransparency = 1
+SessionLabel.Position = UDim2.new(0.05, 0, 0.62, 0)
+SessionLabel.Size = UDim2.new(0.9, 0, 0, 14)
+SessionLabel.Font = Enum.Font.Gotham
+SessionLabel.Text = "⏱️ Sessão: 00:00:00"
+SessionLabel.TextColor3 = Color3.fromRGB(200, 150, 255)
+SessionLabel.TextSize = 10
+SessionLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+ResetStatsBtn.MouseButton1Click:Connect(function()
+    coinStats.recentCoins = {}
+    coinStats.sessionCoins = 0
+    coinStats.coinsPerHour = 0
+    coinStats.coinsPerMinute = 0
+    coinStats.sessionStart = tick()
+    CoinRateLabel.Text = "💰 0/h  •  0/min  •  0 total"
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if SessionLabel then
+            local elapsed = math.floor(tick() - coinStats.sessionStart)
+            local hours = math.floor(elapsed / 3600)
+            local minutes = math.floor((elapsed % 3600) / 60)
+            local seconds = elapsed % 60
+            SessionLabel.Text = string.format("⏱️ Sessão: %02d:%02d:%02d", hours, minutes, seconds)
+        end
+    end
+end)
+
+-------------------------------------------------------------------
 -- 🔁 Auto-farm logic
 -------------------------------------------------------------------
 local function getCharacter()
@@ -369,6 +467,40 @@ CoinCollected.OnClientEvent:Connect(function(_, current, max)
         end
         resetting = false
         bag_full = false
+    end
+end)
+
+-- // Coin tracking - rastreia cada moeda coletada
+CoinCollected.OnClientEvent:Connect(function(_, current, max)
+    local now = tick()
+    coinStats.totalCollected = coinStats.totalCollected + 1
+    coinStats.sessionCoins = coinStats.sessionCoins + 1
+    coinStats.lastCoinTime = now
+
+    table.insert(coinStats.recentCoins, now)
+    if #coinStats.recentCoins > MAX_RECENT_SAMPLES then
+        table.remove(coinStats.recentCoins, 1)
+    end
+
+    if #coinStats.recentCoins >= 2 then
+        local oldest = coinStats.recentCoins[1]
+        local newest = coinStats.recentCoins[#coinStats.recentCoins]
+        local timeSpan = newest - oldest
+        if timeSpan > 0 then
+            local coinsInWindow = #coinStats.recentCoins - 1
+            local coinsPerSecond = coinsInWindow / timeSpan
+            coinStats.coinsPerHour = math.floor(coinsPerSecond * 3600)
+            coinStats.coinsPerMinute = math.floor(coinsPerSecond * 60)
+        end
+    end
+
+    if CoinRateLabel then
+        CoinRateLabel.Text = string.format(
+            "💰 %d/h  •  %d/min  •  %d total",
+            coinStats.coinsPerHour,
+            coinStats.coinsPerMinute,
+            coinStats.sessionCoins
+        )
     end
 end)
 
