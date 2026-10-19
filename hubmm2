@@ -2,6 +2,7 @@
 -- Author: sllvzz
 -- Cleaned: removed remote HttpGet/loadstring and replaced with local Anti-AFK
 -- Added: Coin/h tracking system + Custom Image Button + Improved Coin Detection
+-- Added: Misc Functions (Fullbright, Noclip, FPS Boost, Keybinds, Hover Effects)
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -14,6 +15,7 @@ local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
+local Lighting = game:GetService("Lighting")
 
 -- // Main GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -415,12 +417,9 @@ end
 local function get_nearest_coin()
 	local hrp = getHRP()
 	local closest, dist = nil, math.huge
-	
-	-- Procura em toda a workspace
 	for _, m in pairs(workspace:GetDescendants()) do
 		if m:IsA("BasePart") and m:FindFirstChild("TouchInterest") then
 			local name = string.lower(m.Name)
-			-- Procura por objetos com nome de moeda/doce
 			if string.find(name, "coin") or string.find(name, "candy") or string.find(name, "sweet") then
 				local d = (hrp.Position - m.Position).Magnitude
 				if d < dist then
@@ -526,62 +525,201 @@ task.spawn(function()
 end)
 
 -------------------------------------------------------------------
--- ⚙️ MISC FUNCTIONS
+-- ⚙️ MISC FUNCTIONS (NOVAS FUNÇÕES)
 -------------------------------------------------------------------
 local antiAfkEnabled = false
 local antiAfkConn
+local fullbrightEnabled = false
+local noclipEnabled = false
+local fpsBoostEnabled = false
 
-local AntiAFKToggle = Instance.new("TextButton")
-AntiAFKToggle.Parent = MiscContent
-AntiAFKToggle.Size = UDim2.new(0, 230, 0, 35)
-AntiAFKToggle.Position = UDim2.new(0, 20, 0, 30)
-AntiAFKToggle.BackgroundColor3 = Color3.fromRGB(50, 0, 80)
-AntiAFKToggle.BorderSizePixel = 0
-AntiAFKToggle.Text = ""
-AntiAFKToggle.AutoButtonColor = false
+-- // Função de criar Toggle da Misc para não repetir código
+local function createMiscToggle(text, yPos, callback)
+    local Toggle = Instance.new("TextButton")
+    Toggle.Parent = MiscContent
+    Toggle.Size = UDim2.new(0, 230, 0, 32)
+    Toggle.Position = UDim2.new(0, 20, 0, yPos)
+    Toggle.BackgroundColor3 = Color3.fromRGB(50, 0, 80)
+    Toggle.BorderSizePixel = 0
+    Toggle.Text = ""
+    Toggle.AutoButtonColor = false
+    
+    Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0)
+    local Stroke = Instance.new("UIStroke", Toggle)
+    Stroke.Color = Color3.fromRGB(200, 100, 255)
+    Stroke.Thickness = 1.2
+    Stroke.Transparency = 0.4
+    
+    local Label = Instance.new("TextLabel", Toggle)
+    Label.BackgroundTransparency = 1
+    Label.Position = UDim2.new(0.1, 0, 0, 0)
+    Label.Size = UDim2.new(0.8, 0, 1, 0)
+    Label.Font = Enum.Font.GothamBold
+    Label.Text = text
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.TextSize = 13
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local Circle = Instance.new("Frame", Toggle)
+    Circle.Size = UDim2.new(0, 16, 0, 16)
+    Circle.Position = UDim2.new(0.87, 0, 0.25, 0)
+    Circle.BackgroundColor3 = Color3.fromRGB(100, 40, 140)
+    Circle.BorderSizePixel = 0
+    Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+    
+    Toggle.MouseButton1Click:Connect(function()
+        local isEnabled = callback()
+        if isEnabled then
+            Circle.BackgroundColor3 = Color3.fromRGB(200, 120, 255)
+        else
+            Circle.BackgroundColor3 = Color3.fromRGB(100, 40, 140)
+        end
+    end)
+    return Toggle, Label
+end
 
-local AntiAFKCorner = Instance.new("UICorner", AntiAFKToggle)
-AntiAFKCorner.CornerRadius = UDim.new(1, 0)
-
-local AntiAFKStroke = Instance.new("UIStroke", AntiAFKToggle)
-AntiAFKStroke.Color = Color3.fromRGB(200, 100, 255)
-AntiAFKStroke.Thickness = 1.2
-AntiAFKStroke.Transparency = 0.4
-
-local AntiAFKLabel = Instance.new("TextLabel", AntiAFKToggle)
-AntiAFKLabel.BackgroundTransparency = 1
-AntiAFKLabel.Position = UDim2.new(0.1, 0, 0, 0)
-AntiAFKLabel.Size = UDim2.new(0.8, 0, 1, 0)
-AntiAFKLabel.Font = Enum.Font.GothamBold
-AntiAFKLabel.Text = "⏰ Anti-AFK"
-AntiAFKLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-AntiAFKLabel.TextSize = 14
-AntiAFKLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local AntiAFKToggleCircle = Instance.new("Frame", AntiAFKToggle)
-AntiAFKToggleCircle.Size = UDim2.new(0, 18, 0, 18)
-AntiAFKToggleCircle.Position = UDim2.new(0.87, 0, 0.23, 0)
-AntiAFKToggleCircle.BackgroundColor3 = Color3.fromRGB(100, 40, 140)
-AntiAFKToggleCircle.BorderSizePixel = 0
-Instance.new("UICorner", AntiAFKToggleCircle).CornerRadius = UDim.new(1, 0)
-
-AntiAFKToggle.MouseButton1Click:Connect(function()
-	if not antiAfkEnabled then
-		antiAfkEnabled = true
-		AntiAFKToggleCircle.BackgroundColor3 = Color3.fromRGB(200, 120, 255)
-		AntiAFKLabel.Text = "⏰ Anti-AFK ✓"
-		AntiAFKLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
-
-		antiAfkConn = Player.Idled:Connect(function()
-			VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-			task.wait(0.5)
-			VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-		end)
-
-		AntiAFKToggle.AutoButtonColor = false
-		AntiAFKToggle.Active = false
-	end
+-- // Anti-AFK
+local AntiAFKToggle, AntiAFKLabel = createMiscToggle("⏰ Anti-AFK", 15, function()
+    if not antiAfkEnabled then
+        antiAfkEnabled = true
+        AntiAFKLabel.Text = "⏰ Anti-AFK ✓"
+        AntiAFKLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
+        antiAfkConn = Player.Idled:Connect(function()
+            VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            task.wait(0.5)
+            VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        end)
+        AntiAFKToggle.Active = false
+        return true
+    end
+    return true
 end)
+
+-- // Fullbright
+local FullbrightToggle, FullbrightLabel = createMiscToggle("☀️ Fullbright", 55, function()
+    fullbrightEnabled = not fullbrightEnabled
+    if fullbrightEnabled then
+        Lighting.Brightness = 2
+        Lighting.ClockTime = 14
+        Lighting.FogEnd = 100000
+        Lighting.GlobalShadows = false
+        Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+        FullbrightLabel.Text = "☀️ Fullbright ✓"
+        FullbrightLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
+    else
+        Lighting.Brightness = 1
+        Lighting.ClockTime = 0
+        Lighting.FogEnd = 100000
+        Lighting.GlobalShadows = true
+        Lighting.OutdoorAmbient = Color3.fromRGB(70, 70, 70)
+        FullbrightLabel.Text = "☀️ Fullbright"
+        FullbrightLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+    return fullbrightEnabled
+end)
+
+-- // Noclip
+local NoclipToggle, NoclipLabel = createMiscToggle("👻 Noclip", 95, function()
+    noclipEnabled = not noclipEnabled
+    if noclipEnabled then
+        NoclipLabel.Text = "👻 Noclip ✓"
+        NoclipLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
+    else
+        NoclipLabel.Text = "👻 Noclip"
+        NoclipLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+    return noclipEnabled
+end)
+
+-- // Loop Noclip
+RunService.Stepped:Connect(function()
+    if noclipEnabled and Player.Character then
+        for _, v in pairs(Player.Character:GetDescendants()) do
+            if v:IsA("BasePart") and v.CanCollide then
+                v.CanCollide = false
+            end
+        end
+    end
+end)
+
+-- // FPS Boost
+local FPSBoostToggle, FPSBoostLabel = createMiscToggle("🚀 FPS Boost", 135, function()
+    fpsBoostEnabled = not fpsBoostEnabled
+    if fpsBoostEnabled then
+        -- Remove efeitos pesados
+        for _, v in pairs(Lighting:GetChildren()) do
+            if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") then
+                v.Enabled = false
+            end
+        end
+        -- Remove texturas do chão para economizar memória
+        settings().Rendering.QualityLevel = 1
+        
+        FPSBoostLabel.Text = "🚀 FPS Boost ✓"
+        FPSBoostLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
+    else
+        -- Restaura qualidade padrão (pode não restaurar tudo perfeitamente)
+        settings().Rendering.QualityLevel = 10
+        FPSBoostLabel.Text = "🚀 FPS Boost"
+        FPSBoostLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+    return fpsBoostEnabled
+end)
+
+-------------------------------------------------------------------
+-- // KEYBINDS E HOVER EFFECT
+-------------------------------------------------------------------
+-- Keybind para AutoFarm (Tecla K)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    -- K = AutoFarm
+    if input.KeyCode == Enum.KeyCode.K then
+        autoFarmEnabled = not autoFarmEnabled
+        if autoFarmEnabled then
+            ToggleCircle.BackgroundColor3 = Color3.fromRGB(200, 120, 255)
+        else
+            ToggleCircle.BackgroundColor3 = Color3.fromRGB(100, 40, 140)
+        end
+    end
+    
+    -- H = Mostrar/Esconder UI
+    if input.KeyCode == Enum.KeyCode.H then
+        isVisible = not isVisible
+        MainFrame.Visible = isVisible
+    end
+end)
+
+-- Hover Effect (Brilho ao passar o mouse)
+local function addHover(button, isTab)
+    button.MouseEnter:Connect(function()
+        if isTab then
+            button.BackgroundColor3 = Color3.fromRGB(80, 0, 120)
+        else
+            button.BackgroundColor3 = Color3.fromRGB(70, 0, 100)
+        end
+    end)
+    button.MouseLeave:Connect(function()
+        if isTab then
+            if button.Text == "Main" then
+                button.BackgroundColor3 = MainContent.Visible and Color3.fromRGB(60, 0, 90) or Color3.fromRGB(40, 0, 60)
+            else
+                button.BackgroundColor3 = MiscContent.Visible and Color3.fromRGB(60, 0, 90) or Color3.fromRGB(40, 0, 60)
+            end
+        else
+            button.BackgroundColor3 = Color3.fromRGB(50, 0, 80)
+        end
+    end)
+end
+
+addHover(MainTab, true)
+addHover(MiscTab, true)
+addHover(AutoFarmToggle, false)
+addHover(AutoResetToggle, false)
+addHover(AntiAFKToggle, false)
+addHover(FullbrightToggle, false)
+addHover(NoclipToggle, false)
+addHover(FPSBoostToggle, false)
 
 -------------------------------------------------------------------
 -- // Player profile UI
