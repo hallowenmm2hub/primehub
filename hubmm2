@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Cleaned: removed remote HttpGet/loadstring and replaced with local Anti-AFK
--- Added: FPS Boost + Noclip + Role ESP
+-- Added: FPS Boost + Noclip + Role ESP + Scrolling Frame
 -- Colors: Purple changed to Orange
 
 -- // Wait for game to load
@@ -122,11 +122,17 @@ MainContent.Size = UDim2.new(1, -20, 1, -20)
 MainContent.Position = UDim2.new(0, 10, 0, 10)
 MainContent.BackgroundTransparency = 1
 
-local MiscContent = Instance.new("Frame", ContentContainer)
+-- 🌟 MUDANÇA AQUI: MiscContent agora é um ScrollingFrame
+local MiscContent = Instance.new("ScrollingFrame", ContentContainer)
 MiscContent.Size = UDim2.new(1, -20, 1, -20)
 MiscContent.Position = UDim2.new(0, 10, 0, 10)
 MiscContent.BackgroundTransparency = 1
 MiscContent.Visible = false
+MiscContent.ScrollBarThickness = 4
+MiscContent.ScrollBarImageColor3 = Color3.fromRGB(255, 140, 0)
+MiscContent.CanvasSize = UDim2.new(0, 0, 0, 0) -- Ajusta automaticamente
+MiscContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+MiscContent.ScrollingDirection = Enum.ScrollingDirection.Y
 
 -- // Tab switching
 MainTab.MouseButton1Click:Connect(function()
@@ -154,7 +160,7 @@ local autoFarmEnabled = false
 local farming = false
 local bag_full = false
 local start_position
-local farmSpeed = 20
+local farmSpeed = 20 -- default (1–50)
 local autoResetEnabled = false
 local resetting = false
 
@@ -399,7 +405,7 @@ local roleESPEnabled = false
 local AntiAFKToggle = Instance.new("TextButton")
 AntiAFKToggle.Parent = MiscContent
 AntiAFKToggle.Size = UDim2.new(0, 230, 0, 35)
-AntiAFKToggle.Position = UDim2.new(0, 20, 0, 5)
+AntiAFKToggle.Position = UDim2.new(0, 10, 0, 5)
 AntiAFKToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
 AntiAFKToggle.BorderSizePixel = 0
 AntiAFKToggle.Text = ""
@@ -447,7 +453,7 @@ end)
 local FPSBoostToggle = Instance.new("TextButton")
 FPSBoostToggle.Parent = MiscContent
 FPSBoostToggle.Size = UDim2.new(0, 230, 0, 35)
-FPSBoostToggle.Position = UDim2.new(0, 20, 0, 45)
+FPSBoostToggle.Position = UDim2.new(0, 10, 0, 45)
 FPSBoostToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
 FPSBoostToggle.BorderSizePixel = 0
 FPSBoostToggle.Text = ""
@@ -499,7 +505,7 @@ end)
 local NoclipToggle = Instance.new("TextButton")
 NoclipToggle.Parent = MiscContent
 NoclipToggle.Size = UDim2.new(0, 230, 0, 35)
-NoclipToggle.Position = UDim2.new(0, 20, 0, 85)
+NoclipToggle.Position = UDim2.new(0, 10, 0, 85)
 NoclipToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
 NoclipToggle.BorderSizePixel = 0
 NoclipToggle.Text = ""
@@ -554,7 +560,7 @@ end)
 local RoleESPToggle = Instance.new("TextButton")
 RoleESPToggle.Parent = MiscContent
 RoleESPToggle.Size = UDim2.new(0, 230, 0, 35)
-RoleESPToggle.Position = UDim2.new(0, 20, 0, 125)
+RoleESPToggle.Position = UDim2.new(0, 10, 0, 125)
 RoleESPToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
 RoleESPToggle.BorderSizePixel = 0
 RoleESPToggle.Text = ""
@@ -592,7 +598,6 @@ RoleESPToggle.MouseButton1Click:Connect(function()
 		RoleESPToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
 		RoleESPLabel.Text = "👁️ Ver Papéis (ESP)"
 		RoleESPLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-		-- Remove os ESPs
 		for _, p in pairs(Players:GetPlayers()) do
 			if p.Character and p.Character:FindFirstChild("RoleESP") then
 				p.Character.RoleESP:Destroy()
@@ -601,16 +606,13 @@ RoleESPToggle.MouseButton1Click:Connect(function()
 	end
 end)
 
--- // Loop do Role ESP
 task.spawn(function()
 	while true do
-		task.wait(1) -- Atualiza a cada 1 segundo
+		task.wait(1)
 		if roleESPEnabled then
-			-- Procura as funções internas do jogo ou usa o nome do jogador
 			local murderer = nil
 			local sheriff = nil
 			
-			-- Tenta usar a função do jogo (se existir)
 			if _G.findMurderer then
 				local ok, result = pcall(_G.findMurderer)
 				if ok then murderer = result end
@@ -632,12 +634,11 @@ task.spawn(function()
 						highlight.FillTransparency = 0.6
 						highlight.OutlineTransparency = 0
 						
-						-- Define a cor baseada no papel
-						local roleColor = Color3.fromRGB(0, 255, 0) -- Verde (Inocente)
+						local roleColor = Color3.fromRGB(0, 255, 0)
 						if p == murderer then
-							roleColor = Color3.fromRGB(255, 0, 0) -- Vermelho (Assassino)
+							roleColor = Color3.fromRGB(255, 0, 0)
 						elseif p == sheriff then
-							roleColor = Color3.fromRGB(0, 100, 255) -- Azul (Xerife)
+							roleColor = Color3.fromRGB(0, 100, 255)
 						end
 						
 						highlight.FillColor = roleColor
