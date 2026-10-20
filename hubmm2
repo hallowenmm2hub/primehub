@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Cleaned: removed remote HttpGet/loadstring and replaced with local Anti-AFK
--- Added: FPS Boost + Noclip (Fixed) + Role ESP (Fixed by Tools) + Scrolling Frame
+-- Added: FPS Boost + Noclip (Fixed) + Role ESP V2 + Scrolling Frame
 -- Colors: Purple changed to Orange
 
 -- // Wait for game to load
@@ -542,8 +542,6 @@ NoclipToggle.MouseButton1Click:Connect(function()
 		NoclipToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
 		NoclipLabel.Text = "👻 Noclip"
 		NoclipLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-		
-		-- CORREÇÃO DO NOCLIP: Devolve a colisão e tira a âncora
 		if Player.Character then
 			for _, v in pairs(Player.Character:GetDescendants()) do
 				if v:IsA("BasePart") then
@@ -560,7 +558,6 @@ RunService.Stepped:Connect(function()
         for _, v in pairs(Player.Character:GetDescendants()) do
             if v:IsA("BasePart") then
                 v.CanCollide = false
-                -- Ancora o HumanoidRootPart para não cair no void
                 if v.Name == "HumanoidRootPart" then
                     v.Anchored = true 
                 end
@@ -619,42 +616,34 @@ RoleESPToggle.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 🌟 NOVA LÓGICA DO ROLE ESP (Baseado nas ferramentas na mão)
+-- 🌟 NOVA LÓGICA DO ROLE ESP (Lendo a tabela oficial do jogo)
 task.spawn(function()
 	while true do
-		task.wait(1)
+		task.wait(1.5) -- Atualiza a cada 1.5 segundos para não pesar
 		if roleESPEnabled then
+			local murdererName = nil
+			local sheriffName = nil
+			
+			-- O MM2 usa o Value Object "Roles" no ReplicatedStorage
+			local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
+			if roleFolder then
+				local murdererVal = roleFolder:FindFirstChild("Murderer")
+				local sheriffVal = roleFolder:FindFirstChild("Sheriff")
+				if murdererVal then murdererName = murdererVal.Value end
+				if sheriffVal then sheriffName = sheriffVal.Value end
+			end
+			
 			for _, p in pairs(Players:GetPlayers()) do
 				if p ~= Player and p.Character then
 					local char = p.Character
-					local roleColor = Color3.fromRGB(0, 255, 0) -- Padrão: Inocente (Verde)
+					local roleColor = Color3.fromRGB(0, 255, 0) -- Inocente
 					
-					-- Verifica se o jogador tem a faca ou a arma equipada
-					local hasKnife = false
-					local hasGun = false
-					
-					local function checkTools(container)
-						if container then
-							for _, tool in pairs(container:GetChildren()) do
-								if tool:IsA("Tool") then
-									if tool.Name == "Knife" then hasKnife = true end
-									if tool.Name == "Gun" then hasGun = true end
-								end
-							end
-						end
+					if p.Name == murdererName then
+						roleColor = Color3.fromRGB(255, 0, 0) -- Assassino
+					elseif p.Name == sheriffName then
+						roleColor = Color3.fromRGB(0, 100, 255) -- Xerife
 					end
 					
-					-- Verifica na mochila e na mão
-					checkTools(p.Backpack)
-					checkTools(char)
-					
-					if hasKnife then
-						roleColor = Color3.fromRGB(255, 0, 0) -- Assassino (Vermelho)
-					elseif hasGun then
-						roleColor = Color3.fromRGB(0, 100, 255) -- Xerife (Azul)
-					end
-					
-					-- Cria ou atualiza o ESP
 					local esp = char:FindFirstChild("RoleESP")
 					if not esp then
 						esp = Instance.new("Highlight")
@@ -662,7 +651,7 @@ task.spawn(function()
 						esp.Parent = char
 						esp.Adornee = char
 						esp.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-						esp.FillTransparency = 0.6
+						esp.FillTransparency = 0.7
 						esp.OutlineTransparency = 0
 					end
 					
