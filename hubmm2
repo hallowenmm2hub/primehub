@@ -1,6 +1,6 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System (24h Save) + FPS Boost + Noclip + Role ESP + Keybind H + Sit Farm + Big Hitbox
+-- Added: Key System (24h Save) + AutoFarm Deitado + Noclip + FPS Boost + Role ESP + Keybind H
 -- Visual: Minimalist Dark Theme
 
 -- // Wait for game to load
@@ -19,7 +19,7 @@ local Lighting = game:GetService("Lighting")
 -- ═══════════════════════════════════════════════════════════════
 -- 🔑 SISTEMA DE KEY (COM SALVAMENTO DE 24 HORAS)
 -- ═══════════════════════════════════════════════════════════════
-local VALID_KEY = "PRIMEHUB" -- ⚠️ COLOQUE A SUA KEY AQUI
+local VALID_KEY = "PRIME2024" -- ⚠️ COLOQUE A SUA KEY AQUI
 local KEY_FILE = "primehub_key.txt"
 local TIME_24H = 86400 -- 24 horas em segundos
 
@@ -260,13 +260,19 @@ local function LoadHub()
             ForceDisableNoclip()
             if Player.Character then
                 local humanoid = Player.Character:FindFirstChild("Humanoid")
-                if humanoid then humanoid.Sit = true end
+                if humanoid then 
+                    -- 🌟 DEITA O PERSONAGEM NO CHÃO
+                    humanoid:ChangeState(Enum.HumanoidStateType.PlatformStanding) 
+                end
             end
         else
             ToggleCircle.BackgroundColor3 = Theme.Off
             if Player.Character then
                 local humanoid = Player.Character:FindFirstChild("Humanoid")
-                if humanoid then humanoid.Sit = false end
+                if humanoid then 
+                    -- 🌟 LEVANTA O PERSONAGEM
+                    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp) 
+                end
             end
         end
     end)
@@ -355,13 +361,14 @@ local function LoadHub()
         end
     end)
 
+    -- // Loop do Farm (Deitado + Teletransporte Curto)
     task.spawn(function()
         while true do
             if noclipEnabled and autoFarmEnabled then
                 autoFarmEnabled = false
                 ToggleCircle.BackgroundColor3 = Theme.Off
                 if Player.Character and Player.Character:FindFirstChild("Humanoid") then
-                    Player.Character.Humanoid.Sit = false
+                    Player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
                 end
             end
 
@@ -369,17 +376,27 @@ local function LoadHub()
                 local coin, dist = get_nearest_coin()
                 if coin then
                     local hrp = getHRP()
+                    
+                    -- 🌟 TELETRANSPORTE PARA NÃO BUGAR DEITADO
                     if dist > 150 then
                         hrp.CFrame = coin.CFrame
-                    else
-                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / farmSpeed, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
+                    elseif dist > 20 then
+                        local tw = TweenService:Create(hrp, TweenInfo.new((dist - 15) / farmSpeed, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
                         tw:Play()
-                        repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled
-                        pcall(function() tw:Cancel() end)
+                        task.wait((dist - 15) / farmSpeed)
+                    else
+                        hrp.CFrame = coin.CFrame
                     end
+                    
+                    -- Espera a moeda ser coletada
+                    local tempo = 0
+                    repeat 
+                        task.wait() 
+                        tempo = tempo + 0.05
+                    until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled or tempo > 1
                 end
             end
-            task.wait(0.2)
+            task.wait(0.1)
         end
     end)
 
@@ -426,7 +443,7 @@ local function LoadHub()
                 autoFarmEnabled = false
                 ToggleCircle.BackgroundColor3 = Theme.Off
                 if Player.Character and Player.Character:FindFirstChild("Humanoid") then
-                    Player.Character.Humanoid.Sit = false
+                    Player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
                 end
             end
         else
