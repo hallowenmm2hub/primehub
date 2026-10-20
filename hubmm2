@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Cleaned: removed remote HttpGet/loadstring and replaced with local Anti-AFK
--- Added: FPS Boost + Noclip (Fixed) + Role ESP V2 + Scrolling Frame + Keybind H
+-- Added: FPS Boost + Noclip + Role ESP V2 + Keybind H + Lay Down Farm + Big Hitbox
 -- Visual: Minimalist Dark Theme
 
 -- // Wait for game to load
@@ -19,12 +19,12 @@ local Lighting = game:GetService("Lighting")
 
 -- // Cores do Tema Minimalista
 local Theme = {
-    Background = Color3.fromRGB(20, 20, 20), -- Cinza muito escuro (quase preto)
-    Secondary = Color3.fromRGB(30, 30, 30),  -- Cinza escuro para painéis
-    Element = Color3.fromRGB(40, 40, 40),    -- Cinza médio para botões
-    Text = Color3.fromRGB(240, 240, 240),    -- Branco gelo para textos
-    Accent = Color3.fromRGB(255, 140, 0),    -- Laranja só para detalhes
-    Off = Color3.fromRGB(60, 60, 60)         -- Cor do botão desativado
+    Background = Color3.fromRGB(20, 20, 20),
+    Secondary = Color3.fromRGB(30, 30, 30),
+    Element = Color3.fromRGB(40, 40, 40),
+    Text = Color3.fromRGB(240, 240, 240),
+    Accent = Color3.fromRGB(255, 140, 0),
+    Off = Color3.fromRGB(60, 60, 60)
 }
 
 -- // Main GUI
@@ -132,7 +132,7 @@ MiscContent.CanvasSize = UDim2.new(0, 0, 0, 0)
 MiscContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
 MiscContent.ScrollingDirection = Enum.ScrollingDirection.Y
 
--- // Tab switching (Lógica visual)
+-- // Tab switching
 MainTab.MouseButton1Click:Connect(function()
 	MainContent.Visible = true
 	MiscContent.Visible = false
@@ -197,6 +197,18 @@ local AutoFarmToggle, ToggleCircle = CreateMiscToggle("AutoFarm Candies", 30)
 AutoFarmToggle.MouseButton1Click:Connect(function()
 	autoFarmEnabled = not autoFarmEnabled
 	ToggleCircle.BackgroundColor3 = autoFarmEnabled and Theme.Accent or Theme.Off
+	
+	-- 🌟 Lógica de Deitar (Lay Down) ao ativar/desativar
+	if Player.Character then
+		local humanoid = Player.Character:FindFirstChild("Humanoid")
+		if humanoid then
+			if autoFarmEnabled then
+				humanoid:ChangeState(Enum.HumanoidStateType.PlatformStanding) -- Deita no chão
+			else
+				humanoid:ChangeState(Enum.HumanoidStateType.GettingUp) -- Levanta
+			end
+		end
+	end
 end)
 
 local AutoResetToggle, ResetToggleCircle = CreateMiscToggle("Auto Reset", 120)
@@ -243,7 +255,7 @@ SpeedBox.FocusLost:Connect(function(enterPressed)
 end)
 
 -------------------------------------------------------------------
--- 🔁 Auto-farm logic (INTACTA)
+-- 🔁 Auto-farm logic (COM BIG HITBOX E LAY DOWN)
 -------------------------------------------------------------------
 local function getCharacter()
 	return Player.Character or Player.CharacterAdded:Wait()
@@ -260,6 +272,12 @@ local function get_nearest_coin()
 		if m:FindFirstChild("CoinContainer") then
 			for _, coin in pairs(m.CoinContainer:GetChildren()) do
 				if coin:IsA("BasePart") and coin:FindFirstChild("TouchInterest") then
+					
+					-- 🌟 AUMENTA A HITBOX DO DOCE (Deixa 4x maior)
+					if coin.Size.X < 5 then 
+						coin.Size = Vector3.new(5, 5, 5)
+					end
+					
 					local d = (hrp.Position - coin.Position).Magnitude
 					if d < dist then
 						closest, dist = coin, d
@@ -312,7 +330,16 @@ end)
 
 task.spawn(function()
 	while true do
+		-- Mantém o personagem deitado enquanto farma
 		if autoFarmEnabled and farming and not bag_full then
+			local chr = Player.Character
+			if chr then
+				local hum = chr:FindFirstChild("Humanoid")
+				if hum and hum:GetState() ~= Enum.HumanoidStateType.PlatformStanding then
+					hum:ChangeState(Enum.HumanoidStateType.PlatformStanding)
+				end
+			end
+
 			local coin, dist = get_nearest_coin()
 			if coin then
 				local hrp = getHRP()
@@ -493,7 +520,7 @@ task.spawn(function()
 end)
 
 -------------------------------------------------------------------
--- // Player profile UI (Minimalista)
+-- // Player profile UI
 -------------------------------------------------------------------
 local ProfileContainer = Instance.new("Frame", MainFrame)
 ProfileContainer.Size = UDim2.new(0, 180, 0, 60)
@@ -568,7 +595,7 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 -------------------------------------------------------------------
--- // Toggle Button (Minimalista)
+-- // Toggle Button
 -------------------------------------------------------------------
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Name = "ToggleButton"
