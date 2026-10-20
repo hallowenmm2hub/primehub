@@ -1,8 +1,8 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Cleaned: removed remote HttpGet/loadstring and replaced with local Anti-AFK
--- Added: FPS Boost + Noclip (Fixed) + Role ESP V2 + Scrolling Frame
--- Colors: Purple changed to Orange
+-- Added: FPS Boost + Noclip (Fixed) + Role ESP V2 + Scrolling Frame + Keybind H
+-- Visual: Minimalist Dark Theme
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -17,6 +17,16 @@ local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
 local Lighting = game:GetService("Lighting")
 
+-- // Cores do Tema Minimalista
+local Theme = {
+    Background = Color3.fromRGB(20, 20, 20), -- Cinza muito escuro (quase preto)
+    Secondary = Color3.fromRGB(30, 30, 30),  -- Cinza escuro para painéis
+    Element = Color3.fromRGB(40, 40, 40),    -- Cinza médio para botões
+    Text = Color3.fromRGB(240, 240, 240),    -- Branco gelo para textos
+    Accent = Color3.fromRGB(255, 140, 0),    -- Laranja só para detalhes
+    Off = Color3.fromRGB(60, 60, 60)         -- Cor do botão desativado
+}
+
 -- // Main GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "prime hub hallowen"
@@ -28,93 +38,82 @@ ScreenGui.Parent = game.CoreGui
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(35, 15, 5)
-MainFrame.BackgroundTransparency = 0.25
+MainFrame.BackgroundColor3 = Theme.Background
+MainFrame.BackgroundTransparency = 0.1
 MainFrame.BorderSizePixel = 0
 MainFrame.Size = UDim2.new(0, 500, 0, 280)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 
 local UICorner = Instance.new("UICorner", MainFrame)
-UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.CornerRadius = UDim.new(0, 12)
 
 local UIStroke = Instance.new("UIStroke", MainFrame)
-UIStroke.Color = Color3.fromRGB(255, 140, 0)
-UIStroke.Thickness = 1.3
-UIStroke.Transparency = 0.35
+UIStroke.Color = Theme.Accent
+UIStroke.Thickness = 1
+UIStroke.Transparency = 0.5
 
 -- // Title
 local Title = Instance.new("TextLabel", MainFrame)
 Title.BackgroundTransparency = 1
-Title.Position = UDim2.new(0.04, 0, 0.03, 0)
+Title.Position = UDim2.new(0.04, 0, 0.04, 0)
 Title.Size = UDim2.new(0, 260, 0, 22)
-Title.Font = Enum.Font.GothamBold
+Title.Font = Enum.Font.GothamMedium
 Title.Text = "Murder Mystery 2 | Halloween"
-Title.TextColor3 = Color3.fromRGB(255, 140, 0)
-Title.TextSize = 15
+Title.TextColor3 = Theme.Text
+Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 local SubTitle = Instance.new("TextLabel", MainFrame)
 SubTitle.BackgroundTransparency = 1
-SubTitle.Position = UDim2.new(0.04, 0, 0.11, 0)
+SubTitle.Position = UDim2.new(0.04, 0, 0.12, 0)
 SubTitle.Size = UDim2.new(0, 200, 0, 18)
 SubTitle.Font = Enum.Font.Gotham
-SubTitle.Text = "By: sllvzz ( discord : prime hub )"
-SubTitle.TextColor3 = Color3.fromRGB(255, 180, 100)
-SubTitle.TextSize = 12
+SubTitle.Text = "By: sllvzz ( prime hub )"
+SubTitle.TextColor3 = Color3.fromRGB(150, 150, 150)
+SubTitle.TextSize = 11
 SubTitle.TextXAlignment = Enum.TextXAlignment.Left
-SubTitle.TextTransparency = 0.1
 
 -- // Tabs container
 local TabsContainer = Instance.new("Frame", MainFrame)
-TabsContainer.Size = UDim2.new(0, 150, 0, 45)
+TabsContainer.Size = UDim2.new(0, 150, 0, 40)
 TabsContainer.Position = UDim2.new(0.025, 0, 0.22, 0)
-TabsContainer.BackgroundColor3 = Color3.fromRGB(50, 25, 10)
-TabsContainer.BackgroundTransparency = 0.25
+TabsContainer.BackgroundColor3 = Theme.Secondary
 TabsContainer.BorderSizePixel = 0
-Instance.new("UICorner", TabsContainer).CornerRadius = UDim.new(0, 10)
-local TabsStroke = Instance.new("UIStroke", TabsContainer)
-TabsStroke.Color = Color3.fromRGB(255, 140, 0)
-TabsStroke.Thickness = 1.2
-TabsStroke.Transparency = 0.4
+Instance.new("UICorner", TabsContainer).CornerRadius = UDim.new(0, 8)
 
 -- // Tab buttons
 local MainTab = Instance.new("TextButton", TabsContainer)
-MainTab.Size = UDim2.new(0, 65, 0, 30)
-MainTab.Position = UDim2.new(0, 5, 0, 7)
-MainTab.BackgroundColor3 = Color3.fromRGB(80, 40, 10)
-MainTab.BackgroundTransparency = 0.2
+MainTab.Size = UDim2.new(0, 65, 0, 28)
+MainTab.Position = UDim2.new(0, 5, 0, 6)
+MainTab.BackgroundColor3 = Theme.Element
 MainTab.BorderSizePixel = 0
 MainTab.Text = "Main"
-MainTab.TextColor3 = Color3.fromRGB(255, 180, 100)
-MainTab.TextSize = 13
-MainTab.Font = Enum.Font.GothamBold
+MainTab.TextColor3 = Theme.Accent
+MainTab.TextSize = 12
+MainTab.Font = Enum.Font.GothamMedium
+MainTab.AutoButtonColor = false
 Instance.new("UICorner", MainTab).CornerRadius = UDim.new(0, 6)
 
 local MiscTab = Instance.new("TextButton", TabsContainer)
-MiscTab.Size = UDim2.new(0, 65, 0, 30)
-MiscTab.Position = UDim2.new(0, 80, 0, 7)
-MiscTab.BackgroundColor3 = Color3.fromRGB(50, 25, 10)
-MiscTab.BackgroundTransparency = 0.2
+MiscTab.Size = UDim2.new(0, 65, 0, 28)
+MiscTab.Position = UDim2.new(0, 80, 0, 6)
+MiscTab.BackgroundColor3 = Theme.Secondary
 MiscTab.BorderSizePixel = 0
 MiscTab.Text = "Misc"
-MiscTab.TextColor3 = Color3.fromRGB(255, 140, 0)
-MiscTab.TextSize = 13
-MiscTab.Font = Enum.Font.GothamBold
+MiscTab.TextColor3 = Color3.fromRGB(150, 150, 150)
+MiscTab.TextSize = 12
+MiscTab.Font = Enum.Font.GothamMedium
+MiscTab.AutoButtonColor = false
 Instance.new("UICorner", MiscTab).CornerRadius = UDim.new(0, 6)
 
 -- // Content container
 local ContentContainer = Instance.new("Frame", MainFrame)
 ContentContainer.Size = UDim2.new(0, 280, 0, 180)
 ContentContainer.Position = UDim2.new(0.43, 0, 0.22, 0)
-ContentContainer.BackgroundColor3 = Color3.fromRGB(50, 25, 10)
-ContentContainer.BackgroundTransparency = 0.35
+ContentContainer.BackgroundColor3 = Theme.Secondary
 ContentContainer.BorderSizePixel = 0
 Instance.new("UICorner", ContentContainer).CornerRadius = UDim.new(0, 8)
-local ContentStroke = Instance.new("UIStroke", ContentContainer)
-ContentStroke.Color = Color3.fromRGB(255, 140, 0)
-ContentStroke.Thickness = 1.2
-ContentStroke.Transparency = 0.4
 
 -- // Content frames
 local MainContent = Instance.new("Frame", ContentContainer)
@@ -127,29 +126,29 @@ MiscContent.Size = UDim2.new(1, -20, 1, -20)
 MiscContent.Position = UDim2.new(0, 10, 0, 10)
 MiscContent.BackgroundTransparency = 1
 MiscContent.Visible = false
-MiscContent.ScrollBarThickness = 4
-MiscContent.ScrollBarImageColor3 = Color3.fromRGB(255, 140, 0)
+MiscContent.ScrollBarThickness = 2
+MiscContent.ScrollBarImageColor3 = Theme.Accent
 MiscContent.CanvasSize = UDim2.new(0, 0, 0, 0)
 MiscContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
 MiscContent.ScrollingDirection = Enum.ScrollingDirection.Y
 
--- // Tab switching
+-- // Tab switching (Lógica visual)
 MainTab.MouseButton1Click:Connect(function()
 	MainContent.Visible = true
 	MiscContent.Visible = false
-	MainTab.BackgroundColor3 = Color3.fromRGB(80, 40, 10)
-	MiscTab.BackgroundColor3 = Color3.fromRGB(50, 25, 10)
-	MainTab.TextColor3 = Color3.fromRGB(255, 180, 100)
-	MiscTab.TextColor3 = Color3.fromRGB(255, 140, 0)
+	MainTab.BackgroundColor3 = Theme.Element
+	MiscTab.BackgroundColor3 = Theme.Secondary
+	MainTab.TextColor3 = Theme.Accent
+	MiscTab.TextColor3 = Color3.fromRGB(150, 150, 150)
 end)
 
 MiscTab.MouseButton1Click:Connect(function()
 	MainContent.Visible = false
 	MiscContent.Visible = true
-	MainTab.BackgroundColor3 = Color3.fromRGB(50, 25, 10)
-	MiscTab.BackgroundColor3 = Color3.fromRGB(80, 40, 10)
-	MainTab.TextColor3 = Color3.fromRGB(255, 140, 0)
-	MiscTab.TextColor3 = Color3.fromRGB(255, 180, 100)
+	MainTab.BackgroundColor3 = Theme.Secondary
+	MiscTab.BackgroundColor3 = Theme.Element
+	MainTab.TextColor3 = Color3.fromRGB(150, 150, 150)
+	MiscTab.TextColor3 = Theme.Accent
 end)
 
 -------------------------------------------------------------------
@@ -163,94 +162,58 @@ local farmSpeed = 20
 local autoResetEnabled = false
 local resetting = false
 
-local AutoFarmToggle = Instance.new("TextButton")
-AutoFarmToggle.Parent = MainContent
-AutoFarmToggle.Size = UDim2.new(0, 230, 0, 35)
-AutoFarmToggle.Position = UDim2.new(0, 20, 0, 30)
-AutoFarmToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
-AutoFarmToggle.BorderSizePixel = 0
-AutoFarmToggle.Text = ""
-AutoFarmToggle.AutoButtonColor = false
-Instance.new("UICorner", AutoFarmToggle).CornerRadius = UDim.new(1, 0)
-local AutoFarmStroke = Instance.new("UIStroke", AutoFarmToggle)
-AutoFarmStroke.Color = Color3.fromRGB(255, 140, 0)
-AutoFarmStroke.Thickness = 1.2
-AutoFarmStroke.Transparency = 0.4
+local function CreateMiscToggle(text, yPos)
+	local Toggle = Instance.new("TextButton")
+	Toggle.Parent = MainContent
+	Toggle.Size = UDim2.new(0, 230, 0, 35)
+	Toggle.Position = UDim2.new(0, 20, 0, yPos)
+	Toggle.BackgroundColor3 = Theme.Element
+	Toggle.BorderSizePixel = 0
+	Toggle.Text = ""
+	Toggle.AutoButtonColor = false
+	Instance.new("UICorner", Toggle).CornerRadius = UDim.new(0, 6)
+	
+	local Label = Instance.new("TextLabel", Toggle)
+	Label.BackgroundTransparency = 1
+	Label.Position = UDim2.new(0.1, 0, 0, 0)
+	Label.Size = UDim2.new(0.8, 0, 1, 0)
+	Label.Font = Enum.Font.Gotham
+	Label.Text = text
+	Label.TextColor3 = Theme.Text
+	Label.TextSize = 13
+	Label.TextXAlignment = Enum.TextXAlignment.Left
+	
+	local Circle = Instance.new("Frame", Toggle)
+	Circle.Size = UDim2.new(0, 14, 0, 14)
+	Circle.Position = UDim2.new(0.9, 0, 0.3, 0)
+	Circle.BackgroundColor3 = Theme.Off
+	Circle.BorderSizePixel = 0
+	Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+	
+	return Toggle, Circle
+end
 
-local AutoFarmLabel = Instance.new("TextLabel", AutoFarmToggle)
-AutoFarmLabel.BackgroundTransparency = 1
-AutoFarmLabel.Position = UDim2.new(0.1, 0, 0, 0)
-AutoFarmLabel.Size = UDim2.new(0.8, 0, 1, 0)
-AutoFarmLabel.Font = Enum.Font.GothamBold
-AutoFarmLabel.Text = "🍬 AutoFarm Candies"
-AutoFarmLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-AutoFarmLabel.TextSize = 14
-AutoFarmLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local ToggleCircle = Instance.new("Frame", AutoFarmToggle)
-ToggleCircle.Size = UDim2.new(0, 18, 0, 18)
-ToggleCircle.Position = UDim2.new(0.87, 0, 0.23, 0)
-ToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
-ToggleCircle.BorderSizePixel = 0
-Instance.new("UICorner", ToggleCircle).CornerRadius = UDim.new(1, 0)
-
+local AutoFarmToggle, ToggleCircle = CreateMiscToggle("AutoFarm Candies", 30)
 AutoFarmToggle.MouseButton1Click:Connect(function()
 	autoFarmEnabled = not autoFarmEnabled
-	if autoFarmEnabled then
-		ToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
-	else
-		ToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
-	end
+	ToggleCircle.BackgroundColor3 = autoFarmEnabled and Theme.Accent or Theme.Off
 end)
 
-local AutoResetToggle = Instance.new("TextButton")
-AutoResetToggle.Parent = MainContent
-AutoResetToggle.Size = UDim2.new(0, 230, 0, 35)
-AutoResetToggle.Position = UDim2.new(0, 20, 0, 120)
-AutoResetToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
-AutoResetToggle.BorderSizePixel = 0
-AutoResetToggle.Text = ""
-AutoResetToggle.AutoButtonColor = false
-Instance.new("UICorner", AutoResetToggle).CornerRadius = UDim.new(1, 0)
-local AutoResetStroke = Instance.new("UIStroke", AutoResetToggle)
-AutoResetStroke.Color = Color3.fromRGB(255, 140, 0)
-AutoResetStroke.Thickness = 1.2
-AutoResetStroke.Transparency = 0.4
-
-local AutoResetLabel = Instance.new("TextLabel", AutoResetToggle)
-AutoResetLabel.BackgroundTransparency = 1
-AutoResetLabel.Position = UDim2.new(0.1, 0, 0, 0)
-AutoResetLabel.Size = UDim2.new(0.8, 0, 1, 0)
-AutoResetLabel.Font = Enum.Font.GothamBold
-AutoResetLabel.Text = "🔄 Auto Reset"
-AutoResetLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-AutoResetLabel.TextSize = 14
-AutoResetLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local ResetToggleCircle = Instance.new("Frame", AutoResetToggle)
-ResetToggleCircle.Size = UDim2.new(0, 18, 0, 18)
-ResetToggleCircle.Position = UDim2.new(0.87, 0, 0.23, 0)
-ResetToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
-ResetToggleCircle.BorderSizePixel = 0
-Instance.new("UICorner", ResetToggleCircle).CornerRadius = UDim.new(1, 0)
-
+local AutoResetToggle, ResetToggleCircle = CreateMiscToggle("Auto Reset", 120)
 AutoResetToggle.MouseButton1Click:Connect(function()
 	autoResetEnabled = not autoResetEnabled
-	if autoResetEnabled then
-		ResetToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
-	else
-		ResetToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
-	end
+	ResetToggleCircle.BackgroundColor3 = autoResetEnabled and Theme.Accent or Theme.Off
 end)
 
+-- // Speed Input
 local SpeedLabel = Instance.new("TextLabel")
 SpeedLabel.Parent = MainContent
 SpeedLabel.Position = UDim2.new(0, 25, 0, 70)
 SpeedLabel.Size = UDim2.new(0, 80, 0, 25)
 SpeedLabel.BackgroundTransparency = 1
-SpeedLabel.Font = Enum.Font.GothamBold
+SpeedLabel.Font = Enum.Font.Gotham
 SpeedLabel.Text = "Speed:"
-SpeedLabel.TextColor3 = Color3.fromRGB(255, 200, 150)
+SpeedLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 SpeedLabel.TextSize = 13
 SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -258,29 +221,12 @@ local SpeedBox = Instance.new("TextBox")
 SpeedBox.Parent = MainContent
 SpeedBox.Position = UDim2.new(0, 95, 0, 70)
 SpeedBox.Size = UDim2.new(0, 60, 0, 25)
-SpeedBox.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
-SpeedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedBox.PlaceholderText = tostring(farmSpeed)
-SpeedBox.Font = Enum.Font.GothamBold
+SpeedBox.BackgroundColor3 = Theme.Element
+SpeedBox.TextColor3 = Theme.Text
+SpeedBox.Font = Enum.Font.Gotham
 SpeedBox.TextSize = 13
 SpeedBox.Text = tostring(farmSpeed)
 Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 6)
-local SpeedStroke = Instance.new("UIStroke", SpeedBox)
-SpeedStroke.Color = Color3.fromRGB(255, 140, 0)
-SpeedStroke.Thickness = 1.1
-SpeedStroke.Transparency = 0.4
-
-local WarningText = Instance.new("TextLabel")
-WarningText.Parent = MainContent
-WarningText.Position = UDim2.new(0, 25, 0, 97)
-WarningText.Size = UDim2.new(0, 220, 0, 15)
-WarningText.BackgroundTransparency = 1
-WarningText.Font = Enum.Font.Gotham
-WarningText.Text = "⚠️ Over 25 = Kick"
-WarningText.TextColor3 = Color3.fromRGB(255, 130, 130)
-WarningText.TextSize = 11
-WarningText.TextXAlignment = Enum.TextXAlignment.Left
-WarningText.TextTransparency = 0.1
 
 SpeedBox.FocusLost:Connect(function(enterPressed)
 	if enterPressed then
@@ -290,11 +236,6 @@ SpeedBox.FocusLost:Connect(function(enterPressed)
 			if value > 50 then value = 50 end
 			farmSpeed = value
 			SpeedBox.Text = tostring(farmSpeed)
-			if farmSpeed > 25 then
-				WarningText.TextColor3 = Color3.fromRGB(255, 50, 50)
-			else
-				WarningText.TextColor3 = Color3.fromRGB(255, 130, 130)
-			end
 		else
 			SpeedBox.Text = tostring(farmSpeed)
 		end
@@ -400,92 +341,58 @@ local fpsBoostEnabled = false
 local noclipEnabled = false
 local roleESPEnabled = false
 
--- // Anti-AFK Toggle
-local AntiAFKToggle = Instance.new("TextButton")
-AntiAFKToggle.Parent = MiscContent
-AntiAFKToggle.Size = UDim2.new(0, 230, 0, 35)
-AntiAFKToggle.Position = UDim2.new(0, 10, 0, 5)
-AntiAFKToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
-AntiAFKToggle.BorderSizePixel = 0
-AntiAFKToggle.Text = ""
-AntiAFKToggle.AutoButtonColor = false
-Instance.new("UICorner", AntiAFKToggle).CornerRadius = UDim.new(1, 0)
-local AntiAFKStroke = Instance.new("UIStroke", AntiAFKToggle)
-AntiAFKStroke.Color = Color3.fromRGB(255, 140, 0)
-AntiAFKStroke.Thickness = 1.2
-AntiAFKStroke.Transparency = 0.4
+local function CreateMiscToggle2(text, yPos)
+	local Toggle = Instance.new("TextButton")
+	Toggle.Parent = MiscContent
+	Toggle.Size = UDim2.new(0, 230, 0, 35)
+	Toggle.Position = UDim2.new(0, 10, 0, yPos)
+	Toggle.BackgroundColor3 = Theme.Element
+	Toggle.BorderSizePixel = 0
+	Toggle.Text = ""
+	Toggle.AutoButtonColor = false
+	Instance.new("UICorner", Toggle).CornerRadius = UDim.new(0, 6)
+	
+	local Label = Instance.new("TextLabel", Toggle)
+	Label.BackgroundTransparency = 1
+	Label.Position = UDim2.new(0.1, 0, 0, 0)
+	Label.Size = UDim2.new(0.8, 0, 1, 0)
+	Label.Font = Enum.Font.Gotham
+	Label.Text = text
+	Label.TextColor3 = Theme.Text
+	Label.TextSize = 13
+	Label.TextXAlignment = Enum.TextXAlignment.Left
+	
+	local Circle = Instance.new("Frame", Toggle)
+	Circle.Size = UDim2.new(0, 14, 0, 14)
+	Circle.Position = UDim2.new(0.9, 0, 0.3, 0)
+	Circle.BackgroundColor3 = Theme.Off
+	Circle.BorderSizePixel = 0
+	Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+	
+	return Toggle, Circle
+end
 
-local AntiAFKLabel = Instance.new("TextLabel", AntiAFKToggle)
-AntiAFKLabel.BackgroundTransparency = 1
-AntiAFKLabel.Position = UDim2.new(0.1, 0, 0, 0)
-AntiAFKLabel.Size = UDim2.new(0.8, 0, 1, 0)
-AntiAFKLabel.Font = Enum.Font.GothamBold
-AntiAFKLabel.Text = "⏰ Anti-AFK"
-AntiAFKLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-AntiAFKLabel.TextSize = 14
-AntiAFKLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local AntiAFKToggleCircle = Instance.new("Frame", AntiAFKToggle)
-AntiAFKToggleCircle.Size = UDim2.new(0, 18, 0, 18)
-AntiAFKToggleCircle.Position = UDim2.new(0.87, 0, 0.23, 0)
-AntiAFKToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
-AntiAFKToggleCircle.BorderSizePixel = 0
-Instance.new("UICorner", AntiAFKToggleCircle).CornerRadius = UDim.new(1, 0)
-
+-- // Anti-AFK
+local AntiAFKToggle, AntiAFKCircle = CreateMiscToggle2("Anti-AFK", 5)
 AntiAFKToggle.MouseButton1Click:Connect(function()
 	if not antiAfkEnabled then
 		antiAfkEnabled = true
-		AntiAFKToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
-		AntiAFKLabel.Text = "⏰ Anti-AFK ✓"
-		AntiAFKLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
+		AntiAFKCircle.BackgroundColor3 = Theme.Accent
 		antiAfkConn = Player.Idled:Connect(function()
 			VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 			task.wait(0.5)
 			VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 		end)
-		AntiAFKToggle.AutoButtonColor = false
 		AntiAFKToggle.Active = false
 	end
 end)
 
--- // FPS Boost Toggle
-local FPSBoostToggle = Instance.new("TextButton")
-FPSBoostToggle.Parent = MiscContent
-FPSBoostToggle.Size = UDim2.new(0, 230, 0, 35)
-FPSBoostToggle.Position = UDim2.new(0, 10, 0, 45)
-FPSBoostToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
-FPSBoostToggle.BorderSizePixel = 0
-FPSBoostToggle.Text = ""
-FPSBoostToggle.AutoButtonColor = false
-Instance.new("UICorner", FPSBoostToggle).CornerRadius = UDim.new(1, 0)
-local FPSBoostStroke = Instance.new("UIStroke", FPSBoostToggle)
-FPSBoostStroke.Color = Color3.fromRGB(255, 140, 0)
-FPSBoostStroke.Thickness = 1.2
-FPSBoostStroke.Transparency = 0.4
-
-local FPSBoostLabel = Instance.new("TextLabel", FPSBoostToggle)
-FPSBoostLabel.BackgroundTransparency = 1
-FPSBoostLabel.Position = UDim2.new(0.1, 0, 0, 0)
-FPSBoostLabel.Size = UDim2.new(0.8, 0, 1, 0)
-FPSBoostLabel.Font = Enum.Font.GothamBold
-FPSBoostLabel.Text = "🚀 FPS Boost"
-FPSBoostLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-FPSBoostLabel.TextSize = 14
-FPSBoostLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local FPSBoostToggleCircle = Instance.new("Frame", FPSBoostToggle)
-FPSBoostToggleCircle.Size = UDim2.new(0, 18, 0, 18)
-FPSBoostToggleCircle.Position = UDim2.new(0.87, 0, 0.23, 0)
-FPSBoostToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
-FPSBoostToggleCircle.BorderSizePixel = 0
-Instance.new("UICorner", FPSBoostToggleCircle).CornerRadius = UDim.new(1, 0)
-
+-- // FPS Boost
+local FPSBoostToggle, FPSBoostCircle = CreateMiscToggle2("FPS Boost", 45)
 FPSBoostToggle.MouseButton1Click:Connect(function()
 	fpsBoostEnabled = not fpsBoostEnabled
 	if fpsBoostEnabled then
-		FPSBoostToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
-		FPSBoostLabel.Text = "🚀 FPS Boost ✓"
-		FPSBoostLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
+		FPSBoostCircle.BackgroundColor3 = Theme.Accent
 		for _, v in pairs(Lighting:GetChildren()) do
 			if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") then
 				v.Enabled = false
@@ -493,55 +400,19 @@ FPSBoostToggle.MouseButton1Click:Connect(function()
 		end
 		settings().Rendering.QualityLevel = 1
 	else
-		FPSBoostToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
-		FPSBoostLabel.Text = "🚀 FPS Boost"
-		FPSBoostLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		FPSBoostCircle.BackgroundColor3 = Theme.Off
 		settings().Rendering.QualityLevel = 10
 	end
 end)
 
--- // Noclip Toggle
-local NoclipToggle = Instance.new("TextButton")
-NoclipToggle.Parent = MiscContent
-NoclipToggle.Size = UDim2.new(0, 230, 0, 35)
-NoclipToggle.Position = UDim2.new(0, 10, 0, 85)
-NoclipToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
-NoclipToggle.BorderSizePixel = 0
-NoclipToggle.Text = ""
-NoclipToggle.AutoButtonColor = false
-Instance.new("UICorner", NoclipToggle).CornerRadius = UDim.new(1, 0)
-local NoclipStroke = Instance.new("UIStroke", NoclipToggle)
-NoclipStroke.Color = Color3.fromRGB(255, 140, 0)
-NoclipStroke.Thickness = 1.2
-NoclipStroke.Transparency = 0.4
-
-local NoclipLabel = Instance.new("TextLabel", NoclipToggle)
-NoclipLabel.BackgroundTransparency = 1
-NoclipLabel.Position = UDim2.new(0.1, 0, 0, 0)
-NoclipLabel.Size = UDim2.new(0.8, 0, 1, 0)
-NoclipLabel.Font = Enum.Font.GothamBold
-NoclipLabel.Text = "👻 Noclip"
-NoclipLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-NoclipLabel.TextSize = 14
-NoclipLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local NoclipToggleCircle = Instance.new("Frame", NoclipToggle)
-NoclipToggleCircle.Size = UDim2.new(0, 18, 0, 18)
-NoclipToggleCircle.Position = UDim2.new(0.87, 0, 0.23, 0)
-NoclipToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
-NoclipToggleCircle.BorderSizePixel = 0
-Instance.new("UICorner", NoclipToggleCircle).CornerRadius = UDim.new(1, 0)
-
+-- // Noclip
+local NoclipToggle, NoclipCircle = CreateMiscToggle2("Noclip", 85)
 NoclipToggle.MouseButton1Click:Connect(function()
 	noclipEnabled = not noclipEnabled
 	if noclipEnabled then
-		NoclipToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
-		NoclipLabel.Text = "👻 Noclip ✓"
-		NoclipLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
+		NoclipCircle.BackgroundColor3 = Theme.Accent
 	else
-		NoclipToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
-		NoclipLabel.Text = "👻 Noclip"
-		NoclipLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		NoclipCircle.BackgroundColor3 = Theme.Off
 		if Player.Character then
 			for _, v in pairs(Player.Character:GetDescendants()) do
 				if v:IsA("BasePart") then
@@ -566,48 +437,14 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- // Role ESP Toggle (Ver Papéis)
-local RoleESPToggle = Instance.new("TextButton")
-RoleESPToggle.Parent = MiscContent
-RoleESPToggle.Size = UDim2.new(0, 230, 0, 35)
-RoleESPToggle.Position = UDim2.new(0, 10, 0, 125)
-RoleESPToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
-RoleESPToggle.BorderSizePixel = 0
-RoleESPToggle.Text = ""
-RoleESPToggle.AutoButtonColor = false
-Instance.new("UICorner", RoleESPToggle).CornerRadius = UDim.new(1, 0)
-local RoleESPStroke = Instance.new("UIStroke", RoleESPToggle)
-RoleESPStroke.Color = Color3.fromRGB(255, 140, 0)
-RoleESPStroke.Thickness = 1.2
-RoleESPStroke.Transparency = 0.4
-
-local RoleESPLabel = Instance.new("TextLabel", RoleESPToggle)
-RoleESPLabel.BackgroundTransparency = 1
-RoleESPLabel.Position = UDim2.new(0.1, 0, 0, 0)
-RoleESPLabel.Size = UDim2.new(0.8, 0, 1, 0)
-RoleESPLabel.Font = Enum.Font.GothamBold
-RoleESPLabel.Text = "👁️ Ver Papéis (ESP)"
-RoleESPLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-RoleESPLabel.TextSize = 14
-RoleESPLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local RoleESPToggleCircle = Instance.new("Frame", RoleESPToggle)
-RoleESPToggleCircle.Size = UDim2.new(0, 18, 0, 18)
-RoleESPToggleCircle.Position = UDim2.new(0.87, 0, 0.23, 0)
-RoleESPToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
-RoleESPToggleCircle.BorderSizePixel = 0
-Instance.new("UICorner", RoleESPToggleCircle).CornerRadius = UDim.new(1, 0)
-
+-- // Role ESP
+local RoleESPToggle, RoleESPCircle = CreateMiscToggle2("Ver Papéis (ESP)", 125)
 RoleESPToggle.MouseButton1Click:Connect(function()
 	roleESPEnabled = not roleESPEnabled
 	if roleESPEnabled then
-		RoleESPToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
-		RoleESPLabel.Text = "👁️ Ver Papéis ✓"
-		RoleESPLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
+		RoleESPCircle.BackgroundColor3 = Theme.Accent
 	else
-		RoleESPToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
-		RoleESPLabel.Text = "👁️ Ver Papéis (ESP)"
-		RoleESPLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		RoleESPCircle.BackgroundColor3 = Theme.Off
 		for _, p in pairs(Players:GetPlayers()) do
 			if p.Character and p.Character:FindFirstChild("RoleESP") then
 				p.Character.RoleESP:Destroy()
@@ -616,15 +453,12 @@ RoleESPToggle.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 🌟 NOVA LÓGICA DO ROLE ESP (Lendo a tabela oficial do jogo)
 task.spawn(function()
 	while true do
-		task.wait(1.5) -- Atualiza a cada 1.5 segundos para não pesar
+		task.wait(1.5)
 		if roleESPEnabled then
 			local murdererName = nil
 			local sheriffName = nil
-			
-			-- O MM2 usa o Value Object "Roles" no ReplicatedStorage
 			local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
 			if roleFolder then
 				local murdererVal = roleFolder:FindFirstChild("Murderer")
@@ -636,13 +470,9 @@ task.spawn(function()
 			for _, p in pairs(Players:GetPlayers()) do
 				if p ~= Player and p.Character then
 					local char = p.Character
-					local roleColor = Color3.fromRGB(0, 255, 0) -- Inocente
-					
-					if p.Name == murdererName then
-						roleColor = Color3.fromRGB(255, 0, 0) -- Assassino
-					elseif p.Name == sheriffName then
-						roleColor = Color3.fromRGB(0, 100, 255) -- Xerife
-					end
+					local roleColor = Color3.fromRGB(0, 255, 0)
+					if p.Name == murdererName then roleColor = Color3.fromRGB(255, 0, 0)
+					elseif p.Name == sheriffName then roleColor = Color3.fromRGB(0, 100, 255) end
 					
 					local esp = char:FindFirstChild("RoleESP")
 					if not esp then
@@ -654,7 +484,6 @@ task.spawn(function()
 						esp.FillTransparency = 0.7
 						esp.OutlineTransparency = 0
 					end
-					
 					esp.FillColor = roleColor
 					esp.OutlineColor = roleColor
 				end
@@ -664,48 +493,43 @@ task.spawn(function()
 end)
 
 -------------------------------------------------------------------
--- // Player profile UI
+-- // Player profile UI (Minimalista)
 -------------------------------------------------------------------
 local ProfileContainer = Instance.new("Frame", MainFrame)
 ProfileContainer.Size = UDim2.new(0, 180, 0, 60)
 ProfileContainer.Position = UDim2.new(0.035, 0, 1, -75)
-ProfileContainer.BackgroundColor3 = Color3.fromRGB(50, 25, 10)
-ProfileContainer.BackgroundTransparency = 0.35
+ProfileContainer.BackgroundColor3 = Theme.Secondary
 ProfileContainer.BorderSizePixel = 0
 Instance.new("UICorner", ProfileContainer).CornerRadius = UDim.new(0, 8)
-local ProfileStroke = Instance.new("UIStroke", ProfileContainer)
-ProfileStroke.Color = Color3.fromRGB(255, 140, 0)
-ProfileStroke.Thickness = 1.2
-ProfileStroke.Transparency = 0.4
 
 local ProfileIcon = Instance.new("ImageLabel", ProfileContainer)
 ProfileIcon.BackgroundTransparency = 1
-ProfileIcon.Size = UDim2.new(0, 38, 0, 38)
-ProfileIcon.Position = UDim2.new(0.05, 0, 0.18, 0)
+ProfileIcon.Size = UDim2.new(0, 34, 0, 34)
+ProfileIcon.Position = UDim2.new(0.05, 0, 0.2, 0)
 ProfileIcon.Image = "rbxthumb://type=AvatarHeadShot&id="..Player.UserId.."&w=420&h=420"
 
 local NameLabel = Instance.new("TextLabel", ProfileContainer)
 NameLabel.BackgroundTransparency = 1
-NameLabel.Position = UDim2.new(0.32, 0, 0.18, 0)
+NameLabel.Position = UDim2.new(0.32, 0, 0.2, 0)
 NameLabel.Size = UDim2.new(0, 100, 0, 18)
-NameLabel.Font = Enum.Font.GothamBold
+NameLabel.Font = Enum.Font.GothamMedium
 NameLabel.Text = Player.DisplayName or "Player"
-NameLabel.TextColor3 = Color3.fromRGB(255, 150, 100)
-NameLabel.TextSize = 13
+NameLabel.TextColor3 = Theme.Text
+NameLabel.TextSize = 12
 NameLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local SubName = Instance.new("TextLabel", ProfileContainer)
 SubName.BackgroundTransparency = 1
-SubName.Position = UDim2.new(0.32, 0, 0.52, 0)
+SubName.Position = UDim2.new(0.32, 0, 0.5, 0)
 SubName.Size = UDim2.new(0, 100, 0, 16)
 SubName.Font = Enum.Font.Gotham
 SubName.Text = Player.Name or "anonymous"
-SubName.TextColor3 = Color3.fromRGB(255, 120, 0)
-SubName.TextSize = 11
+SubName.TextColor3 = Color3.fromRGB(150, 150, 150)
+SubName.TextSize = 10
 SubName.TextXAlignment = Enum.TextXAlignment.Left
 
 -------------------------------------------------------------------
--- // Drag support for window
+-- // Drag support
 -------------------------------------------------------------------
 local dragging = false
 local dragStart, startPos
@@ -713,10 +537,8 @@ local dragStart, startPos
 local function update(input)
 	local delta = input.Position - dragStart
 	MainFrame.Position = UDim2.new(
-		startPos.X.Scale,
-		startPos.X.Offset + delta.X,
-		startPos.Y.Scale,
-		startPos.Y.Offset + delta.Y
+		startPos.X.Scale, startPos.X.Offset + delta.X,
+		startPos.Y.Scale, startPos.Y.Offset + delta.Y
 	)
 end
 
@@ -746,22 +568,25 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 -------------------------------------------------------------------
--- // Toggle open/close button
+-- // Toggle Button (Minimalista)
 -------------------------------------------------------------------
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Name = "ToggleButton"
 ToggleButton.Parent = ScreenGui
-ToggleButton.Size = UDim2.new(0, 60, 0, 60)
+ToggleButton.Size = UDim2.new(0, 50, 0, 50)
 ToggleButton.Position = UDim2.new(0.06, 0, 0.12, 0)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(35, 15, 5)
-ToggleButton.BackgroundTransparency = 0.25
-ToggleButton.Text = ""
+ToggleButton.BackgroundColor3 = Theme.Background
+ToggleButton.BorderSizePixel = 0
+ToggleButton.Text = "P"
+ToggleButton.TextColor3 = Theme.Accent
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextSize = 20
 ToggleButton.AutoButtonColor = false
 Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(1, 0)
 local ButtonStroke = Instance.new("UIStroke", ToggleButton)
-ButtonStroke.Color = Color3.fromRGB(255, 140, 0)
-ButtonStroke.Thickness = 1.3
-ButtonStroke.Transparency = 0.35
+ButtonStroke.Color = Theme.Accent
+ButtonStroke.Thickness = 1
+ButtonStroke.Transparency = 0.5
 
 local draggingButton = false
 local dragStartButton, startPosButton
@@ -769,10 +594,8 @@ local dragStartButton, startPosButton
 local function updateButton(input)
 	local delta = input.Position - dragStartButton
 	ToggleButton.Position = UDim2.new(
-		startPosButton.X.Scale,
-		startPosButton.X.Offset + delta.X,
-		startPosButton.Y.Scale,
-		startPosButton.Y.Offset + delta.Y
+		startPosButton.X.Scale, startPosButton.X.Offset + delta.X,
+		startPosButton.Y.Scale, startPosButton.Y.Offset + delta.Y
 	)
 end
 
@@ -805,6 +628,15 @@ local isVisible = true
 ToggleButton.MouseButton1Click:Connect(function()
 	isVisible = not isVisible
 	MainFrame.Visible = isVisible
+end)
+
+-- 🌟 ATALHO DA TECLA "H"
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == Enum.KeyCode.H then
+		isVisible = not isVisible
+		MainFrame.Visible = isVisible
+	end
 end)
 
 -- script end
