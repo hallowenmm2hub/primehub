@@ -1,12 +1,11 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System (24h Save) + AutoFarm Deitado + Noclip + FPS Boost + Role ESP + Keybind H
+-- Added: Key System (24h Save) + AutoFarm Deitado Real + Noclip + FPS Boost + Role ESP + Keybind H
 -- Visual: Minimalist Dark Theme
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
 
--- // Roblox services
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -19,9 +18,9 @@ local Lighting = game:GetService("Lighting")
 -- ═══════════════════════════════════════════════════════════════
 -- 🔑 SISTEMA DE KEY (COM SALVAMENTO DE 24 HORAS)
 -- ═══════════════════════════════════════════════════════════════
-local VALID_KEY = "PRIME2024" -- ⚠️ COLOQUE A SUA KEY AQUI
+local VALID_KEY = "PRIME2024"
 local KEY_FILE = "primehub_key.txt"
-local TIME_24H = 86400 -- 24 horas em segundos
+local TIME_24H = 86400
 
 local Theme = {
     Background = Color3.fromRGB(20, 20, 20),
@@ -38,7 +37,6 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = game.CoreGui
 
--- // Funções de salvamento da Key
 local function CheckSavedKey()
     local success, result = pcall(function()
         if isfile and isfile(KEY_FILE) then
@@ -62,15 +60,11 @@ local function SaveKey()
     end)
 end
 
--- ═══════════════════════════════════════════════════════════════
--- ⚙️ HUB PRINCIPAL
--- ═══════════════════════════════════════════════════════════════
 local function LoadHub()
     if ScreenGui:FindFirstChild("KeyFrame") then
         ScreenGui.KeyFrame:Destroy()
     end
 
-    -- // Main window
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
@@ -81,13 +75,11 @@ local function LoadHub()
     MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
-
     local UIStroke = Instance.new("UIStroke", MainFrame)
     UIStroke.Color = Theme.Accent
     UIStroke.Thickness = 1
     UIStroke.Transparency = 0.5
 
-    -- // Title
     local Title = Instance.new("TextLabel", MainFrame)
     Title.BackgroundTransparency = 1
     Title.Position = UDim2.new(0.04, 0, 0.04, 0)
@@ -108,7 +100,6 @@ local function LoadHub()
     SubTitle.TextSize = 11
     SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- // Tabs
     local TabsContainer = Instance.new("Frame", MainFrame)
     TabsContainer.Size = UDim2.new(0, 150, 0, 40)
     TabsContainer.Position = UDim2.new(0.025, 0, 0.22, 0)
@@ -140,7 +131,6 @@ local function LoadHub()
     MiscTab.AutoButtonColor = false
     Instance.new("UICorner", MiscTab).CornerRadius = UDim.new(0, 6)
 
-    -- // Content
     local ContentContainer = Instance.new("Frame", MainFrame)
     ContentContainer.Size = UDim2.new(0, 280, 0, 180)
     ContentContainer.Position = UDim2.new(0.43, 0, 0.22, 0)
@@ -164,7 +154,6 @@ local function LoadHub()
     MiscContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
     MiscContent.ScrollingDirection = Enum.ScrollingDirection.Y
 
-    -- // Tab Switching
     MainTab.MouseButton1Click:Connect(function()
         MainContent.Visible = true
         MiscContent.Visible = false
@@ -183,7 +172,6 @@ local function LoadHub()
         MiscTab.TextColor3 = Theme.Accent
     end)
 
-    -- // Variáveis de Estado
     local autoFarmEnabled = false
     local farming = false
     local bag_full = false
@@ -200,7 +188,6 @@ local function LoadHub()
     local NoclipToggle, NoclipCircle
     local AutoFarmToggle, ToggleCircle
 
-    -- // Função para criar botões
     local function CreateToggle(parent, text, yPos)
         local Toggle = Instance.new("TextButton")
         Toggle.Parent = parent
@@ -250,7 +237,43 @@ local function LoadHub()
         end
     end
 
-    -- // AutoFarm
+    -- 🌟 DEITAR O PERSONAGEM DE VERDADE
+    local function LayDown()
+        local char = Player.Character
+        if char then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            local humanoid = char:FindFirstChild("Humanoid")
+            if hrp and humanoid then
+                -- Deita o personagem girando 90 graus
+                hrp.CFrame = hrp.CFrame * CFrame.Angles(math.rad(-90), 0, 0)
+                -- Desliga a colisão das pernas para não "empurrar" o chão
+                for _, v in pairs(char:GetDescendants()) do
+                    if v:IsA("BasePart") and (v.Name == "Left Leg" or v.Name == "Right Leg" or v.Name == "LeftFoot" or v.Name == "RightFoot") then
+                        v.CanCollide = false
+                    end
+                end
+            end
+        end
+    end
+
+    -- 🌟 LEVANTAR O PERSONAGEM
+    local function StandUp()
+        local char = Player.Character
+        if char then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                -- Desfaz a rotação
+                hrp.CFrame = CFrame.new(hrp.Position) * (hrp.CFrame - hrp.CFrame.Position):ToOrientation()
+                hrp.CFrame = CFrame.new(hrp.Position)
+            end
+            for _, v in pairs(char:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    v.CanCollide = true
+                end
+            end
+        end
+    end
+
     AutoFarmToggle, ToggleCircle = CreateToggle(MainContent, "AutoFarm Candies", 30)
     AutoFarmToggle.MouseButton1Click:Connect(function()
         autoFarmEnabled = not autoFarmEnabled
@@ -258,33 +281,19 @@ local function LoadHub()
         if autoFarmEnabled then
             ToggleCircle.BackgroundColor3 = Theme.Accent
             ForceDisableNoclip()
-            if Player.Character then
-                local humanoid = Player.Character:FindFirstChild("Humanoid")
-                if humanoid then 
-                    -- 🌟 DEITA O PERSONAGEM NO CHÃO
-                    humanoid:ChangeState(Enum.HumanoidStateType.PlatformStanding) 
-                end
-            end
+            LayDown() -- Deita no chão
         else
             ToggleCircle.BackgroundColor3 = Theme.Off
-            if Player.Character then
-                local humanoid = Player.Character:FindFirstChild("Humanoid")
-                if humanoid then 
-                    -- 🌟 LEVANTA O PERSONAGEM
-                    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp) 
-                end
-            end
+            StandUp() -- Levanta
         end
     end)
 
-    -- // AutoReset
     local AutoResetToggle, ResetToggleCircle = CreateToggle(MainContent, "Auto Reset", 120)
     AutoResetToggle.MouseButton1Click:Connect(function()
         autoResetEnabled = not autoResetEnabled
         ResetToggleCircle.BackgroundColor3 = autoResetEnabled and Theme.Accent or Theme.Off
     end)
 
-    -- // Speed Box
     local SpeedBox = Instance.new("TextBox", MainContent)
     SpeedBox.Position = UDim2.new(0, 95, 0, 70)
     SpeedBox.Size = UDim2.new(0, 60, 0, 25)
@@ -303,7 +312,6 @@ local function LoadHub()
         end
     end)
 
-    -- // Farm Logic
     local function getHRP()
         return (Player.Character or Player.CharacterAdded:Wait()):WaitForChild("HumanoidRootPart")
     end
@@ -361,15 +369,13 @@ local function LoadHub()
         end
     end)
 
-    -- // Loop do Farm (Deitado + Teletransporte Curto)
+    -- // Loop do Farm (Teletransporte)
     task.spawn(function()
         while true do
             if noclipEnabled and autoFarmEnabled then
                 autoFarmEnabled = false
                 ToggleCircle.BackgroundColor3 = Theme.Off
-                if Player.Character and Player.Character:FindFirstChild("Humanoid") then
-                    Player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                end
+                StandUp()
             end
 
             if autoFarmEnabled and farming and not bag_full then
@@ -377,30 +383,23 @@ local function LoadHub()
                 if coin then
                     local hrp = getHRP()
                     
-                    -- 🌟 TELETRANSPORTE PARA NÃO BUGAR DEITADO
+                    -- Usa CFrame para puxar o personagem mesmo deitado
                     if dist > 150 then
-                        hrp.CFrame = coin.CFrame
-                    elseif dist > 20 then
-                        local tw = TweenService:Create(hrp, TweenInfo.new((dist - 15) / farmSpeed, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
+                        hrp.CFrame = coin.CFrame * CFrame.Angles(math.rad(-90), 0, 0)
+                    elseif dist > 10 then
+                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / farmSpeed, Enum.EasingStyle.Linear), {CFrame = coin.CFrame * CFrame.Angles(math.rad(-90), 0, 0)})
                         tw:Play()
-                        task.wait((dist - 15) / farmSpeed)
+                        repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled
+                        pcall(function() tw:Cancel() end)
                     else
-                        hrp.CFrame = coin.CFrame
+                        hrp.CFrame = coin.CFrame * CFrame.Angles(math.rad(-90), 0, 0)
                     end
-                    
-                    -- Espera a moeda ser coletada
-                    local tempo = 0
-                    repeat 
-                        task.wait() 
-                        tempo = tempo + 0.05
-                    until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled or tempo > 1
                 end
             end
             task.wait(0.1)
         end
     end)
 
-    -- // Anti-AFK
     local AntiAFKToggle, AntiAFKCircle = CreateToggle(MiscContent, "Anti-AFK", 5)
     AntiAFKToggle.MouseButton1Click:Connect(function()
         if not antiAfkEnabled then
@@ -415,7 +414,6 @@ local function LoadHub()
         end
     end)
 
-    -- // FPS Boost
     local FPSBoostToggle, FPSBoostCircle = CreateToggle(MiscContent, "FPS Boost", 45)
     FPSBoostToggle.MouseButton1Click:Connect(function()
         fpsBoostEnabled = not fpsBoostEnabled
@@ -433,7 +431,6 @@ local function LoadHub()
         end
     end)
 
-    -- // Noclip
     NoclipToggle, NoclipCircle = CreateToggle(MiscContent, "Noclip", 85)
     NoclipToggle.MouseButton1Click:Connect(function()
         noclipEnabled = not noclipEnabled
@@ -442,9 +439,7 @@ local function LoadHub()
             if autoFarmEnabled then
                 autoFarmEnabled = false
                 ToggleCircle.BackgroundColor3 = Theme.Off
-                if Player.Character and Player.Character:FindFirstChild("Humanoid") then
-                    Player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                end
+                StandUp()
             end
         else
             NoclipCircle.BackgroundColor3 = Theme.Off
@@ -472,7 +467,6 @@ local function LoadHub()
         end
     end)
 
-    -- // Role ESP
     local RoleESPToggle, RoleESPCircle = CreateToggle(MiscContent, "Ver Papéis (ESP)", 125)
     RoleESPToggle.MouseButton1Click:Connect(function()
         roleESPEnabled = not roleESPEnabled
@@ -503,12 +497,8 @@ local function LoadHub()
                     if p ~= Player and p.Character then
                         local char = p.Character
                         local roleColor = Color3.fromRGB(0, 255, 0)
-                        
-                        if p.Name == murdererName then
-                            roleColor = Color3.fromRGB(255, 0, 0)
-                        elseif p.Name == sheriffName then
-                            roleColor = Color3.fromRGB(0, 100, 255)
-                        end
+                        if p.Name == murdererName then roleColor = Color3.fromRGB(255, 0, 0)
+                        elseif p.Name == sheriffName then roleColor = Color3.fromRGB(0, 100, 255) end
                         
                         local esp = char:FindFirstChild("RoleESP")
                         if not esp then
@@ -528,7 +518,6 @@ local function LoadHub()
         end
     end)
 
-    -- // Profile UI
     local ProfileContainer = Instance.new("Frame", MainFrame)
     ProfileContainer.Size = UDim2.new(0, 180, 0, 60)
     ProfileContainer.Position = UDim2.new(0.035, 0, 1, -75)
@@ -562,7 +551,6 @@ local function LoadHub()
     SubName.TextSize = 10
     SubName.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- // Drag Support
     local dragging, dragStart, startPos
     MainFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -582,7 +570,6 @@ local function LoadHub()
         end
     end)
 
-    -- // Toggle Button
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Parent = ScreenGui
     ToggleButton.Size = UDim2.new(0, 50, 0, 50)
@@ -605,7 +592,6 @@ local function LoadHub()
         MainFrame.Visible = isVisible
     end)
 
-    -- // Tecla H
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
         if input.KeyCode == Enum.KeyCode.H then
