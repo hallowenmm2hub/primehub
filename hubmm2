@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Cleaned: removed remote HttpGet/loadstring and replaced with local Anti-AFK
--- Added: FPS Boost + Noclip + Role ESP + Scrolling Frame
+-- Added: FPS Boost + Noclip (Fixed) + Role ESP (Fixed by Tools) + Scrolling Frame
 -- Colors: Purple changed to Orange
 
 -- // Wait for game to load
@@ -122,7 +122,6 @@ MainContent.Size = UDim2.new(1, -20, 1, -20)
 MainContent.Position = UDim2.new(0, 10, 0, 10)
 MainContent.BackgroundTransparency = 1
 
--- 🌟 MUDANÇA AQUI: MiscContent agora é um ScrollingFrame
 local MiscContent = Instance.new("ScrollingFrame", ContentContainer)
 MiscContent.Size = UDim2.new(1, -20, 1, -20)
 MiscContent.Position = UDim2.new(0, 10, 0, 10)
@@ -130,7 +129,7 @@ MiscContent.BackgroundTransparency = 1
 MiscContent.Visible = false
 MiscContent.ScrollBarThickness = 4
 MiscContent.ScrollBarImageColor3 = Color3.fromRGB(255, 140, 0)
-MiscContent.CanvasSize = UDim2.new(0, 0, 0, 0) -- Ajusta automaticamente
+MiscContent.CanvasSize = UDim2.new(0, 0, 0, 0)
 MiscContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
 MiscContent.ScrollingDirection = Enum.ScrollingDirection.Y
 
@@ -160,7 +159,7 @@ local autoFarmEnabled = false
 local farming = false
 local bag_full = false
 local start_position
-local farmSpeed = 20 -- default (1–50)
+local farmSpeed = 20
 local autoResetEnabled = false
 local resetting = false
 
@@ -543,14 +542,28 @@ NoclipToggle.MouseButton1Click:Connect(function()
 		NoclipToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
 		NoclipLabel.Text = "👻 Noclip"
 		NoclipLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		
+		-- CORREÇÃO DO NOCLIP: Devolve a colisão e tira a âncora
+		if Player.Character then
+			for _, v in pairs(Player.Character:GetDescendants()) do
+				if v:IsA("BasePart") then
+					v.CanCollide = true
+					v.Anchored = false
+				end
+			end
+		end
 	end
 end)
 
 RunService.Stepped:Connect(function()
     if noclipEnabled and Player.Character then
         for _, v in pairs(Player.Character:GetDescendants()) do
-            if v:IsA("BasePart") and v.CanCollide then
+            if v:IsA("BasePart") then
                 v.CanCollide = false
+                -- Ancora o HumanoidRootPart para não cair no void
+                if v.Name == "HumanoidRootPart" then
+                    v.Anchored = true 
+                end
             end
         end
     end
@@ -606,44 +619,55 @@ RoleESPToggle.MouseButton1Click:Connect(function()
 	end
 end)
 
+-- 🌟 NOVA LÓGICA DO ROLE ESP (Baseado nas ferramentas na mão)
 task.spawn(function()
 	while true do
 		task.wait(1)
 		if roleESPEnabled then
-			local murderer = nil
-			local sheriff = nil
-			
-			if _G.findMurderer then
-				local ok, result = pcall(_G.findMurderer)
-				if ok then murderer = result end
-			end
-			if _G.findSheriff then
-				local ok, result = pcall(_G.findSheriff)
-				if ok then sheriff = result end
-			end
-			
 			for _, p in pairs(Players:GetPlayers()) do
 				if p ~= Player and p.Character then
 					local char = p.Character
-					if not char:FindFirstChild("RoleESP") then
-						local highlight = Instance.new("Highlight")
-						highlight.Name = "RoleESP"
-						highlight.Parent = char
-						highlight.Adornee = char
-						highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-						highlight.FillTransparency = 0.6
-						highlight.OutlineTransparency = 0
-						
-						local roleColor = Color3.fromRGB(0, 255, 0)
-						if p == murderer then
-							roleColor = Color3.fromRGB(255, 0, 0)
-						elseif p == sheriff then
-							roleColor = Color3.fromRGB(0, 100, 255)
+					local roleColor = Color3.fromRGB(0, 255, 0) -- Padrão: Inocente (Verde)
+					
+					-- Verifica se o jogador tem a faca ou a arma equipada
+					local hasKnife = false
+					local hasGun = false
+					
+					local function checkTools(container)
+						if container then
+							for _, tool in pairs(container:GetChildren()) do
+								if tool:IsA("Tool") then
+									if tool.Name == "Knife" then hasKnife = true end
+									if tool.Name == "Gun" then hasGun = true end
+								end
+							end
 						end
-						
-						highlight.FillColor = roleColor
-						highlight.OutlineColor = roleColor
 					end
+					
+					-- Verifica na mochila e na mão
+					checkTools(p.Backpack)
+					checkTools(char)
+					
+					if hasKnife then
+						roleColor = Color3.fromRGB(255, 0, 0) -- Assassino (Vermelho)
+					elseif hasGun then
+						roleColor = Color3.fromRGB(0, 100, 255) -- Xerife (Azul)
+					end
+					
+					-- Cria ou atualiza o ESP
+					local esp = char:FindFirstChild("RoleESP")
+					if not esp then
+						esp = Instance.new("Highlight")
+						esp.Name = "RoleESP"
+						esp.Parent = char
+						esp.Adornee = char
+						esp.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+						esp.FillTransparency = 0.6
+						esp.OutlineTransparency = 0
+					end
+					
+					esp.FillColor = roleColor
+					esp.OutlineColor = roleColor
 				end
 			end
 		end
