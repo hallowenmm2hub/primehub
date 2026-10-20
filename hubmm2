@@ -1,7 +1,6 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Cleaned: removed remote HttpGet/loadstring and replaced with local Anti-AFK
--- Added: FPS Boost + Noclip + Role ESP V2 + Keybind H + Lay Down Farm + Big Hitbox
+-- Added: Key System + FPS Boost + Noclip + Role ESP + Keybind H + Sit Farm + Anti-Conflito
 -- Visual: Minimalist Dark Theme
 
 -- // Wait for game to load
@@ -17,7 +16,11 @@ local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
 local Lighting = game:GetService("Lighting")
 
--- // Cores do Tema Minimalista
+-- ═══════════════════════════════════════════════════════════════
+-- 🔑 SISTEMA DE KEY
+-- ═══════════════════════════════════════════════════════════════
+local VALID_KEY = "PRIME2024" -- ⚠️ COLOQUE A SUA KEY AQUI
+
 local Theme = {
     Background = Color3.fromRGB(20, 20, 20),
     Secondary = Color3.fromRGB(30, 30, 30),
@@ -27,643 +30,631 @@ local Theme = {
     Off = Color3.fromRGB(60, 60, 60)
 }
 
--- // Main GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "prime hub hallowen"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = game.CoreGui
 
--- // Main window
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Theme.Background
-MainFrame.BackgroundTransparency = 0.1
-MainFrame.BorderSizePixel = 0
-MainFrame.Size = UDim2.new(0, 500, 0, 280)
-MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+-- // Tela de Login (Key)
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Name = "KeyFrame"
+KeyFrame.Parent = ScreenGui
+KeyFrame.BackgroundColor3 = Theme.Background
+KeyFrame.BackgroundTransparency = 0.1
+KeyFrame.BorderSizePixel = 0
+KeyFrame.Size = UDim2.new(0, 300, 0, 200)
+KeyFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+KeyFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 12)
+local KeyStroke = Instance.new("UIStroke", KeyFrame)
+KeyStroke.Color = Theme.Accent
+KeyStroke.Thickness = 1
+KeyStroke.Transparency = 0.5
 
-local UICorner = Instance.new("UICorner", MainFrame)
-UICorner.CornerRadius = UDim.new(0, 12)
+local KeyTitle = Instance.new("TextLabel", KeyFrame)
+KeyTitle.BackgroundTransparency = 1
+KeyTitle.Position = UDim2.new(0, 0, 0.1, 0)
+KeyTitle.Size = UDim2.new(1, 0, 0, 30)
+KeyTitle.Font = Enum.Font.GothamBold
+KeyTitle.Text = "Prime Hub | Acesso Restrito"
+KeyTitle.TextColor3 = Theme.Accent
+KeyTitle.TextSize = 16
 
-local UIStroke = Instance.new("UIStroke", MainFrame)
-UIStroke.Color = Theme.Accent
-UIStroke.Thickness = 1
-UIStroke.Transparency = 0.5
+local KeyInput = Instance.new("TextBox", KeyFrame)
+KeyInput.Position = UDim2.new(0.1, 0, 0.35, 0)
+KeyInput.Size = UDim2.new(0.8, 0, 40, 0)
+KeyInput.BackgroundColor3 = Theme.Element
+KeyInput.TextColor3 = Theme.Text
+KeyInput.Font = Enum.Font.Gotham
+KeyInput.TextSize = 14
+KeyInput.PlaceholderText = "Digite a Key aqui..."
+KeyInput.Text = ""
+Instance.new("UICorner", KeyInput).CornerRadius = UDim.new(0, 6)
 
--- // Title
-local Title = Instance.new("TextLabel", MainFrame)
-Title.BackgroundTransparency = 1
-Title.Position = UDim2.new(0.04, 0, 0.04, 0)
-Title.Size = UDim2.new(0, 260, 0, 22)
-Title.Font = Enum.Font.GothamMedium
-Title.Text = "Murder Mystery 2 | Halloween"
-Title.TextColor3 = Theme.Text
-Title.TextSize = 14
-Title.TextXAlignment = Enum.TextXAlignment.Left
+local KeyButton = Instance.new("TextButton", KeyFrame)
+KeyButton.Position = UDim2.new(0.1, 0, 0.65, 0)
+KeyButton.Size = UDim2.new(0.8, 0, 35, 0)
+KeyButton.BackgroundColor3 = Theme.Accent
+KeyButton.Text = "Verificar Key"
+KeyButton.TextColor3 = Theme.Background
+KeyButton.Font = Enum.Font.GothamBold
+KeyButton.TextSize = 14
+KeyButton.AutoButtonColor = false
+Instance.new("UICorner", KeyButton).CornerRadius = UDim.new(0, 6)
 
-local SubTitle = Instance.new("TextLabel", MainFrame)
-SubTitle.BackgroundTransparency = 1
-SubTitle.Position = UDim2.new(0.04, 0, 0.12, 0)
-SubTitle.Size = UDim2.new(0, 200, 0, 18)
-SubTitle.Font = Enum.Font.Gotham
-SubTitle.Text = "By: sllvzz ( prime hub )"
-SubTitle.TextColor3 = Color3.fromRGB(150, 150, 150)
-SubTitle.TextSize = 11
-SubTitle.TextXAlignment = Enum.TextXAlignment.Left
+local KeyStatus = Instance.new("TextLabel", KeyFrame)
+KeyStatus.BackgroundTransparency = 1
+KeyStatus.Position = UDim2.new(0, 0, 0.85, 0)
+KeyStatus.Size = UDim2.new(1, 0, 20, 0)
+KeyStatus.Font = Enum.Font.Gotham
+KeyStatus.Text = ""
+KeyStatus.TextColor3 = Color3.fromRGB(255, 50, 50)
+KeyStatus.TextSize = 12
 
--- // Tabs container
-local TabsContainer = Instance.new("Frame", MainFrame)
-TabsContainer.Size = UDim2.new(0, 150, 0, 40)
-TabsContainer.Position = UDim2.new(0.025, 0, 0.22, 0)
-TabsContainer.BackgroundColor3 = Theme.Secondary
-TabsContainer.BorderSizePixel = 0
-Instance.new("UICorner", TabsContainer).CornerRadius = UDim.new(0, 8)
+-- ═══════════════════════════════════════════════════════════════
+-- HUB PRINCIPAL
+-- ═══════════════════════════════════════════════════════════════
+local function LoadHub()
+    KeyFrame:Destroy()
 
--- // Tab buttons
-local MainTab = Instance.new("TextButton", TabsContainer)
-MainTab.Size = UDim2.new(0, 65, 0, 28)
-MainTab.Position = UDim2.new(0, 5, 0, 6)
-MainTab.BackgroundColor3 = Theme.Element
-MainTab.BorderSizePixel = 0
-MainTab.Text = "Main"
-MainTab.TextColor3 = Theme.Accent
-MainTab.TextSize = 12
-MainTab.Font = Enum.Font.GothamMedium
-MainTab.AutoButtonColor = false
-Instance.new("UICorner", MainTab).CornerRadius = UDim.new(0, 6)
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
+    MainFrame.Parent = ScreenGui
+    MainFrame.BackgroundColor3 = Theme.Background
+    MainFrame.BackgroundTransparency = 0.1
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Size = UDim2.new(0, 500, 0, 280)
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+    local UIStroke = Instance.new("UIStroke", MainFrame)
+    UIStroke.Color = Theme.Accent
+    UIStroke.Thickness = 1
+    UIStroke.Transparency = 0.5
 
-local MiscTab = Instance.new("TextButton", TabsContainer)
-MiscTab.Size = UDim2.new(0, 65, 0, 28)
-MiscTab.Position = UDim2.new(0, 80, 0, 6)
-MiscTab.BackgroundColor3 = Theme.Secondary
-MiscTab.BorderSizePixel = 0
-MiscTab.Text = "Misc"
-MiscTab.TextColor3 = Color3.fromRGB(150, 150, 150)
-MiscTab.TextSize = 12
-MiscTab.Font = Enum.Font.GothamMedium
-MiscTab.AutoButtonColor = false
-Instance.new("UICorner", MiscTab).CornerRadius = UDim.new(0, 6)
+    local Title = Instance.new("TextLabel", MainFrame)
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0.04, 0, 0.04, 0)
+    Title.Size = UDim2.new(0, 260, 0, 22)
+    Title.Font = Enum.Font.GothamMedium
+    Title.Text = "Murder Mystery 2 | Halloween"
+    Title.TextColor3 = Theme.Text
+    Title.TextSize = 14
+    Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- // Content container
-local ContentContainer = Instance.new("Frame", MainFrame)
-ContentContainer.Size = UDim2.new(0, 280, 0, 180)
-ContentContainer.Position = UDim2.new(0.43, 0, 0.22, 0)
-ContentContainer.BackgroundColor3 = Theme.Secondary
-ContentContainer.BorderSizePixel = 0
-Instance.new("UICorner", ContentContainer).CornerRadius = UDim.new(0, 8)
+    local SubTitle = Instance.new("TextLabel", MainFrame)
+    SubTitle.BackgroundTransparency = 1
+    SubTitle.Position = UDim2.new(0.04, 0, 0.12, 0)
+    SubTitle.Size = UDim2.new(0, 200, 0, 18)
+    SubTitle.Font = Enum.Font.Gotham
+    SubTitle.Text = "By: sllvzz ( prime hub )"
+    SubTitle.TextColor3 = Color3.fromRGB(150, 150, 150)
+    SubTitle.TextSize = 11
+    SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 
--- // Content frames
-local MainContent = Instance.new("Frame", ContentContainer)
-MainContent.Size = UDim2.new(1, -20, 1, -20)
-MainContent.Position = UDim2.new(0, 10, 0, 10)
-MainContent.BackgroundTransparency = 1
+    local TabsContainer = Instance.new("Frame", MainFrame)
+    TabsContainer.Size = UDim2.new(0, 150, 0, 40)
+    TabsContainer.Position = UDim2.new(0.025, 0, 0.22, 0)
+    TabsContainer.BackgroundColor3 = Theme.Secondary
+    TabsContainer.BorderSizePixel = 0
+    Instance.new("UICorner", TabsContainer).CornerRadius = UDim.new(0, 8)
 
-local MiscContent = Instance.new("ScrollingFrame", ContentContainer)
-MiscContent.Size = UDim2.new(1, -20, 1, -20)
-MiscContent.Position = UDim2.new(0, 10, 0, 10)
-MiscContent.BackgroundTransparency = 1
-MiscContent.Visible = false
-MiscContent.ScrollBarThickness = 2
-MiscContent.ScrollBarImageColor3 = Theme.Accent
-MiscContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-MiscContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
-MiscContent.ScrollingDirection = Enum.ScrollingDirection.Y
+    local MainTab = Instance.new("TextButton", TabsContainer)
+    MainTab.Size = UDim2.new(0, 65, 0, 28)
+    MainTab.Position = UDim2.new(0, 5, 0, 6)
+    MainTab.BackgroundColor3 = Theme.Element
+    MainTab.BorderSizePixel = 0
+    MainTab.Text = "Main"
+    MainTab.TextColor3 = Theme.Accent
+    MainTab.TextSize = 12
+    MainTab.Font = Enum.Font.GothamMedium
+    MainTab.AutoButtonColor = false
+    Instance.new("UICorner", MainTab).CornerRadius = UDim.new(0, 6)
 
--- // Tab switching
-MainTab.MouseButton1Click:Connect(function()
-	MainContent.Visible = true
-	MiscContent.Visible = false
-	MainTab.BackgroundColor3 = Theme.Element
-	MiscTab.BackgroundColor3 = Theme.Secondary
-	MainTab.TextColor3 = Theme.Accent
-	MiscTab.TextColor3 = Color3.fromRGB(150, 150, 150)
-end)
+    local MiscTab = Instance.new("TextButton", TabsContainer)
+    MiscTab.Size = UDim2.new(0, 65, 0, 28)
+    MiscTab.Position = UDim2.new(0, 80, 0, 6)
+    MiscTab.BackgroundColor3 = Theme.Secondary
+    MiscTab.BorderSizePixel = 0
+    MiscTab.Text = "Misc"
+    MiscTab.TextColor3 = Color3.fromRGB(150, 150, 150)
+    MiscTab.TextSize = 12
+    MiscTab.Font = Enum.Font.GothamMedium
+    MiscTab.AutoButtonColor = false
+    Instance.new("UICorner", MiscTab).CornerRadius = UDim.new(0, 6)
 
-MiscTab.MouseButton1Click:Connect(function()
-	MainContent.Visible = false
-	MiscContent.Visible = true
-	MainTab.BackgroundColor3 = Theme.Secondary
-	MiscTab.BackgroundColor3 = Theme.Element
-	MainTab.TextColor3 = Color3.fromRGB(150, 150, 150)
-	MiscTab.TextColor3 = Theme.Accent
-end)
+    local ContentContainer = Instance.new("Frame", MainFrame)
+    ContentContainer.Size = UDim2.new(0, 280, 0, 180)
+    ContentContainer.Position = UDim2.new(0.43, 0, 0.22, 0)
+    ContentContainer.BackgroundColor3 = Theme.Secondary
+    ContentContainer.BorderSizePixel = 0
+    Instance.new("UICorner", ContentContainer).CornerRadius = UDim.new(0, 8)
 
--------------------------------------------------------------------
--- 🍬 AUTO FARM CANDIES
--------------------------------------------------------------------
-local autoFarmEnabled = false
-local farming = false
-local bag_full = false
-local start_position
-local farmSpeed = 20
-local autoResetEnabled = false
-local resetting = false
+    local MainContent = Instance.new("Frame", ContentContainer)
+    MainContent.Size = UDim2.new(1, -20, 1, -20)
+    MainContent.Position = UDim2.new(0, 10, 0, 10)
+    MainContent.BackgroundTransparency = 1
 
-local function CreateMiscToggle(text, yPos)
-	local Toggle = Instance.new("TextButton")
-	Toggle.Parent = MainContent
-	Toggle.Size = UDim2.new(0, 230, 0, 35)
-	Toggle.Position = UDim2.new(0, 20, 0, yPos)
-	Toggle.BackgroundColor3 = Theme.Element
-	Toggle.BorderSizePixel = 0
-	Toggle.Text = ""
-	Toggle.AutoButtonColor = false
-	Instance.new("UICorner", Toggle).CornerRadius = UDim.new(0, 6)
-	
-	local Label = Instance.new("TextLabel", Toggle)
-	Label.BackgroundTransparency = 1
-	Label.Position = UDim2.new(0.1, 0, 0, 0)
-	Label.Size = UDim2.new(0.8, 0, 1, 0)
-	Label.Font = Enum.Font.Gotham
-	Label.Text = text
-	Label.TextColor3 = Theme.Text
-	Label.TextSize = 13
-	Label.TextXAlignment = Enum.TextXAlignment.Left
-	
-	local Circle = Instance.new("Frame", Toggle)
-	Circle.Size = UDim2.new(0, 14, 0, 14)
-	Circle.Position = UDim2.new(0.9, 0, 0.3, 0)
-	Circle.BackgroundColor3 = Theme.Off
-	Circle.BorderSizePixel = 0
-	Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
-	
-	return Toggle, Circle
-end
+    local MiscContent = Instance.new("ScrollingFrame", ContentContainer)
+    MiscContent.Size = UDim2.new(1, -20, 1, -20)
+    MiscContent.Position = UDim2.new(0, 10, 0, 10)
+    MiscContent.BackgroundTransparency = 1
+    MiscContent.Visible = false
+    MiscContent.ScrollBarThickness = 2
+    MiscContent.ScrollBarImageColor3 = Theme.Accent
+    MiscContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+    MiscContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    MiscContent.ScrollingDirection = Enum.ScrollingDirection.Y
 
-local AutoFarmToggle, ToggleCircle = CreateMiscToggle("AutoFarm Candies", 30)
-AutoFarmToggle.MouseButton1Click:Connect(function()
-	autoFarmEnabled = not autoFarmEnabled
-	ToggleCircle.BackgroundColor3 = autoFarmEnabled and Theme.Accent or Theme.Off
-	
-	-- 🌟 Lógica de Deitar (Lay Down) ao ativar/desativar
-	if Player.Character then
-		local humanoid = Player.Character:FindFirstChild("Humanoid")
-		if humanoid then
-			if autoFarmEnabled then
-				humanoid:ChangeState(Enum.HumanoidStateType.PlatformStanding) -- Deita no chão
-			else
-				humanoid:ChangeState(Enum.HumanoidStateType.GettingUp) -- Levanta
-			end
-		end
-	end
-end)
+    MainTab.MouseButton1Click:Connect(function()
+        MainContent.Visible = true
+        MiscContent.Visible = false
+        MainTab.BackgroundColor3 = Theme.Element
+        MiscTab.BackgroundColor3 = Theme.Secondary
+        MainTab.TextColor3 = Theme.Accent
+        MiscTab.TextColor3 = Color3.fromRGB(150, 150, 150)
+    end)
 
-local AutoResetToggle, ResetToggleCircle = CreateMiscToggle("Auto Reset", 120)
-AutoResetToggle.MouseButton1Click:Connect(function()
-	autoResetEnabled = not autoResetEnabled
-	ResetToggleCircle.BackgroundColor3 = autoResetEnabled and Theme.Accent or Theme.Off
-end)
+    MiscTab.MouseButton1Click:Connect(function()
+        MainContent.Visible = false
+        MiscContent.Visible = true
+        MainTab.BackgroundColor3 = Theme.Secondary
+        MiscTab.BackgroundColor3 = Theme.Element
+        MainTab.TextColor3 = Color3.fromRGB(150, 150, 150)
+        MiscTab.TextColor3 = Theme.Accent
+    end)
 
--- // Speed Input
-local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Parent = MainContent
-SpeedLabel.Position = UDim2.new(0, 25, 0, 70)
-SpeedLabel.Size = UDim2.new(0, 80, 0, 25)
-SpeedLabel.BackgroundTransparency = 1
-SpeedLabel.Font = Enum.Font.Gotham
-SpeedLabel.Text = "Speed:"
-SpeedLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-SpeedLabel.TextSize = 13
-SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+    -- // Variáveis de Estado
+    local autoFarmEnabled = false
+    local farming = false
+    local bag_full = false
+    local start_position
+    local farmSpeed = 20
+    local autoResetEnabled = false
+    local resetting = false
+    
+    local noclipEnabled = false
+    local fpsBoostEnabled = false
+    local antiAfkEnabled = false
+    local roleESPEnabled = false
+    
+    -- Declarando referências aos botões que vão interagir entre si
+    local NoclipToggle, NoclipCircle
+    local AutoFarmToggle, ToggleCircle
 
-local SpeedBox = Instance.new("TextBox")
-SpeedBox.Parent = MainContent
-SpeedBox.Position = UDim2.new(0, 95, 0, 70)
-SpeedBox.Size = UDim2.new(0, 60, 0, 25)
-SpeedBox.BackgroundColor3 = Theme.Element
-SpeedBox.TextColor3 = Theme.Text
-SpeedBox.Font = Enum.Font.Gotham
-SpeedBox.TextSize = 13
-SpeedBox.Text = tostring(farmSpeed)
-Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 6)
-
-SpeedBox.FocusLost:Connect(function(enterPressed)
-	if enterPressed then
-		local value = tonumber(SpeedBox.Text)
-		if value then
-			if value < 1 then value = 1 end
-			if value > 50 then value = 50 end
-			farmSpeed = value
-			SpeedBox.Text = tostring(farmSpeed)
-		else
-			SpeedBox.Text = tostring(farmSpeed)
-		end
-	end
-end)
-
--------------------------------------------------------------------
--- 🔁 Auto-farm logic (COM BIG HITBOX E LAY DOWN)
--------------------------------------------------------------------
-local function getCharacter()
-	return Player.Character or Player.CharacterAdded:Wait()
-end
-
-local function getHRP()
-	return getCharacter():WaitForChild("HumanoidRootPart")
-end
-
-local function get_nearest_coin()
-	local hrp = getHRP()
-	local closest, dist = nil, math.huge
-	for _, m in pairs(workspace:GetChildren()) do
-		if m:FindFirstChild("CoinContainer") then
-			for _, coin in pairs(m.CoinContainer:GetChildren()) do
-				if coin:IsA("BasePart") and coin:FindFirstChild("TouchInterest") then
-					
-					-- 🌟 AUMENTA A HITBOX DO DOCE (Deixa 4x maior)
-					if coin.Size.X < 5 then 
-						coin.Size = Vector3.new(5, 5, 5)
-					end
-					
-					local d = (hrp.Position - coin.Position).Magnitude
-					if d < dist then
-						closest, dist = coin, d
-					end
-				end
-			end
-		end
-	end
-	return closest, dist
-end
-
-local RoundStart = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Gameplay"):WaitForChild("RoundStart")
-local RoundEnd = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Gameplay"):WaitForChild("RoundEndFade")
-
-RoundStart.OnClientEvent:Connect(function()
-	farming = true
-	start_position = getHRP().CFrame
-end)
-
-RoundEnd.OnClientEvent:Connect(function()
-	farming = false
-	if start_position then
-		getHRP().CFrame = start_position
-	end
-end)
-
-local CoinCollected = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Gameplay"):WaitForChild("CoinCollected")
-
-CoinCollected.OnClientEvent:Connect(function(_, current, max)
-    if current == max and not resetting and autoResetEnabled then
-        resetting = true
-        bag_full = true
-        local hrp = getHRP()
-        if start_position then
-            local tween = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), {CFrame = start_position})
-            tween:Play()
-            tween.Completed:Wait()
+    local function CreateToggle(parent, text, yPos)
+        local Toggle = Instance.new("TextButton")
+        Toggle.Parent = parent
+        Toggle.Size = UDim2.new(0, 230, 0, 35)
+        Toggle.Position = UDim2.new(0, 20, 0, yPos)
+        if parent == MiscContent then
+            Toggle.Position = UDim2.new(0, 10, 0, yPos)
         end
-        task.wait(0.5)
-        local chr = Player.Character
-        if chr and chr:FindFirstChild("Humanoid") then
-            chr.Humanoid.Health = 0
-            Player.CharacterAdded:Wait()
-            task.wait(1.5)
-        end
-        resetting = false
-        bag_full = false
+        Toggle.BackgroundColor3 = Theme.Element
+        Toggle.BorderSizePixel = 0
+        Toggle.Text = ""
+        Toggle.AutoButtonColor = false
+        Instance.new("UICorner", Toggle).CornerRadius = UDim.new(0, 6)
+        
+        local Label = Instance.new("TextLabel", Toggle)
+        Label.BackgroundTransparency = 1
+        Label.Position = UDim2.new(0.1, 0, 0, 0)
+        Label.Size = UDim2.new(0.8, 0, 1, 0)
+        Label.Font = Enum.Font.Gotham
+        Label.Text = text
+        Label.TextColor3 = Theme.Text
+        Label.TextSize = 13
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        
+        local Circle = Instance.new("Frame", Toggle)
+        Circle.Size = UDim2.new(0, 14, 0, 14)
+        Circle.Position = UDim2.new(0.9, 0, 0.3, 0)
+        Circle.BackgroundColor3 = Theme.Off
+        Circle.BorderSizePixel = 0
+        Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+        
+        return Toggle, Circle
     end
-end)
 
-task.spawn(function()
-	while true do
-		-- Mantém o personagem deitado enquanto farma
-		if autoFarmEnabled and farming and not bag_full then
-			local chr = Player.Character
-			if chr then
-				local hum = chr:FindFirstChild("Humanoid")
-				if hum and hum:GetState() ~= Enum.HumanoidStateType.PlatformStanding then
-					hum:ChangeState(Enum.HumanoidStateType.PlatformStanding)
-				end
-			end
-
-			local coin, dist = get_nearest_coin()
-			if coin then
-				local hrp = getHRP()
-				if dist > 150 then
-					hrp.CFrame = coin.CFrame
-				else
-					local tween = TweenService:Create(hrp, TweenInfo.new(dist / farmSpeed, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
-					tween:Play()
-					repeat
-						task.wait()
-					until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled
-					pcall(function() tween:Cancel() end)
-				end
-			end
-		end
-		task.wait(0.2)
-	end
-end)
-
--------------------------------------------------------------------
--- ⚙️ MISC FUNCTIONS
--------------------------------------------------------------------
-local antiAfkEnabled = false
-local antiAfkConn
-local fpsBoostEnabled = false
-local noclipEnabled = false
-local roleESPEnabled = false
-
-local function CreateMiscToggle2(text, yPos)
-	local Toggle = Instance.new("TextButton")
-	Toggle.Parent = MiscContent
-	Toggle.Size = UDim2.new(0, 230, 0, 35)
-	Toggle.Position = UDim2.new(0, 10, 0, yPos)
-	Toggle.BackgroundColor3 = Theme.Element
-	Toggle.BorderSizePixel = 0
-	Toggle.Text = ""
-	Toggle.AutoButtonColor = false
-	Instance.new("UICorner", Toggle).CornerRadius = UDim.new(0, 6)
-	
-	local Label = Instance.new("TextLabel", Toggle)
-	Label.BackgroundTransparency = 1
-	Label.Position = UDim2.new(0.1, 0, 0, 0)
-	Label.Size = UDim2.new(0.8, 0, 1, 0)
-	Label.Font = Enum.Font.Gotham
-	Label.Text = text
-	Label.TextColor3 = Theme.Text
-	Label.TextSize = 13
-	Label.TextXAlignment = Enum.TextXAlignment.Left
-	
-	local Circle = Instance.new("Frame", Toggle)
-	Circle.Size = UDim2.new(0, 14, 0, 14)
-	Circle.Position = UDim2.new(0.9, 0, 0.3, 0)
-	Circle.BackgroundColor3 = Theme.Off
-	Circle.BorderSizePixel = 0
-	Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
-	
-	return Toggle, Circle
-end
-
--- // Anti-AFK
-local AntiAFKToggle, AntiAFKCircle = CreateMiscToggle2("Anti-AFK", 5)
-AntiAFKToggle.MouseButton1Click:Connect(function()
-	if not antiAfkEnabled then
-		antiAfkEnabled = true
-		AntiAFKCircle.BackgroundColor3 = Theme.Accent
-		antiAfkConn = Player.Idled:Connect(function()
-			VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-			task.wait(0.5)
-			VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-		end)
-		AntiAFKToggle.Active = false
-	end
-end)
-
--- // FPS Boost
-local FPSBoostToggle, FPSBoostCircle = CreateMiscToggle2("FPS Boost", 45)
-FPSBoostToggle.MouseButton1Click:Connect(function()
-	fpsBoostEnabled = not fpsBoostEnabled
-	if fpsBoostEnabled then
-		FPSBoostCircle.BackgroundColor3 = Theme.Accent
-		for _, v in pairs(Lighting:GetChildren()) do
-			if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") then
-				v.Enabled = false
-			end
-		end
-		settings().Rendering.QualityLevel = 1
-	else
-		FPSBoostCircle.BackgroundColor3 = Theme.Off
-		settings().Rendering.QualityLevel = 10
-	end
-end)
-
--- // Noclip
-local NoclipToggle, NoclipCircle = CreateMiscToggle2("Noclip", 85)
-NoclipToggle.MouseButton1Click:Connect(function()
-	noclipEnabled = not noclipEnabled
-	if noclipEnabled then
-		NoclipCircle.BackgroundColor3 = Theme.Accent
-	else
-		NoclipCircle.BackgroundColor3 = Theme.Off
-		if Player.Character then
-			for _, v in pairs(Player.Character:GetDescendants()) do
-				if v:IsA("BasePart") then
-					v.CanCollide = true
-					v.Anchored = false
-				end
-			end
-		end
-	end
-end)
-
-RunService.Stepped:Connect(function()
-    if noclipEnabled and Player.Character then
-        for _, v in pairs(Player.Character:GetDescendants()) do
-            if v:IsA("BasePart") then
-                v.CanCollide = false
-                if v.Name == "HumanoidRootPart" then
-                    v.Anchored = true 
+    -- // Função para desativar o Noclip (usada quando liga o Farm)
+    local function ForceDisableNoclip()
+        if noclipEnabled then
+            noclipEnabled = false
+            NoclipCircle.BackgroundColor3 = Theme.Off
+            if Player.Character then
+                for _, v in pairs(Player.Character:GetDescendants()) do
+                    if v:IsA("BasePart") then
+                        v.CanCollide = true
+                        v.Anchored = false
+                    end
                 end
             end
         end
     end
-end)
 
--- // Role ESP
-local RoleESPToggle, RoleESPCircle = CreateMiscToggle2("Ver Papéis (ESP)", 125)
-RoleESPToggle.MouseButton1Click:Connect(function()
-	roleESPEnabled = not roleESPEnabled
-	if roleESPEnabled then
-		RoleESPCircle.BackgroundColor3 = Theme.Accent
-	else
-		RoleESPCircle.BackgroundColor3 = Theme.Off
-		for _, p in pairs(Players:GetPlayers()) do
-			if p.Character and p.Character:FindFirstChild("RoleESP") then
-				p.Character.RoleESP:Destroy()
-			end
-		end
-	end
-end)
+    -- // AutoFarm Toggle (Senta e Farm)
+    AutoFarmToggle, ToggleCircle = CreateToggle(MainContent, "AutoFarm Candies", 30)
+    AutoFarmToggle.MouseButton1Click:Connect(function()
+        autoFarmEnabled = not autoFarmEnabled
+        
+        if autoFarmEnabled then
+            ToggleCircle.BackgroundColor3 = Theme.Accent
+            ForceDisableNoclip() -- 🌟 DESLIGA O NOCLIP AUTOMATICAMENTE
+            if Player.Character then
+                local humanoid = Player.Character:FindFirstChild("Humanoid")
+                if humanoid then humanoid.Sit = true end -- Fica escondido
+            end
+        else
+            ToggleCircle.BackgroundColor3 = Theme.Off
+            if Player.Character then
+                local humanoid = Player.Character:FindFirstChild("Humanoid")
+                if humanoid then humanoid.Sit = false end -- Levanta
+            end
+        end
+    end)
 
-task.spawn(function()
-	while true do
-		task.wait(1.5)
-		if roleESPEnabled then
-			local murdererName = nil
-			local sheriffName = nil
-			local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
-			if roleFolder then
-				local murdererVal = roleFolder:FindFirstChild("Murderer")
-				local sheriffVal = roleFolder:FindFirstChild("Sheriff")
-				if murdererVal then murdererName = murdererVal.Value end
-				if sheriffVal then sheriffName = sheriffVal.Value end
-			end
-			
-			for _, p in pairs(Players:GetPlayers()) do
-				if p ~= Player and p.Character then
-					local char = p.Character
-					local roleColor = Color3.fromRGB(0, 255, 0)
-					if p.Name == murdererName then roleColor = Color3.fromRGB(255, 0, 0)
-					elseif p.Name == sheriffName then roleColor = Color3.fromRGB(0, 100, 255) end
-					
-					local esp = char:FindFirstChild("RoleESP")
-					if not esp then
-						esp = Instance.new("Highlight")
-						esp.Name = "RoleESP"
-						esp.Parent = char
-						esp.Adornee = char
-						esp.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-						esp.FillTransparency = 0.7
-						esp.OutlineTransparency = 0
-					end
-					esp.FillColor = roleColor
-					esp.OutlineColor = roleColor
-				end
-			end
-		end
-	end
-end)
+    -- // Auto Reset Toggle
+    local AutoResetToggle, ResetToggleCircle = CreateToggle(MainContent, "Auto Reset", 120)
+    AutoResetToggle.MouseButton1Click:Connect(function()
+        autoResetEnabled = not autoResetEnabled
+        ResetToggleCircle.BackgroundColor3 = autoResetEnabled and Theme.Accent or Theme.Off
+    end)
 
--------------------------------------------------------------------
--- // Player profile UI
--------------------------------------------------------------------
-local ProfileContainer = Instance.new("Frame", MainFrame)
-ProfileContainer.Size = UDim2.new(0, 180, 0, 60)
-ProfileContainer.Position = UDim2.new(0.035, 0, 1, -75)
-ProfileContainer.BackgroundColor3 = Theme.Secondary
-ProfileContainer.BorderSizePixel = 0
-Instance.new("UICorner", ProfileContainer).CornerRadius = UDim.new(0, 8)
+    -- // Speed Input
+    local SpeedLabel = Instance.new("TextLabel", MainContent)
+    SpeedLabel.Position = UDim2.new(0, 25, 0, 70)
+    SpeedLabel.Size = UDim2.new(0, 80, 0, 25)
+    SpeedLabel.BackgroundTransparency = 1
+    SpeedLabel.Font = Enum.Font.Gotham
+    SpeedLabel.Text = "Speed:"
+    SpeedLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    SpeedLabel.TextSize = 13
+    SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-local ProfileIcon = Instance.new("ImageLabel", ProfileContainer)
-ProfileIcon.BackgroundTransparency = 1
-ProfileIcon.Size = UDim2.new(0, 34, 0, 34)
-ProfileIcon.Position = UDim2.new(0.05, 0, 0.2, 0)
-ProfileIcon.Image = "rbxthumb://type=AvatarHeadShot&id="..Player.UserId.."&w=420&h=420"
+    local SpeedBox = Instance.new("TextBox", MainContent)
+    SpeedBox.Position = UDim2.new(0, 95, 0, 70)
+    SpeedBox.Size = UDim2.new(0, 60, 0, 25)
+    SpeedBox.BackgroundColor3 = Theme.Element
+    SpeedBox.TextColor3 = Theme.Text
+    SpeedBox.Font = Enum.Font.Gotham
+    SpeedBox.TextSize = 13
+    SpeedBox.Text = tostring(farmSpeed)
+    Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 6)
 
-local NameLabel = Instance.new("TextLabel", ProfileContainer)
-NameLabel.BackgroundTransparency = 1
-NameLabel.Position = UDim2.new(0.32, 0, 0.2, 0)
-NameLabel.Size = UDim2.new(0, 100, 0, 18)
-NameLabel.Font = Enum.Font.GothamMedium
-NameLabel.Text = Player.DisplayName or "Player"
-NameLabel.TextColor3 = Theme.Text
-NameLabel.TextSize = 12
-NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    SpeedBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            local value = tonumber(SpeedBox.Text)
+            if value then
+                if value < 1 then value = 1 end
+                if value > 50 then value = 50 end
+                farmSpeed = value
+                SpeedBox.Text = tostring(farmSpeed)
+            else
+                SpeedBox.Text = tostring(farmSpeed)
+            end
+        end
+    end)
 
-local SubName = Instance.new("TextLabel", ProfileContainer)
-SubName.BackgroundTransparency = 1
-SubName.Position = UDim2.new(0.32, 0, 0.5, 0)
-SubName.Size = UDim2.new(0, 100, 0, 16)
-SubName.Font = Enum.Font.Gotham
-SubName.Text = Player.Name or "anonymous"
-SubName.TextColor3 = Color3.fromRGB(150, 150, 150)
-SubName.TextSize = 10
-SubName.TextXAlignment = Enum.TextXAlignment.Left
+    -- // Farm Logic
+    local function getCharacter() return Player.Character or Player.CharacterAdded:Wait() end
+    local function getHRP() return getCharacter():WaitForChild("HumanoidRootPart") end
 
--------------------------------------------------------------------
--- // Drag support
--------------------------------------------------------------------
-local dragging = false
-local dragStart, startPos
+    local function get_nearest_coin()
+        local hrp = getHRP()
+        local closest, dist = nil, math.huge
+        for _, m in pairs(workspace:GetChildren()) do
+            if m:FindFirstChild("CoinContainer") then
+                for _, coin in pairs(m.CoinContainer:GetChildren()) do
+                    if coin:IsA("BasePart") and coin:FindFirstChild("TouchInterest") then
+                        local d = (hrp.Position - coin.Position).Magnitude
+                        if d < dist then
+                            closest, dist = coin, d
+                        end
+                    end
+                end
+            end
+        end
+        return closest, dist
+    end
 
-local function update(input)
-	local delta = input.Position - dragStart
-	MainFrame.Position = UDim2.new(
-		startPos.X.Scale, startPos.X.Offset + delta.X,
-		startPos.Y.Scale, startPos.Y.Offset + delta.Y
-	)
+    local RoundStart = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Gameplay"):WaitForChild("RoundStart")
+    local RoundEnd = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Gameplay"):WaitForChild("RoundEndFade")
+
+    RoundStart.OnClientEvent:Connect(function()
+        farming = true
+        start_position = getHRP().CFrame
+    end)
+
+    RoundEnd.OnClientEvent:Connect(function()
+        farming = false
+        if start_position then
+            getHRP().CFrame = start_position
+        end
+    end)
+
+    local CoinCollected = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Gameplay"):WaitForChild("CoinCollected")
+
+    CoinCollected.OnClientEvent:Connect(function(_, current, max)
+        if current == max and not resetting and autoResetEnabled then
+            resetting = true
+            bag_full = true
+            local hrp = getHRP()
+            if start_position then
+                local tween = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), {CFrame = start_position})
+                tween:Play()
+                tween.Completed:Wait()
+            end
+            task.wait(0.5)
+            local chr = Player.Character
+            if chr and chr:FindFirstChild("Humanoid") then
+                chr.Humanoid.Health = 0
+                Player.CharacterAdded:Wait()
+                task.wait(1.5)
+            end
+            resetting = false
+            bag_full = false
+        end
+    end)
+
+    task.spawn(function()
+        while true do
+            -- Se o Noclip for ativado manualmente enquanto farma, ele para o farm
+            if noclipEnabled and autoFarmEnabled then
+                autoFarmEnabled = false
+                ToggleCircle.BackgroundColor3 = Theme.Off
+                if Player.Character then
+                    local hum = Player.Character:FindFirstChild("Humanoid")
+                    if hum then hum.Sit = false end
+                end
+            end
+
+            if autoFarmEnabled and farming and not bag_full then
+                local coin, dist = get_nearest_coin()
+                if coin then
+                    local hrp = getHRP()
+                    if dist > 150 then
+                        hrp.CFrame = coin.CFrame
+                    else
+                        local tween = TweenService:Create(hrp, TweenInfo.new(dist / farmSpeed, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
+                        tween:Play()
+                        repeat
+                            task.wait()
+                        until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled
+                        pcall(function() tween:Cancel() end)
+                    end
+                end
+            end
+            task.wait(0.2)
+        end
+    end)
+
+    -- // Misc Functions
+    local AntiAFKToggle, AntiAFKCircle = CreateToggle(MiscContent, "Anti-AFK", 5)
+    AntiAFKToggle.MouseButton1Click:Connect(function()
+        if not antiAfkEnabled then
+            antiAfkEnabled = true
+            AntiAFKCircle.BackgroundColor3 = Theme.Accent
+            Player.Idled:Connect(function()
+                VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+                task.wait(0.5)
+                VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            end)
+            AntiAFKToggle.Active = false
+        end
+    end)
+
+    local FPSBoostToggle, FPSBoostCircle = CreateToggle(MiscContent, "FPS Boost", 45)
+    FPSBoostToggle.MouseButton1Click:Connect(function()
+        fpsBoostEnabled = not fpsBoostEnabled
+        if fpsBoostEnabled then
+            FPSBoostCircle.BackgroundColor3 = Theme.Accent
+            for _, v in pairs(Lighting:GetChildren()) do
+                if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") then
+                    v.Enabled = false
+                end
+            end
+            settings().Rendering.QualityLevel = 1
+        else
+            FPSBoostCircle.BackgroundColor3 = Theme.Off
+            settings().Rendering.QualityLevel = 10
+        end
+    end)
+
+    -- // Noclip Toggle
+    NoclipToggle, NoclipCircle = CreateToggle(MiscContent, "Noclip", 85)
+    NoclipToggle.MouseButton1Click:Connect(function()
+        noclipEnabled = not noclipEnabled
+        
+        if noclipEnabled then
+            NoclipCircle.BackgroundColor3 = Theme.Accent
+            -- 🌟 DESLIGA O FARM AUTOMATICAMENTE SE LIGAR O NOCLIP
+            if autoFarmEnabled then
+                autoFarmEnabled = false
+                ToggleCircle.BackgroundColor3 = Theme.Off
+                if Player.Character then
+                    local hum = Player.Character:FindFirstChild("Humanoid")
+                    if hum then hum.Sit = false end
+                end
+            end
+        else
+            NoclipCircle.BackgroundColor3 = Theme.Off
+            if Player.Character then
+                for _, v in pairs(Player.Character:GetDescendants()) do
+                    if v:IsA("BasePart") then
+                        v.CanCollide = true
+                        v.Anchored = false
+                    end
+                end
+            end
+        end
+    end)
+
+    RunService.Stepped:Connect(function()
+        if noclipEnabled and Player.Character then
+            for _, v in pairs(Player.Character:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    v.CanCollide = false
+                    if v.Name == "HumanoidRootPart" then
+                        v.Anchored = true 
+                    end
+                end
+            end
+        end
+    end)
+
+    -- // Role ESP
+    local RoleESPToggle, RoleESPCircle = CreateToggle(MiscContent, "Ver Papéis (ESP)", 125)
+    RoleESPToggle.MouseButton1Click:Connect(function()
+        roleESPEnabled = not roleESPEnabled
+        if roleESPEnabled then
+            RoleESPCircle.BackgroundColor3 = Theme.Accent
+        else
+            RoleESPCircle.BackgroundColor3 = Theme.Off
+            for _, p in pairs(Players:GetPlayers()) do
+                if p.Character and p.Character:FindFirstChild("RoleESP") then
+                    p.Character.RoleESP:Destroy()
+                end
+            end
+        end
+    end)
+
+    task.spawn(function()
+        while true do
+            task.wait(1.5)
+            if roleESPEnabled then
+                local murdererName = nil
+                local sheriffName = nil
+                local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
+                if roleFolder then
+                    local murdererVal = roleFolder:FindFirstChild("Murderer")
+                    local sheriffVal = roleFolder:FindFirstChild("Sheriff")
+                    if murdererVal then murdererName = murdererVal.Value end
+                    if sheriffVal then sheriffName = sheriffVal.Value end
+                end
+                
+                for _, p in pairs(Players:GetPlayers()) do
+                    if p ~= Player and p.Character then
+                        local char = p.Character
+                        local roleColor = Color3.fromRGB(0, 255, 0)
+                        if p.Name == murdererName then roleColor = Color3.fromRGB(255, 0, 0)
+                        elseif p.Name == sheriffName then roleColor = Color3.fromRGB(0, 100, 255) end
+                        
+                        local esp = char:FindFirstChild("RoleESP")
+                        if not esp then
+                            esp = Instance.new("Highlight")
+                            esp.Name = "RoleESP"
+                            esp.Parent = char
+                            esp.Adornee = char
+                            esp.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                            esp.FillTransparency = 0.7
+                            esp.OutlineTransparency = 0
+                        end
+                        esp.FillColor = roleColor
+                        esp.OutlineColor = roleColor
+                    end
+                end
+            end
+        end
+    end)
+
+    -- // Profile UI
+    local ProfileContainer = Instance.new("Frame", MainFrame)
+    ProfileContainer.Size = UDim2.new(0, 180, 0, 60)
+    ProfileContainer.Position = UDim2.new(0.035, 0, 1, -75)
+    ProfileContainer.BackgroundColor3 = Theme.Secondary
+    ProfileContainer.BorderSizePixel = 0
+    Instance.new("UICorner", ProfileContainer).CornerRadius = UDim.new(0, 8)
+
+    local ProfileIcon = Instance.new("ImageLabel", ProfileContainer)
+    ProfileIcon.BackgroundTransparency = 1
+    ProfileIcon.Size = UDim2.new(0, 34, 0, 34)
+    ProfileIcon.Position = UDim2.new(0.05, 0, 0.2, 0)
+    ProfileIcon.Image = "rbxthumb://type=AvatarHeadShot&id="..Player.UserId.."&w=420&h=420"
+
+    local NameLabel = Instance.new("TextLabel", ProfileContainer)
+    NameLabel.BackgroundTransparency = 1
+    NameLabel.Position = UDim2.new(0.32, 0, 0.2, 0)
+    NameLabel.Size = UDim2.new(0, 100, 0, 18)
+    NameLabel.Font = Enum.Font.GothamMedium
+    NameLabel.Text = Player.DisplayName or "Player"
+    NameLabel.TextColor3 = Theme.Text
+    NameLabel.TextSize = 12
+    NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local SubName = Instance.new("TextLabel", ProfileContainer)
+    SubName.BackgroundTransparency = 1
+    SubName.Position = UDim2.new(0.32, 0, 0.5, 0)
+    SubName.Size = UDim2.new(0, 100, 0, 16)
+    SubName.Font = Enum.Font.Gotham
+    SubName.Text = Player.Name or "anonymous"
+    SubName.TextColor3 = Color3.fromRGB(150, 150, 150)
+    SubName.TextSize = 10
+    SubName.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- // Drag
+    local dragging = false
+    local dragStart, startPos
+
+    MainFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+
+    MainFrame.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    -- // Toggle Button
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Parent = ScreenGui
+    ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+    ToggleButton.Position = UDim2.new(0.06, 0, 0.12, 0)
+    ToggleButton.BackgroundColor3 = Theme.Background
+    ToggleButton.Text = "P"
+    ToggleButton.TextColor3 = Theme.Accent
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.TextSize = 20
+    ToggleButton.AutoButtonColor = false
+    Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(1, 0)
+    local ButtonStroke = Instance.new("UIStroke", ToggleButton)
+    ButtonStroke.Color = Theme.Accent
+    ButtonStroke.Thickness = 1
+    ButtonStroke.Transparency = 0.5
+
+    local isVisible = true
+    ToggleButton.MouseButton1Click:Connect(function()
+        isVisible = not isVisible
+        MainFrame.Visible = isVisible
+    end)
+
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        if input.KeyCode == Enum.KeyCode.H then
+            isVisible = not isVisible
+            MainFrame.Visible = isVisible
+        end
+    end)
 end
 
-MainFrame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStart = input.Position
-		startPos = MainFrame.Position
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
+-- // Verificação da Key
+KeyButton.MouseButton1Click:Connect(function()
+    if KeyInput.Text == VALID_KEY then
+        KeyStatus.Text = "Acesso Liberado!"
+        KeyStatus.TextColor3 = Color3.fromRGB(120, 255, 120)
+        task.wait(1)
+        LoadHub()
+    else
+        KeyStatus.Text = "Key incorreta. Tente novamente."
+        KeyStatus.TextColor3 = Color3.fromRGB(255, 50, 50)
+    end
 end)
-
-MainFrame.InputChanged:Connect(function(input)
-	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-		update(input)
-	end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-		update(input)
-	end
-end)
-
--------------------------------------------------------------------
--- // Toggle Button
--------------------------------------------------------------------
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Name = "ToggleButton"
-ToggleButton.Parent = ScreenGui
-ToggleButton.Size = UDim2.new(0, 50, 0, 50)
-ToggleButton.Position = UDim2.new(0.06, 0, 0.12, 0)
-ToggleButton.BackgroundColor3 = Theme.Background
-ToggleButton.BorderSizePixel = 0
-ToggleButton.Text = "P"
-ToggleButton.TextColor3 = Theme.Accent
-ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.TextSize = 20
-ToggleButton.AutoButtonColor = false
-Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(1, 0)
-local ButtonStroke = Instance.new("UIStroke", ToggleButton)
-ButtonStroke.Color = Theme.Accent
-ButtonStroke.Thickness = 1
-ButtonStroke.Transparency = 0.5
-
-local draggingButton = false
-local dragStartButton, startPosButton
-
-local function updateButton(input)
-	local delta = input.Position - dragStartButton
-	ToggleButton.Position = UDim2.new(
-		startPosButton.X.Scale, startPosButton.X.Offset + delta.X,
-		startPosButton.Y.Scale, startPosButton.Y.Offset + delta.Y
-	)
-end
-
-ToggleButton.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		draggingButton = true
-		dragStartButton = input.Position
-		startPosButton = ToggleButton.Position
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				draggingButton = false
-			end
-		end)
-	end
-end)
-
-ToggleButton.InputChanged:Connect(function(input)
-	if draggingButton and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-		updateButton(input)
-	end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-	if draggingButton and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-		updateButton(input)
-	end
-end)
-
-local isVisible = true
-ToggleButton.MouseButton1Click:Connect(function()
-	isVisible = not isVisible
-	MainFrame.Visible = isVisible
-end)
-
--- 🌟 ATALHO DA TECLA "H"
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-	if gameProcessed then return end
-	if input.KeyCode == Enum.KeyCode.H then
-		isVisible = not isVisible
-		MainFrame.Visible = isVisible
-	end
-end)
-
--- script end
