@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Cleaned: removed remote HttpGet/loadstring and replaced with local Anti-AFK
--- Added: FPS Boost + Noclip
+-- Added: FPS Boost + Noclip + Role ESP
 -- Colors: Purple changed to Orange
 
 -- // Wait for game to load
@@ -154,11 +154,10 @@ local autoFarmEnabled = false
 local farming = false
 local bag_full = false
 local start_position
-local farmSpeed = 20 -- default (1–50)
+local farmSpeed = 20
 local autoResetEnabled = false
 local resetting = false
 
--- // AutoFarm Toggle
 local AutoFarmToggle = Instance.new("TextButton")
 AutoFarmToggle.Parent = MainContent
 AutoFarmToggle.Size = UDim2.new(0, 230, 0, 35)
@@ -167,10 +166,7 @@ AutoFarmToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
 AutoFarmToggle.BorderSizePixel = 0
 AutoFarmToggle.Text = ""
 AutoFarmToggle.AutoButtonColor = false
-
-local AutoFarmCorner = Instance.new("UICorner", AutoFarmToggle)
-AutoFarmCorner.CornerRadius = UDim.new(1, 0)
-
+Instance.new("UICorner", AutoFarmToggle).CornerRadius = UDim.new(1, 0)
 local AutoFarmStroke = Instance.new("UIStroke", AutoFarmToggle)
 AutoFarmStroke.Color = Color3.fromRGB(255, 140, 0)
 AutoFarmStroke.Thickness = 1.2
@@ -202,7 +198,6 @@ AutoFarmToggle.MouseButton1Click:Connect(function()
 	end
 end)
 
--- // Auto Reset Toggle
 local AutoResetToggle = Instance.new("TextButton")
 AutoResetToggle.Parent = MainContent
 AutoResetToggle.Size = UDim2.new(0, 230, 0, 35)
@@ -211,10 +206,7 @@ AutoResetToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
 AutoResetToggle.BorderSizePixel = 0
 AutoResetToggle.Text = ""
 AutoResetToggle.AutoButtonColor = false
-
-local AutoResetCorner = Instance.new("UICorner", AutoResetToggle)
-AutoResetCorner.CornerRadius = UDim.new(1, 0)
-
+Instance.new("UICorner", AutoResetToggle).CornerRadius = UDim.new(1, 0)
 local AutoResetStroke = Instance.new("UIStroke", AutoResetToggle)
 AutoResetStroke.Color = Color3.fromRGB(255, 140, 0)
 AutoResetStroke.Thickness = 1.2
@@ -246,7 +238,6 @@ AutoResetToggle.MouseButton1Click:Connect(function()
 	end
 end)
 
--- // Speed Input
 local SpeedLabel = Instance.new("TextLabel")
 SpeedLabel.Parent = MainContent
 SpeedLabel.Position = UDim2.new(0, 25, 0, 70)
@@ -294,7 +285,6 @@ SpeedBox.FocusLost:Connect(function(enterPressed)
 			if value > 50 then value = 50 end
 			farmSpeed = value
 			SpeedBox.Text = tostring(farmSpeed)
-			-- Change warning color
 			if farmSpeed > 25 then
 				WarningText.TextColor3 = Color3.fromRGB(255, 50, 50)
 			else
@@ -307,7 +297,7 @@ SpeedBox.FocusLost:Connect(function(enterPressed)
 end)
 
 -------------------------------------------------------------------
--- 🔁 Auto-farm logic
+-- 🔁 Auto-farm logic (INTACTA)
 -------------------------------------------------------------------
 local function getCharacter()
 	return Player.Character or Player.CharacterAdded:Wait()
@@ -350,7 +340,6 @@ RoundEnd.OnClientEvent:Connect(function()
 	end
 end)
 
--- // Auto Reset Logic
 local CoinCollected = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Gameplay"):WaitForChild("CoinCollected")
 
 CoinCollected.OnClientEvent:Connect(function(_, current, max)
@@ -384,7 +373,6 @@ task.spawn(function()
 				if dist > 150 then
 					hrp.CFrame = coin.CFrame
 				else
-					-- Speed control (lower = faster)
 					local tween = TweenService:Create(hrp, TweenInfo.new(dist / farmSpeed, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
 					tween:Play()
 					repeat
@@ -405,20 +393,18 @@ local antiAfkEnabled = false
 local antiAfkConn
 local fpsBoostEnabled = false
 local noclipEnabled = false
+local roleESPEnabled = false
 
--- // Anti-AFK Toggle (one-time activation)
+-- // Anti-AFK Toggle
 local AntiAFKToggle = Instance.new("TextButton")
 AntiAFKToggle.Parent = MiscContent
 AntiAFKToggle.Size = UDim2.new(0, 230, 0, 35)
-AntiAFKToggle.Position = UDim2.new(0, 20, 0, 10)
+AntiAFKToggle.Position = UDim2.new(0, 20, 0, 5)
 AntiAFKToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
 AntiAFKToggle.BorderSizePixel = 0
 AntiAFKToggle.Text = ""
 AntiAFKToggle.AutoButtonColor = false
-
-local AntiAFKCorner = Instance.new("UICorner", AntiAFKToggle)
-AntiAFKCorner.CornerRadius = UDim.new(1, 0)
-
+Instance.new("UICorner", AntiAFKToggle).CornerRadius = UDim.new(1, 0)
 local AntiAFKStroke = Instance.new("UIStroke", AntiAFKToggle)
 AntiAFKStroke.Color = Color3.fromRGB(255, 140, 0)
 AntiAFKStroke.Thickness = 1.2
@@ -447,16 +433,11 @@ AntiAFKToggle.MouseButton1Click:Connect(function()
 		AntiAFKToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
 		AntiAFKLabel.Text = "⏰ Anti-AFK ✓"
 		AntiAFKLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
-
-		-- Local Anti-AFK using Idled event (no external code)
 		antiAfkConn = Player.Idled:Connect(function()
-			-- simulate a short input to prevent idling
 			VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 			task.wait(0.5)
 			VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 		end)
-
-		-- disable button after activation
 		AntiAFKToggle.AutoButtonColor = false
 		AntiAFKToggle.Active = false
 	end
@@ -466,15 +447,12 @@ end)
 local FPSBoostToggle = Instance.new("TextButton")
 FPSBoostToggle.Parent = MiscContent
 FPSBoostToggle.Size = UDim2.new(0, 230, 0, 35)
-FPSBoostToggle.Position = UDim2.new(0, 20, 0, 50) 
+FPSBoostToggle.Position = UDim2.new(0, 20, 0, 45)
 FPSBoostToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
 FPSBoostToggle.BorderSizePixel = 0
 FPSBoostToggle.Text = ""
 FPSBoostToggle.AutoButtonColor = false
-
-local FPSBoostCorner = Instance.new("UICorner", FPSBoostToggle)
-FPSBoostCorner.CornerRadius = UDim.new(1, 0)
-
+Instance.new("UICorner", FPSBoostToggle).CornerRadius = UDim.new(1, 0)
 local FPSBoostStroke = Instance.new("UIStroke", FPSBoostToggle)
 FPSBoostStroke.Color = Color3.fromRGB(255, 140, 0)
 FPSBoostStroke.Thickness = 1.2
@@ -503,21 +481,16 @@ FPSBoostToggle.MouseButton1Click:Connect(function()
 		FPSBoostToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
 		FPSBoostLabel.Text = "🚀 FPS Boost ✓"
 		FPSBoostLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
-		
-		-- Remove efeitos pesados
 		for _, v in pairs(Lighting:GetChildren()) do
 			if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") then
 				v.Enabled = false
 			end
 		end
-		-- Reduz a qualidade gráfica para nível 1
 		settings().Rendering.QualityLevel = 1
 	else
 		FPSBoostToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
 		FPSBoostLabel.Text = "🚀 FPS Boost"
 		FPSBoostLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-		
-		-- Restaura a qualidade gráfica
 		settings().Rendering.QualityLevel = 10
 	end
 end)
@@ -526,15 +499,12 @@ end)
 local NoclipToggle = Instance.new("TextButton")
 NoclipToggle.Parent = MiscContent
 NoclipToggle.Size = UDim2.new(0, 230, 0, 35)
-NoclipToggle.Position = UDim2.new(0, 20, 0, 90)
+NoclipToggle.Position = UDim2.new(0, 20, 0, 85)
 NoclipToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
 NoclipToggle.BorderSizePixel = 0
 NoclipToggle.Text = ""
 NoclipToggle.AutoButtonColor = false
-
-local NoclipCorner = Instance.new("UICorner", NoclipToggle)
-NoclipCorner.CornerRadius = UDim.new(1, 0)
-
+Instance.new("UICorner", NoclipToggle).CornerRadius = UDim.new(1, 0)
 local NoclipStroke = Instance.new("UIStroke", NoclipToggle)
 NoclipStroke.Color = Color3.fromRGB(255, 140, 0)
 NoclipStroke.Thickness = 1.2
@@ -570,7 +540,6 @@ NoclipToggle.MouseButton1Click:Connect(function()
 	end
 end)
 
--- // Loop Noclip
 RunService.Stepped:Connect(function()
     if noclipEnabled and Player.Character then
         for _, v in pairs(Player.Character:GetDescendants()) do
@@ -579,6 +548,105 @@ RunService.Stepped:Connect(function()
             end
         end
     end
+end)
+
+-- // Role ESP Toggle (Ver Papéis)
+local RoleESPToggle = Instance.new("TextButton")
+RoleESPToggle.Parent = MiscContent
+RoleESPToggle.Size = UDim2.new(0, 230, 0, 35)
+RoleESPToggle.Position = UDim2.new(0, 20, 0, 125)
+RoleESPToggle.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
+RoleESPToggle.BorderSizePixel = 0
+RoleESPToggle.Text = ""
+RoleESPToggle.AutoButtonColor = false
+Instance.new("UICorner", RoleESPToggle).CornerRadius = UDim.new(1, 0)
+local RoleESPStroke = Instance.new("UIStroke", RoleESPToggle)
+RoleESPStroke.Color = Color3.fromRGB(255, 140, 0)
+RoleESPStroke.Thickness = 1.2
+RoleESPStroke.Transparency = 0.4
+
+local RoleESPLabel = Instance.new("TextLabel", RoleESPToggle)
+RoleESPLabel.BackgroundTransparency = 1
+RoleESPLabel.Position = UDim2.new(0.1, 0, 0, 0)
+RoleESPLabel.Size = UDim2.new(0.8, 0, 1, 0)
+RoleESPLabel.Font = Enum.Font.GothamBold
+RoleESPLabel.Text = "👁️ Ver Papéis (ESP)"
+RoleESPLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+RoleESPLabel.TextSize = 14
+RoleESPLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local RoleESPToggleCircle = Instance.new("Frame", RoleESPToggle)
+RoleESPToggleCircle.Size = UDim2.new(0, 18, 0, 18)
+RoleESPToggleCircle.Position = UDim2.new(0.87, 0, 0.23, 0)
+RoleESPToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
+RoleESPToggleCircle.BorderSizePixel = 0
+Instance.new("UICorner", RoleESPToggleCircle).CornerRadius = UDim.new(1, 0)
+
+RoleESPToggle.MouseButton1Click:Connect(function()
+	roleESPEnabled = not roleESPEnabled
+	if roleESPEnabled then
+		RoleESPToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
+		RoleESPLabel.Text = "👁️ Ver Papéis ✓"
+		RoleESPLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
+	else
+		RoleESPToggleCircle.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
+		RoleESPLabel.Text = "👁️ Ver Papéis (ESP)"
+		RoleESPLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		-- Remove os ESPs
+		for _, p in pairs(Players:GetPlayers()) do
+			if p.Character and p.Character:FindFirstChild("RoleESP") then
+				p.Character.RoleESP:Destroy()
+			end
+		end
+	end
+end)
+
+-- // Loop do Role ESP
+task.spawn(function()
+	while true do
+		task.wait(1) -- Atualiza a cada 1 segundo
+		if roleESPEnabled then
+			-- Procura as funções internas do jogo ou usa o nome do jogador
+			local murderer = nil
+			local sheriff = nil
+			
+			-- Tenta usar a função do jogo (se existir)
+			if _G.findMurderer then
+				local ok, result = pcall(_G.findMurderer)
+				if ok then murderer = result end
+			end
+			if _G.findSheriff then
+				local ok, result = pcall(_G.findSheriff)
+				if ok then sheriff = result end
+			end
+			
+			for _, p in pairs(Players:GetPlayers()) do
+				if p ~= Player and p.Character then
+					local char = p.Character
+					if not char:FindFirstChild("RoleESP") then
+						local highlight = Instance.new("Highlight")
+						highlight.Name = "RoleESP"
+						highlight.Parent = char
+						highlight.Adornee = char
+						highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+						highlight.FillTransparency = 0.6
+						highlight.OutlineTransparency = 0
+						
+						-- Define a cor baseada no papel
+						local roleColor = Color3.fromRGB(0, 255, 0) -- Verde (Inocente)
+						if p == murderer then
+							roleColor = Color3.fromRGB(255, 0, 0) -- Vermelho (Assassino)
+						elseif p == sheriff then
+							roleColor = Color3.fromRGB(0, 100, 255) -- Azul (Xerife)
+						end
+						
+						highlight.FillColor = roleColor
+						highlight.OutlineColor = roleColor
+					end
+				end
+			end
+		end
+	end
 end)
 
 -------------------------------------------------------------------
@@ -675,10 +743,7 @@ ToggleButton.BackgroundColor3 = Color3.fromRGB(35, 15, 5)
 ToggleButton.BackgroundTransparency = 0.25
 ToggleButton.Text = ""
 ToggleButton.AutoButtonColor = false
-
-local ButtonCorner = Instance.new("UICorner", ToggleButton)
-ButtonCorner.CornerRadius = UDim.new(1, 0)
-
+Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(1, 0)
 local ButtonStroke = Instance.new("UIStroke", ToggleButton)
 ButtonStroke.Color = Color3.fromRGB(255, 140, 0)
 ButtonStroke.Thickness = 1.3
