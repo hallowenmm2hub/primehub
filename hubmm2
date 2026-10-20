@@ -18,7 +18,7 @@ local Lighting = game:GetService("Lighting")
 -- ═══════════════════════════════════════════════════════════════
 -- 🔑 SISTEMA DE KEY (COM SALVAMENTO DE 24 HORAS)
 -- ═══════════════════════════════════════════════════════════════
-local VALID_KEY = "PRIME2024"
+local VALID_KEY = "PRIMEHUBHALLOWEN"
 local KEY_FILE = "primehub_key.txt"
 local TIME_24H = 86400
 
@@ -29,8 +29,7 @@ local Theme = {
     ElementHover = Color3.fromRGB(45, 45, 65),
     Text = Color3.fromRGB(240, 240, 240),
     TextDim = Color3.fromRGB(150, 150, 170),
-    Accent = Color3.fromRGB(160, 100, 255), -- Roxo Premium
-    AccentDark = Color3.fromRGB(100, 50, 180),
+    Accent = Color3.fromRGB(160, 100, 255),
     Off = Color3.fromRGB(60, 60, 80)
 }
 
@@ -80,7 +79,6 @@ local function LoadHub()
     UIStroke.Thickness = 1.5
     UIStroke.Transparency = 0.3
 
-    -- // Efeito de brilho no topo (Gradient)
     local Gradient = Instance.new("UIGradient", MainFrame)
     Gradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 45)),
@@ -88,7 +86,7 @@ local function LoadHub()
     }
     Gradient.Rotation = 90
 
-    -- // Header (Título e ID)
+    -- // Header
     local Header = Instance.new("Frame", MainFrame)
     Header.Size = UDim2.new(1, 0, 0, 60)
     Header.BackgroundTransparency = 1
@@ -113,7 +111,6 @@ local function LoadHub()
     SubTitle.TextSize = 12
     SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- // User Info (Avatar e Nome no topo direito)
     local UserFrame = Instance.new("Frame", Header)
     UserFrame.Size = UDim2.new(0, 140, 0, 40)
     UserFrame.Position = UDim2.new(1, -150, 0.15, 0)
@@ -146,14 +143,13 @@ local function LoadHub()
     UserTag.TextSize = 10
     UserTag.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- // Divisória
     local Divider = Instance.new("Frame", MainFrame)
     Divider.Size = UDim2.new(0.92, 0, 0, 1)
     Divider.Position = UDim2.new(0.04, 0, 0.18, 0)
     Divider.BackgroundColor3 = Theme.Element
     Divider.BorderSizePixel = 0
 
-    -- // Tabs Container
+    -- // Tabs
     local TabsContainer = Instance.new("Frame", MainFrame)
     TabsContainer.Size = UDim2.new(0, 160, 0, 45)
     TabsContainer.Position = UDim2.new(0.04, 0, 0.23, 0)
@@ -185,7 +181,7 @@ local function LoadHub()
     MiscTab.AutoButtonColor = false
     Instance.new("UICorner", MiscTab).CornerRadius = UDim.new(0, 8)
 
-    -- // Content Container
+    -- // Content
     local ContentContainer = Instance.new("Frame", MainFrame)
     ContentContainer.Size = UDim2.new(0, 300, 0, 200)
     ContentContainer.Position = UDim2.new(0.36, 0, 0.23, 0)
@@ -209,7 +205,6 @@ local function LoadHub()
     MiscContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
     MiscContent.ScrollingDirection = Enum.ScrollingDirection.Y
 
-    -- // Tab Switching Logic
     MainTab.MouseButton1Click:Connect(function()
         MainContent.Visible = true; MiscContent.Visible = false
         MainTab.BackgroundColor3 = Theme.Element; MiscTab.BackgroundColor3 = Theme.Secondary
@@ -221,7 +216,7 @@ local function LoadHub()
         MainTab.TextColor3 = Theme.TextDim; MiscTab.TextColor3 = Theme.Accent
     end)
 
-    -- // Funções de Lógica
+    -- // Variáveis de Estado
     local autoFarmEnabled = false
     local farming = false
     local bag_full = false
@@ -233,7 +228,7 @@ local function LoadHub()
     local antiAfkEnabled = false
     local roleESPEnabled = false
 
-    -- // Função para criar botões bonitos com Emoji
+    -- // Função de Criar Botões com Hover
     local function CreateToggle(parent, emoji, text, yPos, callback)
         local Toggle = Instance.new("TextButton")
         Toggle.Parent = parent
@@ -248,7 +243,7 @@ local function LoadHub()
         local HoverStroke = Instance.new("UIStroke", Toggle)
         HoverStroke.Color = Theme.Accent
         HoverStroke.Thickness = 1
-        HoverStroke.Transparency = 1 -- Invisível até passar o mouse
+        HoverStroke.Transparency = 1
 
         local Label = Instance.new("TextLabel", Toggle)
         Label.BackgroundTransparency = 1
@@ -267,7 +262,6 @@ local function LoadHub()
         Circle.BorderSizePixel = 0
         Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
 
-        -- Efeito Hover
         Toggle.MouseEnter:Connect(function()
             TweenService:Create(Toggle, TweenInfo.new(0.2), {BackgroundColor3 = Theme.ElementHover}):Play()
             HoverStroke.Transparency = 0.5
@@ -284,39 +278,50 @@ local function LoadHub()
         return Toggle
     end
 
-    -- // Funções de Deitar/Levantar
+    -- // Deitar e Levantar
     local function LayDown()
         local char = Player.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(-90), 0, 0)
-            for _, v in pairs(char:GetDescendants()) do
-                if v:IsA("BasePart") and (v.Name == "Left Leg" or v.Name == "Right Leg") then v.CanCollide = false end
+        if char then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                -- Sobe 2 studs e gira 90 graus para ficar reto no chão
+                hrp.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 2, 0)) * CFrame.Angles(math.rad(-90), 0, 0)
+                for _, v in pairs(char:GetDescendants()) do
+                    if v:IsA("BasePart") and (v.Name == "Left Leg" or v.Name == "Right Leg" or v.Name == "LeftFoot" or v.Name == "RightFoot") then
+                        v.CanCollide = false
+                    end
+                end
             end
         end
     end
 
     local function StandUp()
         local char = Player.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = CFrame.new(char.HumanoidRootPart.Position)
-            for _, v in pairs(char:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = true end end
+        if char then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                -- Reseta a rotação e a posição Y
+                hrp.CFrame = CFrame.new(hrp.Position)
+            end
+            for _, v in pairs(char:GetDescendants()) do
+                if v:IsA("BasePart") then v.CanCollide = true end
+            end
         end
     end
 
-    -- // AutoFarm Toggle
+    -- // Toggles
     CreateToggle(MainContent, "🍬", "AutoFarm Candies", 10, function()
         autoFarmEnabled = not autoFarmEnabled
         if autoFarmEnabled then LayDown() else StandUp() end
         return autoFarmEnabled
     end)
 
-    -- // Auto Reset Toggle
     CreateToggle(MainContent, "🔄", "Auto Reset (Bag Cheia)", 60, function()
         autoResetEnabled = not autoResetEnabled
         return autoResetEnabled
     end)
 
-    -- // Speed Box
+    -- // Velocidade
     local SpeedBox = Instance.new("TextBox", MainContent)
     SpeedBox.Position = UDim2.new(0, 120, 0, 110)
     SpeedBox.Size = UDim2.new(0, 60, 0, 30)
@@ -346,7 +351,7 @@ local function LoadHub()
         end
     end)
 
-    -- // Misc Toggles
+    -- // Misc
     CreateToggle(MiscContent, "🛡️", "Anti-AFK", 5, function()
         if not antiAfkEnabled then
             antiAfkEnabled = true
@@ -382,7 +387,7 @@ local function LoadHub()
         return roleESPEnabled
     end)
 
-    -- // Farm Logic (Loop)
+    -- // Farm Logic
     local function getHRP() return (Player.Character or Player.CharacterAdded:Wait()):WaitForChild("HumanoidRootPart") end
     local function get_nearest_coin()
         local hrp, closest, dist = getHRP(), nil, math.huge
@@ -402,6 +407,7 @@ local function LoadHub()
     ReplicatedStorage:WaitForChild("Remotes").Gameplay.RoundStart.OnClientEvent:Connect(function() farming = true; start_position = getHRP().CFrame end)
     ReplicatedStorage.Remotes.Gameplay.RoundEndFade.OnClientEvent:Connect(function() farming = false; if start_position then getHRP().CFrame = start_position end end)
 
+    -- // Auto Reset Corrigido (Deita novamente ao nascer)
     ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(_, current, max)
         if current == max and not resetting and autoResetEnabled then
             resetting, bag_full = true, true
@@ -413,27 +419,33 @@ local function LoadHub()
             task.wait(0.5)
             if Player.Character and Player.Character:FindFirstChild("Humanoid") then
                 Player.Character.Humanoid.Health = 0
-                Player.CharacterAdded:Wait(); task.wait(1.5)
+                Player.CharacterAdded:Wait()
+                task.wait(1.5)
+                if autoFarmEnabled then LayDown() end -- Deita de novo após o respawn!
             end
             resetting, bag_full = false, false
         end
     end)
 
+    -- // Loop do Farm Corrigido (Deitado Reto)
     task.spawn(function()
         while true do
             if autoFarmEnabled and farming and not bag_full then
                 local coin, dist = get_nearest_coin()
                 if coin then
                     local hrp = getHRP()
+                    -- Usa CFrame.new(Position + 2) para ficar sempre reto no chão
+                    local targetCFrame = CFrame.new(coin.Position + Vector3.new(0, 2, 0)) * CFrame.Angles(math.rad(-90), 0, 0)
+                    
                     if dist > 150 then
-                        hrp.CFrame = coin.CFrame * CFrame.Angles(math.rad(-90), 0, 0)
+                        hrp.CFrame = targetCFrame
                     elseif dist > 10 then
-                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / farmSpeed, Enum.EasingStyle.Linear), {CFrame = coin.CFrame * CFrame.Angles(math.rad(-90), 0, 0)})
+                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / farmSpeed, Enum.EasingStyle.Linear), {CFrame = targetCFrame})
                         tw:Play()
                         repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled
                         pcall(function() tw:Cancel() end)
                     else
-                        hrp.CFrame = coin.CFrame * CFrame.Angles(math.rad(-90), 0, 0)
+                        hrp.CFrame = targetCFrame
                     end
                 end
             end
@@ -441,7 +453,7 @@ local function LoadHub()
         end
     end)
 
-    -- // Role ESP Logic
+    -- // Role ESP Corrigido (Com fallback de ferramenta)
     task.spawn(function()
         while true do
             task.wait(1.5)
@@ -456,8 +468,19 @@ local function LoadHub()
                     if p ~= Player and p.Character then
                         local char = p.Character
                         local roleColor = Color3.fromRGB(0, 255, 0)
-                        if p.Name == murdererName then roleColor = Color3.fromRGB(255, 0, 0)
-                        elseif p.Name == sheriffName then roleColor = Color3.fromRGB(0, 100, 255) end
+                        
+                        if p.Name == murdererName then
+                            roleColor = Color3.fromRGB(255, 0, 0)
+                        elseif p.Name == sheriffName then
+                            roleColor = Color3.fromRGB(0, 100, 255)
+                        else
+                            -- PROTEÇÃO EXTRA: Se não achou a pasta, olha a mochila/mão
+                            local backpack = p:FindFirstChild("Backpack")
+                            local hasKnife = (backpack and backpack:FindFirstChild("Knife")) or char:FindFirstChild("Knife")
+                            local hasGun = (backpack and backpack:FindFirstChild("Gun")) or char:FindFirstChild("Gun")
+                            if hasKnife then roleColor = Color3.fromRGB(255, 0, 0)
+                            elseif hasGun then roleColor = Color3.fromRGB(0, 100, 255) end
+                        end
                         
                         local esp = char:FindFirstChild("RoleESP")
                         if not esp then
@@ -470,7 +493,7 @@ local function LoadHub()
         end
     end)
 
-    -- // Drag Support
+    -- // Drag
     local dragging, dragStart, startPos
     MainFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -485,7 +508,7 @@ local function LoadHub()
         end
     end)
 
-    -- // Botão Flutuante para abrir/fechar
+    -- // Botão Flutuante
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Parent = ScreenGui
     ToggleButton.Size = UDim2.new(0, 50, 0, 50)
