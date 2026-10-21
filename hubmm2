@@ -1,6 +1,6 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System (24h Save) + AutoFarm Deitado + FPS Boost + Role ESP + Keybind H
+-- Added: Key System (24h Save) + AutoFarm Normal + FPS Boost + Role ESP + Draggable Keybind H
 -- Visual: Premium Dark & Purple Theme
 
 -- // Wait for game to load
@@ -18,7 +18,7 @@ local Lighting = game:GetService("Lighting")
 -- ═══════════════════════════════════════════════════════════════
 -- 🔑 SISTEMA DE KEY (COM SALVAMENTO DE 24 HORAS)
 -- ═══════════════════════════════════════════════════════════════
-local VALID_KEY = "PRIMEHUBHALLOWEN"
+local VALID_KEY = "PRIME2024"
 local KEY_FILE = "primehub_key.txt"
 local TIME_24H = 86400
 
@@ -278,41 +278,9 @@ local function LoadHub()
         return Toggle
     end
 
-    -- // Deitar e Levantar
-    local function LayDown()
-        local char = Player.Character
-        if char then
-            local hrp = char:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                -- Sobe 2 studs e gira 90 graus para ficar reto no chão
-                hrp.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 2, 0)) * CFrame.Angles(math.rad(-90), 0, 0)
-                for _, v in pairs(char:GetDescendants()) do
-                    if v:IsA("BasePart") and (v.Name == "Left Leg" or v.Name == "Right Leg" or v.Name == "LeftFoot" or v.Name == "RightFoot") then
-                        v.CanCollide = false
-                    end
-                end
-            end
-        end
-    end
-
-    local function StandUp()
-        local char = Player.Character
-        if char then
-            local hrp = char:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                -- Reseta a rotação e a posição Y
-                hrp.CFrame = CFrame.new(hrp.Position)
-            end
-            for _, v in pairs(char:GetDescendants()) do
-                if v:IsA("BasePart") then v.CanCollide = true end
-            end
-        end
-    end
-
     -- // Toggles
     CreateToggle(MainContent, "🍬", "AutoFarm Candies", 10, function()
         autoFarmEnabled = not autoFarmEnabled
-        if autoFarmEnabled then LayDown() else StandUp() end
         return autoFarmEnabled
     end)
 
@@ -351,7 +319,7 @@ local function LoadHub()
         end
     end)
 
-    -- // Misc
+    -- // Misc Toggles
     CreateToggle(MiscContent, "🛡️", "Anti-AFK", 5, function()
         if not antiAfkEnabled then
             antiAfkEnabled = true
@@ -407,7 +375,7 @@ local function LoadHub()
     ReplicatedStorage:WaitForChild("Remotes").Gameplay.RoundStart.OnClientEvent:Connect(function() farming = true; start_position = getHRP().CFrame end)
     ReplicatedStorage.Remotes.Gameplay.RoundEndFade.OnClientEvent:Connect(function() farming = false; if start_position then getHRP().CFrame = start_position end end)
 
-    -- // Auto Reset Corrigido (Deita novamente ao nascer)
+    -- // Auto Reset Normal
     ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(_, current, max)
         if current == max and not resetting and autoResetEnabled then
             resetting, bag_full = true, true
@@ -419,33 +387,27 @@ local function LoadHub()
             task.wait(0.5)
             if Player.Character and Player.Character:FindFirstChild("Humanoid") then
                 Player.Character.Humanoid.Health = 0
-                Player.CharacterAdded:Wait()
-                task.wait(1.5)
-                if autoFarmEnabled then LayDown() end -- Deita de novo após o respawn!
+                Player.CharacterAdded:Wait(); task.wait(1.5)
             end
             resetting, bag_full = false, false
         end
     end)
 
-    -- // Loop do Farm Corrigido (Deitado Reto)
+    -- // Loop do Farm Normal
     task.spawn(function()
         while true do
             if autoFarmEnabled and farming and not bag_full then
                 local coin, dist = get_nearest_coin()
                 if coin then
                     local hrp = getHRP()
-                    -- Usa CFrame.new(Position + 2) para ficar sempre reto no chão
-                    local targetCFrame = CFrame.new(coin.Position + Vector3.new(0, 2, 0)) * CFrame.Angles(math.rad(-90), 0, 0)
                     
                     if dist > 150 then
-                        hrp.CFrame = targetCFrame
-                    elseif dist > 10 then
-                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / farmSpeed, Enum.EasingStyle.Linear), {CFrame = targetCFrame})
+                        hrp.CFrame = CFrame.new(coin.Position)
+                    else
+                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / farmSpeed, Enum.EasingStyle.Linear), {CFrame = CFrame.new(coin.Position)})
                         tw:Play()
                         repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled
                         pcall(function() tw:Cancel() end)
-                    else
-                        hrp.CFrame = targetCFrame
                     end
                 end
             end
@@ -453,7 +415,7 @@ local function LoadHub()
         end
     end)
 
-    -- // Role ESP Corrigido (Com fallback de ferramenta)
+    -- // Role ESP Corrigido
     task.spawn(function()
         while true do
             task.wait(1.5)
@@ -474,7 +436,6 @@ local function LoadHub()
                         elseif p.Name == sheriffName then
                             roleColor = Color3.fromRGB(0, 100, 255)
                         else
-                            -- PROTEÇÃO EXTRA: Se não achou a pasta, olha a mochila/mão
                             local backpack = p:FindFirstChild("Backpack")
                             local hasKnife = (backpack and backpack:FindFirstChild("Knife")) or char:FindFirstChild("Knife")
                             local hasGun = (backpack and backpack:FindFirstChild("Gun")) or char:FindFirstChild("Gun")
@@ -493,7 +454,7 @@ local function LoadHub()
         end
     end)
 
-    -- // Drag
+    -- // Arrastar a Janela Principal
     local dragging, dragStart, startPos
     MainFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -508,7 +469,7 @@ local function LoadHub()
         end
     end)
 
-    -- // Botão Flutuante
+    -- // Botão Flutuante Arrastável (Coroa)
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Parent = ScreenGui
     ToggleButton.Size = UDim2.new(0, 50, 0, 50)
@@ -522,9 +483,59 @@ local function LoadHub()
     Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(1, 0)
     local BtnStroke = Instance.new("UIStroke", ToggleButton); BtnStroke.Color = Theme.Accent; BtnStroke.Thickness = 1.5; BtnStroke.Transparency = 0.3
 
+    local draggingButton = false
+    local dragStartButton, startPosButton
+    local buttonWasDragged = false
+
+    ToggleButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            draggingButton = true
+            buttonWasDragged = false
+            dragStartButton = input.Position
+            startPosButton = ToggleButton.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    draggingButton = false
+                end
+            end)
+        end
+    end)
+
+    ToggleButton.InputChanged:Connect(function(input)
+        if draggingButton and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStartButton
+            if delta.Magnitude > 5 then
+                buttonWasDragged = true
+            end
+            ToggleButton.Position = UDim2.new(startPosButton.X.Scale, startPosButton.X.Offset + delta.X, startPosButton.Y.Scale, startPosButton.Y.Offset + delta.Y)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if draggingButton and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStartButton
+            if delta.Magnitude > 5 then
+                buttonWasDragged = true
+            end
+            ToggleButton.Position = UDim2.new(startPosButton.X.Scale, startPosButton.X.Offset + delta.X, startPosButton.Y.Scale, startPosButton.Y.Offset + delta.Y)
+        end
+    end)
+
     local isVisible = true
-    ToggleButton.MouseButton1Click:Connect(function() isVisible = not isVisible; MainFrame.Visible = isVisible end)
-    UserInputService.InputBegan:Connect(function(input, gp) if not gp and input.KeyCode == Enum.KeyCode.H then isVisible = not isVisible; MainFrame.Visible = isVisible end end)
+    ToggleButton.MouseButton1Click:Connect(function()
+        if not buttonWasDragged then
+            isVisible = not isVisible
+            MainFrame.Visible = isVisible
+        end
+    end)
+
+    -- // Tecla H
+    UserInputService.InputBegan:Connect(function(input, gp)
+        if not gp and input.KeyCode == Enum.KeyCode.H then
+            isVisible = not isVisible
+            MainFrame.Visible = isVisible
+        end
+    end)
 end
 
 -- ═══════════════════════════════════════════════════════════════
