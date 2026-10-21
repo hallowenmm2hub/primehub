@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System + Safe AutoFarm + Anti-Void + Auto-Win + Extreme FPS + Watermark ESP
--- Visual: Premium Dark & Purple Theme (Pixel Perfect Layout)
+-- Added: Key System + AutoFarm + Auto-Rejoin + Config Save + Extreme FPS + Watermark
+-- Visual: Premium Dark & Purple Theme
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -14,12 +14,15 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
 local Lighting = game:GetService("Lighting")
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
 
 -- ═══════════════════════════════════════════════════════════════
 -- 🔑 SISTEMA DE KEY (COM SALVAMENTO DE 24 HORAS)
 -- ═══════════════════════════════════════════════════════════════
 local VALID_KEY = "PRIME2024"
 local KEY_FILE = "primehub_key.txt"
+local CONFIG_FILE = "primehub_config.json"
 local TIME_24H = 86400
 
 local Theme = {
@@ -60,10 +63,85 @@ local function SaveKey()
     end)
 end
 
+-- ═══════════════════════════════════════════════════════════════
+-- 💾 SISTEMA DE SALVAR CONFIGURAÇÕES
+-- ═══════════════════════════════════════════════════════════════
+local Config = {
+    autoFarmEnabled = false,
+    safeFarmEnabled = false,
+    autoResetEnabled = false,
+    farmSpeed = 20,
+    fpsBoostEnabled = false,
+    extremeFPSEnabled = false,
+    antiAfkEnabled = false,
+    roleESPEnabled = false,
+    antiVoidEnabled = false,
+    autoWinEnabled = false,
+    autoRejoinEnabled = false
+}
+
+local function LoadConfig()
+    pcall(function()
+        if isfile and isfile(CONFIG_FILE) then
+            local data = HttpService:JSONDecode(readfile(CONFIG_FILE))
+            for k, v in pairs(data) do
+                if Config[k] ~= nil then Config[k] = v end
+            end
+        end
+    end)
+end
+
+local function SaveConfig()
+    pcall(function()
+        if writefile then
+            writefile(CONFIG_FILE, HttpService:JSONEncode(Config))
+        end
+    end)
+end
+
+LoadConfig()
+
+-- ═══════════════════════════════════════════════════════════════
+-- 🔄 SISTEMA DE AUTO-REJOIN
+-- ═══════════════════════════════════════════════════════════════
+local function GetQueueOnTeleport()
+    return queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
+end
+
+local function SetupAutoRejoin()
+    if not Config.autoRejoinEnabled then return end
+    local qot = GetQueueOnTeleport()
+    if not qot then return end
+    
+    -- Salva o script atual para reexecutar após o teleporte
+    local scriptUrl = "https://raw.githubusercontent.com/hallowenmm2hub/primehub/refs/heads/main/hubmm2"
+    pcall(qot, string.format('loadstring(game:HttpGet("%s?v=" .. os.time()))()', scriptUrl))
+    
+    -- Se o jogador for kickado, agenda o teleporte de volta
+    Player.OnTeleport:Connect(function(state)
+        if state == Enum.TeleportState.Started then
+            pcall(qot, string.format('loadstring(game:HttpGet("%s?v=" .. os.time()))()', scriptUrl))
+        end
+    end)
+end
+
+local function RejoinServer()
+    if game.JobId == "" then return end -- Não está em um servidor
+    local qot = GetQueueOnTeleport()
+    if qot then
+        local scriptUrl = "https://raw.githubusercontent.com/hallowenmm2hub/primehub/refs/heads/main/hubmm2"
+        pcall(qot, string.format('loadstring(game:HttpGet("%s?v=" .. os.time()))()', scriptUrl))
+    end
+    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Player)
+end
+
+-- ═══════════════════════════════════════════════════════════════
+-- ⚙️ HUB PRINCIPAL
+-- ═══════════════════════════════════════════════════════════════
 local function LoadHub()
     if ScreenGui:FindFirstChild("KeyFrame") then ScreenGui.KeyFrame:Destroy() end
 
-    -- // 🌟 WATERMARK (FPS e PING)
+    -- // Watermark
     local Watermark = Instance.new("TextLabel")
     Watermark.Parent = ScreenGui
     Watermark.Position = UDim2.new(0, 20, 0, 20)
@@ -243,7 +321,6 @@ local function LoadHub()
     CombatContent.BackgroundTransparency = 1
     CombatContent.Visible = false
 
-    -- // Tab Switching
     local function HideAllTabs()
         MainContent.Visible = false; MiscContent.Visible = false; CombatContent.Visible = false
         MainTab.BackgroundColor3 = Theme.Secondary; MiscTab.BackgroundColor3 = Theme.Secondary; CombatTab.BackgroundColor3 = Theme.Secondary
@@ -251,39 +328,20 @@ local function LoadHub()
     end
 
     MainTab.MouseButton1Click:Connect(function()
-        HideAllTabs()
-        MainContent.Visible = true
+        HideAllTabs(); MainContent.Visible = true
         MainTab.BackgroundColor3 = Theme.Element; MainTab.TextColor3 = Theme.Accent
     end)
     MiscTab.MouseButton1Click:Connect(function()
-        HideAllTabs()
-        MiscContent.Visible = true
+        HideAllTabs(); MiscContent.Visible = true
         MiscTab.BackgroundColor3 = Theme.Element; MiscTab.TextColor3 = Theme.Accent
     end)
     CombatTab.MouseButton1Click:Connect(function()
-        HideAllTabs()
-        CombatContent.Visible = true
+        HideAllTabs(); CombatContent.Visible = true
         CombatTab.BackgroundColor3 = Theme.Element; CombatTab.TextColor3 = Theme.Accent
     end)
 
-    -- // Variáveis de Estado
-    local autoFarmEnabled = false
-    local safeFarmEnabled = false
-    local farming = false
-    local bag_full = false
-    local start_position
-    local farmSpeed = 20
-    local autoResetEnabled = false
-    local resetting = false
-    local fpsBoostEnabled = false
-    local extremeFPSEnabled = false
-    local antiAfkEnabled = false
-    local roleESPEnabled = false
-    local antiVoidEnabled = false
-    local autoWinEnabled = false
-
-    -- // Função de Criar Botões
-    local function CreateToggle(parent, emoji, text, yPos, callback)
+    -- // Função de Criar Botões (com Auto-Save)
+    local function CreateToggle(parent, emoji, text, yPos, configKey, callback)
         local Toggle = Instance.new("TextButton")
         Toggle.Parent = parent
         Toggle.Size = UDim2.new(1, 0, 0, 40)
@@ -312,9 +370,11 @@ local function LoadHub()
         local Circle = Instance.new("Frame", Toggle)
         Circle.Size = UDim2.new(0, 18, 0, 18)
         Circle.Position = UDim2.new(0.9, 0, 0.3, 0)
-        Circle.BackgroundColor3 = Theme.Off
+        Circle.BackgroundColor3 = Config[configKey] and Theme.Accent or Theme.Off
         Circle.BorderSizePixel = 0
         Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+
+        if Config[configKey] then task.spawn(function() callback(true) end) end
 
         Toggle.MouseEnter:Connect(function()
             TweenService:Create(Toggle, TweenInfo.new(0.2), {BackgroundColor3 = Theme.ElementHover}):Play()
@@ -326,26 +386,28 @@ local function LoadHub()
         end)
 
         Toggle.MouseButton1Click:Connect(function()
-            local state = callback()
+            Config[configKey] = not Config[configKey]
+            local state = callback(false)
             Circle.BackgroundColor3 = state and Theme.Accent or Theme.Off
+            SaveConfig()
         end)
         return Toggle
     end
 
     -- // Toggles Main
-    CreateToggle(MainContent, "🍬", "AutoFarm Candies", 0, function()
-        autoFarmEnabled = not autoFarmEnabled
-        return autoFarmEnabled
+    CreateToggle(MainContent, "🍬", "AutoFarm Candies", 0, "autoFarmEnabled", function(isLoad)
+        Config.autoFarmEnabled = isLoad or not Config.autoFarmEnabled
+        return Config.autoFarmEnabled
     end)
 
-    CreateToggle(MainContent, "🥷", "Farm Seguro (Anti-Player)", 45, function()
-        safeFarmEnabled = not safeFarmEnabled
-        return safeFarmEnabled
+    CreateToggle(MainContent, "🥷", "Farm Seguro (Anti-Player)", 45, "safeFarmEnabled", function(isLoad)
+        Config.safeFarmEnabled = isLoad or not Config.safeFarmEnabled
+        return Config.safeFarmEnabled
     end)
 
-    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 90, function()
-        autoResetEnabled = not autoResetEnabled
-        return autoResetEnabled
+    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 90, "autoResetEnabled", function(isLoad)
+        Config.autoResetEnabled = isLoad or not Config.autoResetEnabled
+        return Config.autoResetEnabled
     end)
 
     local SpeedBox = Instance.new("TextBox", MainContent)
@@ -355,7 +417,7 @@ local function LoadHub()
     SpeedBox.TextColor3 = Theme.Accent
     SpeedBox.Font = Enum.Font.GothamBold
     SpeedBox.TextSize = 14
-    SpeedBox.Text = tostring(farmSpeed)
+    SpeedBox.Text = tostring(Config.farmSpeed)
     Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 8)
     local SpeedStroke = Instance.new("UIStroke", SpeedBox); SpeedStroke.Color = Theme.Accent; SpeedStroke.Thickness = 1; SpeedStroke.Transparency = 0.5
 
@@ -372,27 +434,28 @@ local function LoadHub()
     SpeedBox.FocusLost:Connect(function(ep)
         if ep then
             local v = tonumber(SpeedBox.Text)
-            farmSpeed = math.clamp(v or 20, 1, 50)
-            SpeedBox.Text = tostring(farmSpeed)
+            Config.farmSpeed = math.clamp(v or 20, 1, 50)
+            SpeedBox.Text = tostring(Config.farmSpeed)
+            SaveConfig()
         end
     end)
 
     -- // Toggles Misc
-    CreateToggle(MiscContent, "🛡️", "Anti-AFK", 0, function()
-        if not antiAfkEnabled then
-            antiAfkEnabled = true
+    CreateToggle(MiscContent, "🛡️", "Anti-AFK", 0, "antiAfkEnabled", function(isLoad)
+        Config.antiAfkEnabled = isLoad or not Config.antiAfkEnabled
+        if Config.antiAfkEnabled and not isLoad then
             Player.Idled:Connect(function()
                 VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
                 task.wait(0.5)
                 VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
             end)
         end
-        return antiAfkEnabled
+        return Config.antiAfkEnabled
     end)
 
-    CreateToggle(MiscContent, "🚀", "FPS Boost (Padrão)", 45, function()
-        fpsBoostEnabled = not fpsBoostEnabled
-        if fpsBoostEnabled then
+    CreateToggle(MiscContent, "🚀", "FPS Boost (Padrão)", 45, "fpsBoostEnabled", function(isLoad)
+        Config.fpsBoostEnabled = isLoad or not Config.fpsBoostEnabled
+        if Config.fpsBoostEnabled then
             for _, v in pairs(Lighting:GetChildren()) do
                 if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") then v.Enabled = false end
             end
@@ -400,20 +463,16 @@ local function LoadHub()
         else
             settings().Rendering.QualityLevel = 10
         end
-        return fpsBoostEnabled
+        return Config.fpsBoostEnabled
     end)
 
-    -- 🌟 MODO DESERTO (EXTREME FPS)
-    CreateToggle(MiscContent, "☠️", "Modo Deserto (Extreme)", 90, function()
-        extremeFPSEnabled = not extremeFPSEnabled
-        if extremeFPSEnabled then
+    CreateToggle(MiscContent, "☠️", "Modo Deserto (Extreme)", 90, "extremeFPSEnabled", function(isLoad)
+        Config.extremeFPSEnabled = isLoad or not Config.extremeFPSEnabled
+        if Config.extremeFPSEnabled then
             for _, v in pairs(workspace:GetDescendants()) do
                 if v:IsA("BasePart") then
                     v.CastShadow = false
-                    -- Deixa tudo liso e apaga texturas (grama, madeira, etc)
-                    if v.Material ~= Enum.Material.SmoothPlastic then
-                        v.Material = Enum.Material.SmoothPlastic
-                    end
+                    if v.Material ~= Enum.Material.SmoothPlastic then v.Material = Enum.Material.SmoothPlastic end
                 elseif v:IsA("Decal") or v:IsA("Texture") then
                     v.Transparency = 1
                 elseif v:IsA("ParticleEmitter") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Trail") then
@@ -421,28 +480,37 @@ local function LoadHub()
                 end
             end
         end
-        return extremeFPSEnabled
+        return Config.extremeFPSEnabled
     end)
 
-    CreateToggle(MiscContent, "👁️", "Ver Papéis (ESP)", 135, function()
-        roleESPEnabled = not roleESPEnabled
-        if not roleESPEnabled then
+    CreateToggle(MiscContent, "👁️", "Ver Papéis (ESP)", 135, "roleESPEnabled", function(isLoad)
+        Config.roleESPEnabled = isLoad or not Config.roleESPEnabled
+        if not Config.roleESPEnabled then
             for _, p in pairs(Players:GetPlayers()) do
                 if p.Character and p.Character:FindFirstChild("RoleESP") then p.Character.RoleESP:Destroy() end
             end
         end
-        return roleESPEnabled
+        return Config.roleESPEnabled
+    end)
+
+    -- 🔄 AUTO-REJOIN TOGGLE
+    CreateToggle(MiscContent, "🔄", "Auto-Rejoin (24h)", 180, "autoRejoinEnabled", function(isLoad)
+        Config.autoRejoinEnabled = isLoad or not Config.autoRejoinEnabled
+        if Config.autoRejoinEnabled then
+            SetupAutoRejoin()
+        end
+        return Config.autoRejoinEnabled
     end)
 
     -- // Toggles Combat
-    CreateToggle(CombatContent, "🕳️", "Anti-Void", 5, function()
-        antiVoidEnabled = not antiVoidEnabled
-        return antiVoidEnabled
+    CreateToggle(CombatContent, "🕳️", "Anti-Void", 5, "antiVoidEnabled", function(isLoad)
+        Config.antiVoidEnabled = isLoad or not Config.antiVoidEnabled
+        return Config.antiVoidEnabled
     end)
 
-    CreateToggle(CombatContent, "🏆", "Auto-Win (Bag)", 55, function()
-        autoWinEnabled = not autoWinEnabled
-        return autoWinEnabled
+    CreateToggle(CombatContent, "🏆", "Auto-Win (Bag)", 55, "autoWinEnabled", function(isLoad)
+        Config.autoWinEnabled = isLoad or not Config.autoWinEnabled
+        return Config.autoWinEnabled
     end)
 
     -- // Farm Logic
@@ -475,14 +543,10 @@ local function LoadHub()
                         end
 
                         if isSafe then
-                            if myDist < safe_dist then
-                                safe_closest, safe_dist = coin, myDist
-                            end
+                            if myDist < safe_dist then safe_closest, safe_dist = coin, myDist end
                         end
                         
-                        if myDist < dist then
-                            closest, dist = coin, myDist
-                        end
+                        if myDist < dist then closest, dist = coin, myDist end
                     end
                 end
             end
@@ -514,7 +578,7 @@ local function LoadHub()
     task.spawn(function()
         while true do
             task.wait(0.5)
-            if antiVoidEnabled then
+            if Config.antiVoidEnabled then
                 local char = Player.Character
                 local hrp = char and char:FindFirstChild("HumanoidRootPart")
                 if hrp and hrp.Position.Y < -50 then
@@ -525,10 +589,36 @@ local function LoadHub()
         end
     end)
 
-    -- // Auto-Win + Auto Reset Logic
+    -- // Auto-Unstuck Loop
+    task.spawn(function()
+        local lastPos = Vector3.zero
+        local stuckTimer = 0
+        while true do
+            task.wait(1)
+            if Config.autoFarmEnabled and farming then
+                local char = Player.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    if (hrp.Position - lastPos).Magnitude < 3 then
+                        stuckTimer = stuckTimer + 1
+                    else
+                        stuckTimer = 0
+                        lastPos = hrp.Position
+                    end
+                    
+                    if stuckTimer >= 8 then
+                        stuckTimer = 0
+                        if char:FindFirstChild("Humanoid") then char.Humanoid.Health = 0 end
+                    end
+                end
+            end
+        end
+    end)
+
+    -- // Auto-Win + Auto Reset
     ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(_, current, max)
         if current == max and not resetting then
-            if autoWinEnabled then
+            if Config.autoWinEnabled then
                 local myRole = getMyRole()
                 if myRole == "Murderer" then
                     for _, p in pairs(Players:GetPlayers()) do
@@ -555,7 +645,7 @@ local function LoadHub()
                 end
             end
 
-            if autoResetEnabled then
+            if Config.autoResetEnabled then
                 resetting, bag_full = true, true
                 local hrp = getHRP()
                 if start_position then
@@ -575,22 +665,19 @@ local function LoadHub()
     -- // Loop do Farm
     task.spawn(function()
         while true do
-            if autoFarmEnabled and farming and not bag_full then
+            if Config.autoFarmEnabled and farming and not bag_full then
                 local coin, dist
-                if safeFarmEnabled then
-                    coin, dist = get_safest_coin()
-                else
-                    coin, dist = get_safest_coin()
-                end
+                if Config.safeFarmEnabled then coin, dist = get_safest_coin()
+                else coin, dist = get_safest_coin() end
 
                 if coin then
                     local hrp = getHRP()
                     if dist > 150 then
                         hrp.CFrame = CFrame.new(coin.Position)
                     else
-                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / farmSpeed, Enum.EasingStyle.Linear), {CFrame = CFrame.new(coin.Position)})
+                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / Config.farmSpeed, Enum.EasingStyle.Linear), {CFrame = CFrame.new(coin.Position)})
                         tw:Play()
-                        repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled
+                        repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not farming or not Config.autoFarmEnabled
                         pcall(function() tw:Cancel() end)
                     end
                 end
@@ -603,7 +690,7 @@ local function LoadHub()
     task.spawn(function()
         while true do
             task.wait(1.5)
-            if roleESPEnabled then
+            if Config.roleESPEnabled then
                 local murdererName, sheriffName
                 local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
                 if roleFolder then
@@ -670,24 +757,16 @@ local function LoadHub()
 
     ToggleButton.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            draggingButton = true
-            buttonWasDragged = false
-            dragStartButton = input.Position
-            startPosButton = ToggleButton.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    draggingButton = false
-                end
-            end)
+            draggingButton = true; buttonWasDragged = false
+            dragStartButton = input.Position; startPosButton = ToggleButton.Position
+            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then draggingButton = false end end)
         end
     end)
 
     ToggleButton.InputChanged:Connect(function(input)
         if draggingButton and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - dragStartButton
-            if delta.Magnitude > 5 then
-                buttonWasDragged = true
-            end
+            if delta.Magnitude > 5 then buttonWasDragged = true end
             ToggleButton.Position = UDim2.new(startPosButton.X.Scale, startPosButton.X.Offset + delta.X, startPosButton.Y.Scale, startPosButton.Y.Offset + delta.Y)
         end
     end)
@@ -695,9 +774,7 @@ local function LoadHub()
     UserInputService.InputChanged:Connect(function(input)
         if draggingButton and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - dragStartButton
-            if delta.Magnitude > 5 then
-                buttonWasDragged = true
-            end
+            if delta.Magnitude > 5 then buttonWasDragged = true end
             ToggleButton.Position = UDim2.new(startPosButton.X.Scale, startPosButton.X.Offset + delta.X, startPosButton.Y.Scale, startPosButton.Y.Offset + delta.Y)
         end
     end)
@@ -710,7 +787,6 @@ local function LoadHub()
         end
     end)
 
-    -- // Tecla H
     UserInputService.InputBegan:Connect(function(input, gp)
         if not gp and input.KeyCode == Enum.KeyCode.H then
             isVisible = not isVisible
