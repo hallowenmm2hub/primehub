@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Added: Key System + AutoFarm + Anti-Void + Auto-Win + FPS Boost + ESP
--- Visual: Premium Dark & Purple Theme (3 Tabs)
+-- Visual: Premium Dark & Purple Theme (Sidebar Layout)
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -149,54 +149,58 @@ local function LoadHub()
     Divider.BackgroundColor3 = Theme.Element
     Divider.BorderSizePixel = 0
 
-    -- // Tabs (Agora com 3 abas)
+    -- ═══════════════════════════════════════════════════════════
+    -- 🌟 SIDEBAR (ABAS UMA EMBAIXO DA OUTRA)
+    -- ═══════════════════════════════════════════════════════════
     local TabsContainer = Instance.new("Frame", MainFrame)
-    TabsContainer.Size = UDim2.new(0, 230, 0, 45)
+    TabsContainer.Size = UDim2.new(0, 130, 0, 160)
     TabsContainer.Position = UDim2.new(0.04, 0, 0.23, 0)
     TabsContainer.BackgroundColor3 = Theme.Secondary
     TabsContainer.BorderSizePixel = 0
     Instance.new("UICorner", TabsContainer).CornerRadius = UDim.new(0, 10)
 
     local MainTab = Instance.new("TextButton", TabsContainer)
-    MainTab.Size = UDim2.new(0, 70, 0, 33)
-    MainTab.Position = UDim2.new(0, 6, 0, 6)
+    MainTab.Size = UDim2.new(0, 120, 0, 40)
+    MainTab.Position = UDim2.new(0, 5, 0, 5)
     MainTab.BackgroundColor3 = Theme.Element
     MainTab.BorderSizePixel = 0
     MainTab.Text = "🎯 Main"
     MainTab.TextColor3 = Theme.Accent
-    MainTab.TextSize = 12
+    MainTab.TextSize = 13
     MainTab.Font = Enum.Font.GothamBold
     MainTab.AutoButtonColor = false
     Instance.new("UICorner", MainTab).CornerRadius = UDim.new(0, 8)
 
     local MiscTab = Instance.new("TextButton", TabsContainer)
-    MiscTab.Size = UDim2.new(0, 70, 0, 33)
-    MiscTab.Position = UDim2.new(0, 80, 0, 6)
+    MiscTab.Size = UDim2.new(0, 120, 0, 40)
+    MiscTab.Position = UDim2.new(0, 5, 0, 55)
     MiscTab.BackgroundColor3 = Theme.Secondary
     MiscTab.BorderSizePixel = 0
     MiscTab.Text = "⚙️ Misc"
     MiscTab.TextColor3 = Theme.TextDim
-    MiscTab.TextSize = 12
+    MiscTab.TextSize = 13
     MiscTab.Font = Enum.Font.GothamBold
     MiscTab.AutoButtonColor = false
     Instance.new("UICorner", MiscTab).CornerRadius = UDim.new(0, 8)
 
     local CombatTab = Instance.new("TextButton", TabsContainer)
-    CombatTab.Size = UDim2.new(0, 70, 0, 33)
-    CombatTab.Position = UDim2.new(0, 154, 0, 6)
+    CombatTab.Size = UDim2.new(0, 120, 0, 40)
+    CombatTab.Position = UDim2.new(0, 5, 0, 105)
     CombatTab.BackgroundColor3 = Theme.Secondary
     CombatTab.BorderSizePixel = 0
     CombatTab.Text = "⚔️ Combat"
     CombatTab.TextColor3 = Theme.TextDim
-    CombatTab.TextSize = 12
+    CombatTab.TextSize = 13
     CombatTab.Font = Enum.Font.GothamBold
     CombatTab.AutoButtonColor = false
     Instance.new("UICorner", CombatTab).CornerRadius = UDim.new(0, 8)
 
-    -- // Content
+    -- ═══════════════════════════════════════════════════════════
+    -- CONTAINER DE CONTEÚDO
+    -- ═══════════════════════════════════════════════════════════
     local ContentContainer = Instance.new("Frame", MainFrame)
-    ContentContainer.Size = UDim2.new(0, 260, 0, 200)
-    ContentContainer.Position = UDim2.new(0, 245, 0, 0.23)
+    ContentContainer.Size = UDim2.new(0, 350, 0, 210)
+    ContentContainer.Position = UDim2.new(0, 155, 0, 0.23)
     ContentContainer.BackgroundColor3 = Theme.Secondary
     ContentContainer.BorderSizePixel = 0
     Instance.new("UICorner", ContentContainer).CornerRadius = UDim.new(0, 10)
@@ -264,7 +268,7 @@ local function LoadHub()
     local function CreateToggle(parent, emoji, text, yPos, callback)
         local Toggle = Instance.new("TextButton")
         Toggle.Parent = parent
-        Toggle.Size = UDim2.new(0, 240, 0, 40)
+        Toggle.Size = UDim2.new(1, 0, 0, 45)
         Toggle.Position = UDim2.new(0, 0, 0, yPos)
         Toggle.BackgroundColor3 = Theme.Element
         Toggle.BorderSizePixel = 0
@@ -279,16 +283,16 @@ local function LoadHub()
 
         local Label = Instance.new("TextLabel", Toggle)
         Label.BackgroundTransparency = 1
-        Label.Position = UDim2.new(0, 10, 0, 0)
+        Label.Position = UDim2.new(0, 15, 0, 0)
         Label.Size = UDim2.new(0.8, 0, 1, 0)
         Label.Font = Enum.Font.GothamBold
         Label.Text = emoji .. "  " .. text
         Label.TextColor3 = Theme.Text
-        Label.TextSize = 13
+        Label.TextSize = 14
         Label.TextXAlignment = Enum.TextXAlignment.Left
 
         local Circle = Instance.new("Frame", Toggle)
-        Circle.Size = UDim2.new(0, 16, 0, 16)
+        Circle.Size = UDim2.new(0, 18, 0, 18)
         Circle.Position = UDim2.new(0.9, 0, 0.3, 0)
         Circle.BackgroundColor3 = Theme.Off
         Circle.BorderSizePixel = 0
@@ -316,14 +320,14 @@ local function LoadHub()
         return autoFarmEnabled
     end)
 
-    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 60, function()
+    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 65, function()
         autoResetEnabled = not autoResetEnabled
         return autoResetEnabled
     end)
 
     local SpeedBox = Instance.new("TextBox", MainContent)
-    SpeedBox.Position = UDim2.new(0, 110, 0, 110)
-    SpeedBox.Size = UDim2.new(0, 60, 0, 30)
+    SpeedBox.Position = UDim2.new(0, 140, 0, 120)
+    SpeedBox.Size = UDim2.new(0, 80, 0, 35)
     SpeedBox.BackgroundColor3 = Theme.Background
     SpeedBox.TextColor3 = Theme.Accent
     SpeedBox.Font = Enum.Font.GothamBold
@@ -333,13 +337,13 @@ local function LoadHub()
     local SpeedStroke = Instance.new("UIStroke", SpeedBox); SpeedStroke.Color = Theme.Accent; SpeedStroke.Thickness = 1; SpeedStroke.Transparency = 0.5
 
     local SpeedLabel = Instance.new("TextLabel", MainContent)
-    SpeedLabel.Position = UDim2.new(0, 10, 0, 110)
-    SpeedLabel.Size = UDim2.new(0, 100, 0, 30)
+    SpeedLabel.Position = UDim2.new(0, 15, 0, 120)
+    SpeedLabel.Size = UDim2.new(0, 100, 0, 35)
     SpeedLabel.BackgroundTransparency = 1
     SpeedLabel.Font = Enum.Font.GothamBold
     SpeedLabel.Text = "⚡ Speed:"
     SpeedLabel.TextColor3 = Theme.TextDim
-    SpeedLabel.TextSize = 13
+    SpeedLabel.TextSize = 14
     SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
 
     SpeedBox.FocusLost:Connect(function(ep)
@@ -363,7 +367,7 @@ local function LoadHub()
         return antiAfkEnabled
     end)
 
-    CreateToggle(MiscContent, "🚀", "FPS Boost", 55, function()
+    CreateToggle(MiscContent, "🚀", "FPS Boost", 60, function()
         fpsBoostEnabled = not fpsBoostEnabled
         if fpsBoostEnabled then
             for _, v in pairs(Lighting:GetChildren()) do
@@ -376,7 +380,7 @@ local function LoadHub()
         return fpsBoostEnabled
     end)
 
-    CreateToggle(MiscContent, "👁️", "Ver Papéis (ESP)", 105, function()
+    CreateToggle(MiscContent, "👁️", "Ver Papéis (ESP)", 115, function()
         roleESPEnabled = not roleESPEnabled
         if not roleESPEnabled then
             for _, p in pairs(Players:GetPlayers()) do
@@ -386,13 +390,13 @@ local function LoadHub()
         return roleESPEnabled
     end)
 
-    -- // Toggles Combat (Nova Aba)
+    -- // Toggles Combat
     CreateToggle(CombatContent, "🕳️", "Anti-Void", 10, function()
         antiVoidEnabled = not antiVoidEnabled
         return antiVoidEnabled
     end)
 
-    CreateToggle(CombatContent, "🏆", "Auto-Win (Bag)", 60, function()
+    CreateToggle(CombatContent, "🏆", "Auto-Win (Bag)", 65, function()
         autoWinEnabled = not autoWinEnabled
         return autoWinEnabled
     end)
