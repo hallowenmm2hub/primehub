@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Added: Key System + AutoFarm + Anti-Void + Auto-Win + FPS Boost + ESP
--- Visual: Premium Dark & Purple Theme (Perfect Layout)
+-- Visual: Premium Dark & Purple Theme (Pixel Perfect Layout)
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -63,13 +63,13 @@ end
 local function LoadHub()
     if ScreenGui:FindFirstChild("KeyFrame") then ScreenGui.KeyFrame:Destroy() end
 
-    -- // Main window
+    -- // Main window (Altura reduzida para tirar o espaço preto)
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
     MainFrame.BackgroundColor3 = Theme.Background
     MainFrame.BorderSizePixel = 0
-    MainFrame.Size = UDim2.new(0, 500, 0, 320)
+    MainFrame.Size = UDim2.new(0, 500, 0, 290) -- Tamanho exato para caber tudo
     MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 16)
@@ -86,14 +86,10 @@ local function LoadHub()
     }
     Gradient.Rotation = 90
 
-    -- // Header
-    local Header = Instance.new("Frame", MainFrame)
-    Header.Size = UDim2.new(1, 0, 0, 60)
-    Header.BackgroundTransparency = 1
-
-    local Title = Instance.new("TextLabel", Header)
+    -- // Header (Posições travadas em pixels)
+    local Title = Instance.new("TextLabel", MainFrame)
     Title.BackgroundTransparency = 1
-    Title.Position = UDim2.new(0.04, 0, 0.2, 0)
+    Title.Position = UDim2.new(0, 20, 0, 12) -- Travado no topo esquerdo
     Title.Size = UDim2.new(0, 300, 0, 24)
     Title.Font = Enum.Font.GothamBold
     Title.Text = "✨ Prime Hub | Halloween ✨"
@@ -101,9 +97,9 @@ local function LoadHub()
     Title.TextSize = 18
     Title.TextXAlignment = Enum.TextXAlignment.Left
 
-    local SubTitle = Instance.new("TextLabel", Header)
+    local SubTitle = Instance.new("TextLabel", MainFrame)
     SubTitle.BackgroundTransparency = 1
-    SubTitle.Position = UDim2.new(0.04, 0, 0.55, 0)
+    SubTitle.Position = UDim2.new(0, 20, 0, 34)
     SubTitle.Size = UDim2.new(0, 300, 0, 18)
     SubTitle.Font = Enum.Font.Gotham
     SubTitle.Text = "👑 Dev: sllvzz"
@@ -111,9 +107,9 @@ local function LoadHub()
     SubTitle.TextSize = 12
     SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 
-    local UserFrame = Instance.new("Frame", Header)
+    local UserFrame = Instance.new("Frame", MainFrame)
     UserFrame.Size = UDim2.new(0, 140, 0, 40)
-    UserFrame.Position = UDim2.new(1, -150, 0.15, 0)
+    UserFrame.Position = UDim2.new(1, -160, 0, 12) -- Canto superior direito travado
     UserFrame.BackgroundTransparency = 1
 
     local Avatar = Instance.new("ImageLabel", UserFrame)
@@ -144,23 +140,23 @@ local function LoadHub()
     UserTag.TextXAlignment = Enum.TextXAlignment.Left
 
     local Divider = Instance.new("Frame", MainFrame)
-    Divider.Size = UDim2.new(0.92, 0, 0, 1)
-    Divider.Position = UDim2.new(0.04, 0, 0.19, 0)
+    Divider.Size = UDim2.new(1, -40, 0, 1)
+    Divider.Position = UDim2.new(0, 20, 0, 60) -- Linha divisória perfeita
     Divider.BackgroundColor3 = Theme.Element
     Divider.BorderSizePixel = 0
 
     -- ═══════════════════════════════════════════════════════════
-    -- 🌟 SIDEBAR (ABAS UMA EMBAIXO DA OUTRA - ALINHADAS)
+    -- 🌟 SIDEBAR (ABAS ALINHADAS COM PIXELS)
     -- ═══════════════════════════════════════════════════════════
     local TabsContainer = Instance.new("Frame", MainFrame)
-    TabsContainer.Size = UDim2.new(0, 125, 0, 185)
-    TabsContainer.Position = UDim2.new(0, 20, 0, 80)
+    TabsContainer.Size = UDim2.new(0, 125, 0, 195)
+    TabsContainer.Position = UDim2.new(0, 20, 0, 75)
     TabsContainer.BackgroundColor3 = Theme.Secondary
     TabsContainer.BorderSizePixel = 0
     Instance.new("UICorner", TabsContainer).CornerRadius = UDim.new(0, 10)
 
     local MainTab = Instance.new("TextButton", TabsContainer)
-    MainTab.Size = UDim2.new(0, 105, 0, 45)
+    MainTab.Size = UDim2.new(0, 105, 0, 50)
     MainTab.Position = UDim2.new(0, 10, 0, 10)
     MainTab.BackgroundColor3 = Theme.Element
     MainTab.BorderSizePixel = 0
@@ -172,8 +168,8 @@ local function LoadHub()
     Instance.new("UICorner", MainTab).CornerRadius = UDim.new(0, 8)
 
     local MiscTab = Instance.new("TextButton", TabsContainer)
-    MiscTab.Size = UDim2.new(0, 105, 0, 45)
-    MiscTab.Position = UDim2.new(0, 10, 0, 65)
+    MiscTab.Size = UDim2.new(0, 105, 0, 50)
+    MiscTab.Position = UDim2.new(0, 10, 0, 72)
     MiscTab.BackgroundColor3 = Theme.Secondary
     MiscTab.BorderSizePixel = 0
     MiscTab.Text = "⚙️ Misc"
@@ -184,8 +180,8 @@ local function LoadHub()
     Instance.new("UICorner", MiscTab).CornerRadius = UDim.new(0, 8)
 
     local CombatTab = Instance.new("TextButton", TabsContainer)
-    CombatTab.Size = UDim2.new(0, 105, 0, 45)
-    CombatTab.Position = UDim2.new(0, 10, 0, 120)
+    CombatTab.Size = UDim2.new(0, 105, 0, 50)
+    CombatTab.Position = UDim2.new(0, 10, 0, 134)
     CombatTab.BackgroundColor3 = Theme.Secondary
     CombatTab.BorderSizePixel = 0
     CombatTab.Text = "⚔️ Combat"
@@ -196,11 +192,11 @@ local function LoadHub()
     Instance.new("UICorner", CombatTab).CornerRadius = UDim.new(0, 8)
 
     -- ═══════════════════════════════════════════════════════════
-    -- CONTAINER DE CONTEÚDO (ALINHADO COM AS ABAS)
+    -- CONTAINER DE CONTEÚDO (ALINHADO PERFEITAMENTE)
     -- ═══════════════════════════════════════════════════════════
     local ContentContainer = Instance.new("Frame", MainFrame)
-    ContentContainer.Size = UDim2.new(0, 325, 0, 185)
-    ContentContainer.Position = UDim2.new(0, 155, 0, 80)
+    ContentContainer.Size = UDim2.new(0, 325, 0, 195)
+    ContentContainer.Position = UDim2.new(0, 155, 0, 75)
     ContentContainer.BackgroundColor3 = Theme.Secondary
     ContentContainer.BorderSizePixel = 0
     Instance.new("UICorner", ContentContainer).CornerRadius = UDim.new(0, 10)
@@ -320,13 +316,13 @@ local function LoadHub()
         return autoFarmEnabled
     end)
 
-    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 55, function()
+    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 60, function()
         autoResetEnabled = not autoResetEnabled
         return autoResetEnabled
     end)
 
     local SpeedBox = Instance.new("TextBox", MainContent)
-    SpeedBox.Position = UDim2.new(0, 140, 0, 110)
+    SpeedBox.Position = UDim2.new(0, 130, 0, 115)
     SpeedBox.Size = UDim2.new(0, 70, 0, 35)
     SpeedBox.BackgroundColor3 = Theme.Background
     SpeedBox.TextColor3 = Theme.Accent
@@ -337,7 +333,7 @@ local function LoadHub()
     local SpeedStroke = Instance.new("UIStroke", SpeedBox); SpeedStroke.Color = Theme.Accent; SpeedStroke.Thickness = 1; SpeedStroke.Transparency = 0.5
 
     local SpeedLabel = Instance.new("TextLabel", MainContent)
-    SpeedLabel.Position = UDim2.new(0, 10, 0, 110)
+    SpeedLabel.Position = UDim2.new(0, 10, 0, 115)
     SpeedLabel.Size = UDim2.new(0, 100, 0, 35)
     SpeedLabel.BackgroundTransparency = 1
     SpeedLabel.Font = Enum.Font.GothamBold
@@ -367,7 +363,7 @@ local function LoadHub()
         return antiAfkEnabled
     end)
 
-    CreateToggle(MiscContent, "🚀", "FPS Boost", 55, function()
+    CreateToggle(MiscContent, "🚀", "FPS Boost", 60, function()
         fpsBoostEnabled = not fpsBoostEnabled
         if fpsBoostEnabled then
             for _, v in pairs(Lighting:GetChildren()) do
@@ -380,7 +376,7 @@ local function LoadHub()
         return fpsBoostEnabled
     end)
 
-    CreateToggle(MiscContent, "👁️", "Ver Papéis (ESP)", 105, function()
+    CreateToggle(MiscContent, "👁️", "Ver Papéis (ESP)", 115, function()
         roleESPEnabled = not roleESPEnabled
         if not roleESPEnabled then
             for _, p in pairs(Players:GetPlayers()) do
@@ -396,7 +392,7 @@ local function LoadHub()
         return antiVoidEnabled
     end)
 
-    CreateToggle(CombatContent, "🏆", "Auto-Win (Bag)", 55, function()
+    CreateToggle(CombatContent, "🏆", "Auto-Win (Bag)", 60, function()
         autoWinEnabled = not autoWinEnabled
         return autoWinEnabled
     end)
