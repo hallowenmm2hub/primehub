@@ -1,6 +1,6 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System + AutoFarm + Ghost Farm + Auto-Rejoin + Config Save + Extreme FPS + Watermark
+-- Added: Key System + AutoFarm + Lie Down Farm + Close Button + Config Save + Extreme FPS
 -- Visual: Premium Dark & Purple Theme
 
 -- // Wait for game to load
@@ -15,7 +15,6 @@ local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
 local Lighting = game:GetService("Lighting")
 local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
 
 -- ═══════════════════════════════════════════════════════════════
 -- 🔑 SISTEMA DE KEY (COM SALVAMENTO DE 24 HORAS)
@@ -68,9 +67,8 @@ end
 -- ═══════════════════════════════════════════════════════════════
 local Config = {
     autoFarmEnabled = false,
-    safeFarmEnabled = false,
     autoResetEnabled = false,
-    ghostFarmEnabled = false, -- NOVO: Modo Invisível
+    lieDownEnabled = false,
     farmSpeed = 20,
     fpsBoostEnabled = false,
     extremeFPSEnabled = false,
@@ -113,10 +111,11 @@ local function LoadHub()
     local resetting = false
     local start_position
 
-    -- // Watermark
+    -- // 🌟 WATERMARK
     local Watermark = Instance.new("TextLabel")
     Watermark.Parent = ScreenGui
-    Watermark.Position = UDim2.new(0, 20, 0, 20)
+    Watermark.Position = UDim2.new(0, 20, 1, -30)
+    Watermark.AnchorPoint = Vector2.new(0, 1)
     Watermark.Size = UDim2.new(0, 300, 0, 20)
     Watermark.BackgroundTransparency = 1
     Watermark.TextColor3 = Theme.Accent
@@ -127,6 +126,7 @@ local function LoadHub()
 
     local fpsFrames, fpsTime = 0, 0
     RunService.RenderStepped:Connect(function(dt)
+        if not Watermark or not Watermark.Parent then return end -- Para o loop se fechar
         fpsFrames = fpsFrames + 1
         fpsTime = fpsTime + dt
         if fpsTime >= 0.5 then
@@ -160,6 +160,32 @@ local function LoadHub()
     }
     Gradient.Rotation = 90
 
+    -- // 🌟 BOTÃO DE FECHAR (X)
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Parent = MainFrame
+    CloseButton.Size = UDim2.new(0, 30, 0, 30)
+    CloseButton.Position = UDim2.new(1, -35, 0, 5) -- Canto superior direito
+    CloseButton.BackgroundTransparency = 1
+    CloseButton.Text = "✖"
+    CloseButton.TextColor3 = Color3.fromRGB(255, 80, 80)
+    CloseButton.Font = Enum.Font.GothamBold
+    CloseButton.TextSize = 18
+    CloseButton.AutoButtonColor = false
+
+    CloseButton.MouseEnter:Connect(function() CloseButton.TextColor3 = Color3.fromRGB(255, 0, 0) end)
+    CloseButton.MouseLeave:Connect(function() CloseButton.TextColor3 = Color3.fromRGB(255, 80, 80) end)
+
+    CloseButton.MouseButton1Click:Connect(function()
+        -- Limpa os ESPs do mapa antes de fechar
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character and p.Character:FindFirstChild("RoleESP") then
+                p.Character.RoleESP:Destroy()
+            end
+        end
+        -- Destrói a tela inteira (fecha o script e o botão da coroa)
+        ScreenGui:Destroy()
+    end)
+
     -- // Header
     local Title = Instance.new("TextLabel", MainFrame)
     Title.BackgroundTransparency = 1
@@ -183,7 +209,7 @@ local function LoadHub()
 
     local UserFrame = Instance.new("Frame", MainFrame)
     UserFrame.Size = UDim2.new(0, 140, 0, 40)
-    UserFrame.Position = UDim2.new(1, -160, 0, 12)
+    UserFrame.Position = UDim2.new(1, -180, 0, 12) -- Movido um pouco pra esquerda pro X caber
     UserFrame.BackgroundTransparency = 1
 
     local Avatar = Instance.new("ImageLabel", UserFrame)
@@ -271,7 +297,7 @@ local function LoadHub()
     ContentContainer.BorderSizePixel = 0
     Instance.new("UICorner", ContentContainer).CornerRadius = UDim.new(0, 10)
 
-    local MainContent = Instance.new("ScrollingFrame", ContentContainer) -- Transformado em ScrollingFrame para caber mais botões
+    local MainContent = Instance.new("ScrollingFrame", ContentContainer)
     MainContent.Size = UDim2.new(1, -20, 1, -20)
     MainContent.Position = UDim2.new(0, 10, 0, 10)
     MainContent.BackgroundTransparency = 1
@@ -375,49 +401,41 @@ local function LoadHub()
         end)
     end
 
-    -- 🌟 FUNÇÕES DO MODO FANTASMA
-    local function SetGhostMode(state)
+    -- 🌟 FUNÇÕES DO MODO DEITADO
+    local function SetLieDownMode(state)
         local char = Player.Character
         if not char then return end
+        local humanoid = char:FindFirstChild("Humanoid")
         local hrp = char:FindFirstChild("HumanoidRootPart")
-        
+        if not humanoid or not hrp then return end
+
         if state then
-            if hrp then
-                hrp.Anchored = true
-                hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(math.rad(-90), 0, 0) -- Deita
-            end
+            humanoid.AutoRotate = false
             for _, v in pairs(char:GetDescendants()) do
-                if v:IsA("BasePart") then
-                    v.CanCollide = false
-                    v.Transparency = 1
-                elseif v:IsA("Decal") or v:IsA("Texture") then
-                    v.Transparency = 1
-                end
+                if v:IsA("BasePart") then v.CanCollide = false end
             end
+            hrp.CFrame = hrp.CFrame * CFrame.Angles(math.rad(-90), 0, 0)
         else
-            if hrp then
-                hrp.Anchored = false
-                hrp.CFrame = CFrame.new(hrp.Position)
-            end
+            humanoid.AutoRotate = true
             for _, v in pairs(char:GetDescendants()) do
-                if v:IsA("BasePart") then
-                    v.CanCollide = true
-                    v.Transparency = 0
-                elseif v:IsA("Decal") or v:IsA("Texture") then
-                    v.Transparency = 0
-                end
+                if v:IsA("BasePart") then v.CanCollide = true end
             end
+            hrp.CFrame = CFrame.new(hrp.Position)
         end
     end
 
+    Player.CharacterAdded:Connect(function()
+        task.wait(1)
+        if Config.lieDownEnabled then SetLieDownMode(true) end
+    end)
+
     -- // Toggles Main
     CreateToggle(MainContent, "🍬", "AutoFarm Candies", 0, "autoFarmEnabled", function(state) end)
-    CreateToggle(MainContent, "🥷", "Farm Seguro (Anti-Player)", 45, "safeFarmEnabled", function(state) end)
-    CreateToggle(MainContent, "👻", "Farm Fantasma (Invisível)", 90, "ghostFarmEnabled", function(state) SetGhostMode(state) end)
-    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 135, "autoResetEnabled", function(state) end)
+    CreateToggle(MainContent, "🛌", "Farm Deitado (Disfarçado)", 45, "lieDownEnabled", function(state) SetLieDownMode(state) end)
+    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 90, "autoResetEnabled", function(state) end)
 
     local SpeedBox = Instance.new("TextBox", MainContent)
-    SpeedBox.Position = UDim2.new(0, 130, 0, 180)
+    SpeedBox.Position = UDim2.new(0, 130, 0, 135)
     SpeedBox.Size = UDim2.new(0, 70, 0, 30)
     SpeedBox.BackgroundColor3 = Theme.Background
     SpeedBox.TextColor3 = Theme.Accent
@@ -428,7 +446,7 @@ local function LoadHub()
     local SpeedStroke = Instance.new("UIStroke", SpeedBox); SpeedStroke.Color = Theme.Accent; SpeedStroke.Thickness = 1; SpeedStroke.Transparency = 0.5
 
     local SpeedLabel = Instance.new("TextLabel", MainContent)
-    SpeedLabel.Position = UDim2.new(0, 10, 0, 180)
+    SpeedLabel.Position = UDim2.new(0, 10, 0, 135)
     SpeedLabel.Size = UDim2.new(0, 100, 0, 30)
     SpeedLabel.BackgroundTransparency = 1
     SpeedLabel.Font = Enum.Font.GothamBold
@@ -508,63 +526,56 @@ local function LoadHub()
     -- // Farm Logic
     local function getHRP() return (Player.Character or Player.CharacterAdded:Wait()):WaitForChild("HumanoidRootPart") end
     
-    local function get_safest_coin()
+    local function get_nearest_coin()
         local hrp = getHRP()
         local closest, dist = nil, math.huge
-        local safe_closest, safe_dist = nil, math.huge
-
-        local otherPlayersPos = {}
-        for _, p in pairs(Players:GetPlayers()) do
-            if p ~= Player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                table.insert(otherPlayersPos, p.Character.HumanoidRootPart.Position)
-            end
-        end
-
         for _, m in pairs(workspace:GetChildren()) do
-            if m:FindFirstChild("CoinContainer") then
-                for _, coin in pairs(m.CoinContainer:GetChildren()) do
+            local container = m:FindFirstChild("CoinContainer")
+            if container then
+                for _, coin in pairs(container:GetChildren()) do
                     if coin:IsA("BasePart") and coin:FindFirstChild("TouchInterest") then
-                        local myDist = (hrp.Position - coin.Position).Magnitude
-                        
-                        local isSafe = true
-                        for _, otherPos in pairs(otherPlayersPos) do
-                            if (otherPos - coin.Position).Magnitude < 35 then
-                                isSafe = false
-                                break
-                            end
-                        end
-
-                        if isSafe then
-                            if myDist < safe_dist then safe_closest, safe_dist = coin, myDist end
-                        end
-                        
-                        if myDist < dist then closest, dist = coin, myDist end
+                        local d = (hrp.Position - coin.Position).Magnitude
+                        if d < dist then closest, dist = coin, d end
                     end
                 end
             end
         end
+        return closest, dist
+    end
 
-        if Config.safeFarmEnabled and safe_closest then return safe_closest, safe_dist
-        else return closest, dist end
+    local function getMyRole()
+        local char = Player.Character
+        local backpack = Player:FindFirstChild("Backpack")
+        local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
+        if roleFolder then
+            local m = roleFolder:FindFirstChild("Murderer")
+            local s = roleFolder:FindFirstChild("Sheriff")
+            if m and m.Value == Player.Name then return "Murderer" end
+            if s and s.Value == Player.Name then return "Sheriff" end
+        end
+        if (backpack and backpack:FindFirstChild("Knife")) or (char and char:FindFirstChild("Knife")) then return "Murderer" end
+        if (backpack and backpack:FindFirstChild("Gun")) or (char and char:FindFirstChild("Gun")) then return "Sheriff" end
+        return "Innocent"
     end
 
     ReplicatedStorage:WaitForChild("Remotes").Gameplay.RoundStart.OnClientEvent:Connect(function() 
         farming = true
         start_position = getHRP().CFrame 
-        if Config.ghostFarmEnabled then SetGhostMode(true) end
+        if Config.lieDownEnabled then SetLieDownMode(true) end
     end)
     
     ReplicatedStorage.Remotes.Gameplay.RoundEndFade.OnClientEvent:Connect(function() 
         farming = false
-        if Config.ghostFarmEnabled then SetGhostMode(false) end
+        if Config.lieDownEnabled then SetLieDownMode(false) end
         if start_position then getHRP().CFrame = start_position end 
     end)
 
     -- // Anti-Void Loop
     task.spawn(function()
         while true do
-            task.wait(0.5)
-            if Config.antiVoidEnabled and not Config.ghostFarmEnabled then -- Desativa se estiver fantasma
+            task.wait(1)
+            if not ScreenGui or not ScreenGui.Parent then break end -- Fecha se a UI for destruída
+            if Config.antiVoidEnabled and not Config.lieDownEnabled then
                 local char = Player.Character
                 local hrp = char and char:FindFirstChild("HumanoidRootPart")
                 if hrp and hrp.Position.Y < -50 then
@@ -575,36 +586,10 @@ local function LoadHub()
         end
     end)
 
-    -- // Auto-Unstuck Loop (Desativado no modo fantasma pq ele fica ancorado)
-    task.spawn(function()
-        local lastPos = Vector3.zero
-        local stuckTimer = 0
-        while true do
-            task.wait(1)
-            if Config.autoFarmEnabled and farming and not Config.ghostFarmEnabled then
-                local char = Player.Character
-                local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    if (hrp.Position - lastPos).Magnitude < 3 then
-                        stuckTimer = stuckTimer + 1
-                    else
-                        stuckTimer = 0
-                        lastPos = hrp.Position
-                    end
-                    
-                    if stuckTimer >= 8 then
-                        stuckTimer = 0
-                        if char:FindFirstChild("Humanoid") then char.Humanoid.Health = 0 end
-                    end
-                end
-            end
-        end
-    end)
-
     -- // Auto-Win + Auto Reset
     ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(_, current, max)
         if current == max and not resetting then
-            if Config.ghostFarmEnabled then SetGhostMode(false) end -- Levanta pra matar
+            if Config.lieDownEnabled then SetLieDownMode(false) end
             if Config.autoWinEnabled then
                 local myRole = getMyRole()
                 if myRole == "Murderer" then
@@ -649,46 +634,27 @@ local function LoadHub()
         end
     end)
 
-    local function getMyRole()
-        local char = Player.Character
-        local backpack = Player:FindFirstChild("Backpack")
-        local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
-        if roleFolder then
-            local m = roleFolder:FindFirstChild("Murderer")
-            local s = roleFolder:FindFirstChild("Sheriff")
-            if m and m.Value == Player.Name then return "Murderer" end
-            if s and s.Value == Player.Name then return "Sheriff" end
-        end
-        if (backpack and backpack:FindFirstChild("Knife")) or (char and char:FindFirstChild("Knife")) then return "Murderer" end
-        if (backpack and backpack:FindFirstChild("Gun")) or (char and char:FindFirstChild("Gun")) then return "Sheriff" end
-        return "Innocent"
-    end
-
     -- // Loop do Farm
     task.spawn(function()
         while true do
+            if not ScreenGui or not ScreenGui.Parent then break end -- Fecha se a UI for destruída
             if Config.autoFarmEnabled and farming and not bag_full then
-                local coin, dist = get_safest_coin()
+                local coin, dist = get_nearest_coin()
                 if coin then
                     local hrp = getHRP()
+                    local targetCF = CFrame.new(coin.Position)
                     
-                    if Config.ghostFarmEnabled then
-                        -- MODO FANTASMA: Voa reto e deitado (Ancorado)
-                        local targetCF = CFrame.new(coin.Position) * CFrame.Angles(math.rad(-90), 0, 0)
+                    if Config.lieDownEnabled then
+                        targetCF = CFrame.new(coin.Position - Vector3.new(0, 3, 0)) * CFrame.Angles(math.rad(-90), 0, 0)
+                    end
+
+                    if dist > 150 then
+                        hrp.CFrame = targetCF
+                    else
                         local tw = TweenService:Create(hrp, TweenInfo.new(dist / Config.farmSpeed, Enum.EasingStyle.Linear), {CFrame = targetCF})
                         tw:Play()
                         repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not farming or not Config.autoFarmEnabled
                         pcall(function() tw:Cancel() end)
-                    else
-                        -- MODO NORMAL
-                        if dist > 150 then
-                            hrp.CFrame = CFrame.new(coin.Position)
-                        else
-                            local tw = TweenService:Create(hrp, TweenInfo.new(dist / Config.farmSpeed, Enum.EasingStyle.Linear), {CFrame = CFrame.new(coin.Position)})
-                            tw:Play()
-                            repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not farming or not Config.autoFarmEnabled
-                            pcall(function() tw:Cancel() end)
-                        end
                     end
                 end
             end
@@ -700,6 +666,7 @@ local function LoadHub()
     task.spawn(function()
         while true do
             task.wait(1.5)
+            if not ScreenGui or not ScreenGui.Parent then break end -- Fecha se a UI for destruída
             if Config.roleESPEnabled then
                 local murdererName, sheriffName
                 local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
@@ -816,7 +783,7 @@ else
     KeyFrame.Parent = ScreenGui
     KeyFrame.BackgroundColor3 = Theme.Background
     KeyFrame.BorderSizePixel = 0
-    KeyFrame.Size = UDim2.new(0, 320, 0, 220)
+    KeyFrame.Size = UDim2.new(0, 300, 0, 220)
     KeyFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     KeyFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 16)
@@ -824,7 +791,7 @@ else
     
     local KeyTitle = Instance.new("TextLabel", KeyFrame)
     KeyTitle.BackgroundTransparency = 1
-    KeyTitle.Position = UDim2.new(0, 0, 0.1, 0)
+    KeyTitle.Position = UDim2.new(0, 0, 0, 20)
     KeyTitle.Size = UDim2.new(1, 0, 0, 30)
     KeyTitle.Font = Enum.Font.GothamBold
     KeyTitle.Text = "👑 Prime Hub | Login"
@@ -832,8 +799,8 @@ else
     KeyTitle.TextSize = 18
 
     local KeyInput = Instance.new("TextBox", KeyFrame)
-    KeyInput.Position = UDim2.new(0.1, 0, 0.35, 0)
-    KeyInput.Size = UDim2.new(0.8, 0, 40, 0)
+    KeyInput.Position = UDim2.new(0, 30, 0, 70)
+    KeyInput.Size = UDim2.new(0, 240, 0, 40)
     KeyInput.BackgroundColor3 = Theme.Element
     KeyInput.TextColor3 = Theme.Text
     KeyInput.Font = Enum.Font.GothamBold
@@ -843,8 +810,8 @@ else
     Instance.new("UICorner", KeyInput).CornerRadius = UDim.new(0, 8)
 
     local KeyButton = Instance.new("TextButton", KeyFrame)
-    KeyButton.Position = UDim2.new(0.1, 0, 0.65, 0)
-    KeyButton.Size = UDim2.new(0.8, 0, 40, 0)
+    KeyButton.Position = UDim2.new(0, 30, 0, 130)
+    KeyButton.Size = UDim2.new(0, 240, 0, 40)
     KeyButton.BackgroundColor3 = Theme.Accent
     KeyButton.Text = "Verificar"
     KeyButton.TextColor3 = Theme.Text
@@ -855,7 +822,7 @@ else
 
     local KeyStatus = Instance.new("TextLabel", KeyFrame)
     KeyStatus.BackgroundTransparency = 1
-    KeyStatus.Position = UDim2.new(0, 0, 0.87, 0)
+    KeyStatus.Position = UDim2.new(0, 0, 0, 180)
     KeyStatus.Size = UDim2.new(1, 0, 20, 0)
     KeyStatus.Font = Enum.Font.Gotham
     KeyStatus.Text = ""
