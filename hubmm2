@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System (24h Save) + AutoFarm Normal + FPS Boost + Role ESP + Draggable Keybind H
--- Visual: Premium Dark & Purple Theme
+-- Added: Key System + AutoFarm + Anti-Void + Auto-Win + FPS Boost + ESP
+-- Visual: Premium Dark & Purple Theme (3 Tabs)
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -149,9 +149,9 @@ local function LoadHub()
     Divider.BackgroundColor3 = Theme.Element
     Divider.BorderSizePixel = 0
 
-    -- // Tabs
+    -- // Tabs (Agora com 3 abas)
     local TabsContainer = Instance.new("Frame", MainFrame)
-    TabsContainer.Size = UDim2.new(0, 160, 0, 45)
+    TabsContainer.Size = UDim2.new(0, 230, 0, 45)
     TabsContainer.Position = UDim2.new(0.04, 0, 0.23, 0)
     TabsContainer.BackgroundColor3 = Theme.Secondary
     TabsContainer.BorderSizePixel = 0
@@ -171,7 +171,7 @@ local function LoadHub()
 
     local MiscTab = Instance.new("TextButton", TabsContainer)
     MiscTab.Size = UDim2.new(0, 70, 0, 33)
-    MiscTab.Position = UDim2.new(0, 84, 0, 6)
+    MiscTab.Position = UDim2.new(0, 80, 0, 6)
     MiscTab.BackgroundColor3 = Theme.Secondary
     MiscTab.BorderSizePixel = 0
     MiscTab.Text = "⚙️ Misc"
@@ -181,10 +181,22 @@ local function LoadHub()
     MiscTab.AutoButtonColor = false
     Instance.new("UICorner", MiscTab).CornerRadius = UDim.new(0, 8)
 
+    local CombatTab = Instance.new("TextButton", TabsContainer)
+    CombatTab.Size = UDim2.new(0, 70, 0, 33)
+    CombatTab.Position = UDim2.new(0, 154, 0, 6)
+    CombatTab.BackgroundColor3 = Theme.Secondary
+    CombatTab.BorderSizePixel = 0
+    CombatTab.Text = "⚔️ Combat"
+    CombatTab.TextColor3 = Theme.TextDim
+    CombatTab.TextSize = 12
+    CombatTab.Font = Enum.Font.GothamBold
+    CombatTab.AutoButtonColor = false
+    Instance.new("UICorner", CombatTab).CornerRadius = UDim.new(0, 8)
+
     -- // Content
     local ContentContainer = Instance.new("Frame", MainFrame)
-    ContentContainer.Size = UDim2.new(0, 300, 0, 200)
-    ContentContainer.Position = UDim2.new(0.36, 0, 0.23, 0)
+    ContentContainer.Size = UDim2.new(0, 260, 0, 200)
+    ContentContainer.Position = UDim2.new(0, 245, 0, 0.23)
     ContentContainer.BackgroundColor3 = Theme.Secondary
     ContentContainer.BorderSizePixel = 0
     Instance.new("UICorner", ContentContainer).CornerRadius = UDim.new(0, 10)
@@ -205,15 +217,33 @@ local function LoadHub()
     MiscContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
     MiscContent.ScrollingDirection = Enum.ScrollingDirection.Y
 
+    local CombatContent = Instance.new("Frame", ContentContainer)
+    CombatContent.Size = UDim2.new(1, -20, 1, -20)
+    CombatContent.Position = UDim2.new(0, 10, 0, 10)
+    CombatContent.BackgroundTransparency = 1
+    CombatContent.Visible = false
+
+    -- // Tab Switching Logic
+    local function HideAllTabs()
+        MainContent.Visible = false; MiscContent.Visible = false; CombatContent.Visible = false
+        MainTab.BackgroundColor3 = Theme.Secondary; MiscTab.BackgroundColor3 = Theme.Secondary; CombatTab.BackgroundColor3 = Theme.Secondary
+        MainTab.TextColor3 = Theme.TextDim; MiscTab.TextColor3 = Theme.TextDim; CombatTab.TextColor3 = Theme.TextDim
+    end
+
     MainTab.MouseButton1Click:Connect(function()
-        MainContent.Visible = true; MiscContent.Visible = false
-        MainTab.BackgroundColor3 = Theme.Element; MiscTab.BackgroundColor3 = Theme.Secondary
-        MainTab.TextColor3 = Theme.Accent; MiscTab.TextColor3 = Theme.TextDim
+        HideAllTabs()
+        MainContent.Visible = true
+        MainTab.BackgroundColor3 = Theme.Element; MainTab.TextColor3 = Theme.Accent
     end)
     MiscTab.MouseButton1Click:Connect(function()
-        MainContent.Visible = false; MiscContent.Visible = true
-        MainTab.BackgroundColor3 = Theme.Secondary; MiscTab.BackgroundColor3 = Theme.Element
-        MainTab.TextColor3 = Theme.TextDim; MiscTab.TextColor3 = Theme.Accent
+        HideAllTabs()
+        MiscContent.Visible = true
+        MiscTab.BackgroundColor3 = Theme.Element; MiscTab.TextColor3 = Theme.Accent
+    end)
+    CombatTab.MouseButton1Click:Connect(function()
+        HideAllTabs()
+        CombatContent.Visible = true
+        CombatTab.BackgroundColor3 = Theme.Element; CombatTab.TextColor3 = Theme.Accent
     end)
 
     -- // Variáveis de Estado
@@ -227,13 +257,15 @@ local function LoadHub()
     local fpsBoostEnabled = false
     local antiAfkEnabled = false
     local roleESPEnabled = false
+    local antiVoidEnabled = false
+    local autoWinEnabled = false
 
-    -- // Função de Criar Botões com Hover
+    -- // Função de Criar Botões
     local function CreateToggle(parent, emoji, text, yPos, callback)
         local Toggle = Instance.new("TextButton")
         Toggle.Parent = parent
-        Toggle.Size = UDim2.new(0, 270, 0, 40)
-        Toggle.Position = UDim2.new(0, 5, 0, yPos)
+        Toggle.Size = UDim2.new(0, 240, 0, 40)
+        Toggle.Position = UDim2.new(0, 0, 0, yPos)
         Toggle.BackgroundColor3 = Theme.Element
         Toggle.BorderSizePixel = 0
         Toggle.Text = ""
@@ -278,20 +310,19 @@ local function LoadHub()
         return Toggle
     end
 
-    -- // Toggles
+    -- // Toggles Main
     CreateToggle(MainContent, "🍬", "AutoFarm Candies", 10, function()
         autoFarmEnabled = not autoFarmEnabled
         return autoFarmEnabled
     end)
 
-    CreateToggle(MainContent, "🔄", "Auto Reset (Bag Cheia)", 60, function()
+    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 60, function()
         autoResetEnabled = not autoResetEnabled
         return autoResetEnabled
     end)
 
-    -- // Velocidade
     local SpeedBox = Instance.new("TextBox", MainContent)
-    SpeedBox.Position = UDim2.new(0, 120, 0, 110)
+    SpeedBox.Position = UDim2.new(0, 110, 0, 110)
     SpeedBox.Size = UDim2.new(0, 60, 0, 30)
     SpeedBox.BackgroundColor3 = Theme.Background
     SpeedBox.TextColor3 = Theme.Accent
@@ -302,11 +333,11 @@ local function LoadHub()
     local SpeedStroke = Instance.new("UIStroke", SpeedBox); SpeedStroke.Color = Theme.Accent; SpeedStroke.Thickness = 1; SpeedStroke.Transparency = 0.5
 
     local SpeedLabel = Instance.new("TextLabel", MainContent)
-    SpeedLabel.Position = UDim2.new(0, 15, 0, 110)
+    SpeedLabel.Position = UDim2.new(0, 10, 0, 110)
     SpeedLabel.Size = UDim2.new(0, 100, 0, 30)
     SpeedLabel.BackgroundTransparency = 1
     SpeedLabel.Font = Enum.Font.GothamBold
-    SpeedLabel.Text = "⚡ Velocidade:"
+    SpeedLabel.Text = "⚡ Speed:"
     SpeedLabel.TextColor3 = Theme.TextDim
     SpeedLabel.TextSize = 13
     SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -319,7 +350,7 @@ local function LoadHub()
         end
     end)
 
-    -- // Misc Toggles
+    -- // Toggles Misc
     CreateToggle(MiscContent, "🛡️", "Anti-AFK", 5, function()
         if not antiAfkEnabled then
             antiAfkEnabled = true
@@ -355,6 +386,17 @@ local function LoadHub()
         return roleESPEnabled
     end)
 
+    -- // Toggles Combat (Nova Aba)
+    CreateToggle(CombatContent, "🕳️", "Anti-Void", 10, function()
+        antiVoidEnabled = not antiVoidEnabled
+        return antiVoidEnabled
+    end)
+
+    CreateToggle(CombatContent, "🏆", "Auto-Win (Bag)", 60, function()
+        autoWinEnabled = not autoWinEnabled
+        return autoWinEnabled
+    end)
+
     -- // Farm Logic
     local function getHRP() return (Player.Character or Player.CharacterAdded:Wait()):WaitForChild("HumanoidRootPart") end
     local function get_nearest_coin()
@@ -372,35 +414,93 @@ local function LoadHub()
         return closest, dist
     end
 
+    local function getMyRole()
+        local char = Player.Character
+        local backpack = Player:FindFirstChild("Backpack")
+        local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
+        if roleFolder then
+            local m = roleFolder:FindFirstChild("Murderer")
+            local s = roleFolder:FindFirstChild("Sheriff")
+            if m and m.Value == Player.Name then return "Murderer" end
+            if s and s.Value == Player.Name then return "Sheriff" end
+        end
+        if (backpack and backpack:FindFirstChild("Knife")) or (char and char:FindFirstChild("Knife")) then return "Murderer" end
+        if (backpack and backpack:FindFirstChild("Gun")) or (char and char:FindFirstChild("Gun")) then return "Sheriff" end
+        return "Innocent"
+    end
+
     ReplicatedStorage:WaitForChild("Remotes").Gameplay.RoundStart.OnClientEvent:Connect(function() farming = true; start_position = getHRP().CFrame end)
     ReplicatedStorage.Remotes.Gameplay.RoundEndFade.OnClientEvent:Connect(function() farming = false; if start_position then getHRP().CFrame = start_position end end)
 
-    -- // Auto Reset Normal
-    ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(_, current, max)
-        if current == max and not resetting and autoResetEnabled then
-            resetting, bag_full = true, true
-            local hrp = getHRP()
-            if start_position then
-                local tw = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), {CFrame = start_position})
-                tw:Play(); tw.Completed:Wait()
-            end
+    -- // Anti-Void Loop
+    task.spawn(function()
+        while true do
             task.wait(0.5)
-            if Player.Character and Player.Character:FindFirstChild("Humanoid") then
-                Player.Character.Humanoid.Health = 0
-                Player.CharacterAdded:Wait(); task.wait(1.5)
+            if antiVoidEnabled then
+                local char = Player.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                if hrp and hrp.Position.Y < -50 then
+                    if start_position then hrp.CFrame = start_position
+                    else hrp.CFrame = CFrame.new(0, 50, 0) end
+                end
             end
-            resetting, bag_full = false, false
         end
     end)
 
-    -- // Loop do Farm Normal
+    -- // Auto-Win + Auto Reset Logic
+    ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(_, current, max)
+        if current == max and not resetting then
+            if autoWinEnabled then
+                local myRole = getMyRole()
+                if myRole == "Murderer" then
+                    for _, p in pairs(Players:GetPlayers()) do
+                        if p ~= Player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                            getHRP().CFrame = p.Character.HumanoidRootPart.CFrame
+                            task.wait(0.15)
+                        end
+                    end
+                elseif myRole == "Sheriff" then
+                    local murdererName
+                    local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
+                    if roleFolder and roleFolder:FindFirstChild("Murderer") then murdererName = roleFolder.Murderer.Value end
+                    if murdererName then
+                        local murderer = Players:FindFirstChild(murdererName)
+                        if murderer and murderer.Character and murderer.Character:FindFirstChild("HumanoidRootPart") then
+                            getHRP().CFrame = murderer.Character.HumanoidRootPart.CFrame
+                            local gun = Player.Character:FindFirstChild("Gun") or Player.Backpack:FindFirstChild("Gun")
+                            if gun then
+                                if gun.Parent == Player.Backpack then Player.Character.Humanoid:EquipTool(gun) end
+                                task.wait(0.1); gun:Activate()
+                            end
+                        end
+                    end
+                end
+            end
+
+            if autoResetEnabled then
+                resetting, bag_full = true, true
+                local hrp = getHRP()
+                if start_position then
+                    local tw = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), {CFrame = start_position})
+                    tw:Play(); tw.Completed:Wait()
+                end
+                task.wait(0.5)
+                if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+                    Player.Character.Humanoid.Health = 0
+                    Player.CharacterAdded:Wait(); task.wait(1.5)
+                end
+                resetting, bag_full = false, false
+            end
+        end
+    end)
+
+    -- // Loop do Farm
     task.spawn(function()
         while true do
             if autoFarmEnabled and farming and not bag_full then
                 local coin, dist = get_nearest_coin()
                 if coin then
                     local hrp = getHRP()
-                    
                     if dist > 150 then
                         hrp.CFrame = CFrame.new(coin.Position)
                     else
@@ -415,7 +515,7 @@ local function LoadHub()
         end
     end)
 
-    -- // Role ESP Corrigido
+    -- // Role ESP
     task.spawn(function()
         while true do
             task.wait(1.5)
@@ -430,11 +530,8 @@ local function LoadHub()
                     if p ~= Player and p.Character then
                         local char = p.Character
                         local roleColor = Color3.fromRGB(0, 255, 0)
-                        
-                        if p.Name == murdererName then
-                            roleColor = Color3.fromRGB(255, 0, 0)
-                        elseif p.Name == sheriffName then
-                            roleColor = Color3.fromRGB(0, 100, 255)
+                        if p.Name == murdererName then roleColor = Color3.fromRGB(255, 0, 0)
+                        elseif p.Name == sheriffName then roleColor = Color3.fromRGB(0, 100, 255)
                         else
                             local backpack = p:FindFirstChild("Backpack")
                             local hasKnife = (backpack and backpack:FindFirstChild("Knife")) or char:FindFirstChild("Knife")
@@ -469,7 +566,7 @@ local function LoadHub()
         end
     end)
 
-    -- // Botão Flutuante Arrastável (Coroa)
+    -- // Botão Flutuante Arrastável
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Parent = ScreenGui
     ToggleButton.Size = UDim2.new(0, 50, 0, 50)
