@@ -1,6 +1,6 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System + AutoFarm + Auto-Rejoin + Config Save + Extreme FPS + Watermark
+-- Added: Key System + AutoFarm + Ghost Farm + Auto-Rejoin + Config Save + Extreme FPS + Watermark
 -- Visual: Premium Dark & Purple Theme
 
 -- // Wait for game to load
@@ -70,6 +70,7 @@ local Config = {
     autoFarmEnabled = false,
     safeFarmEnabled = false,
     autoResetEnabled = false,
+    ghostFarmEnabled = false, -- NOVO: Modo Invisível
     farmSpeed = 20,
     fpsBoostEnabled = false,
     extremeFPSEnabled = false,
@@ -107,7 +108,6 @@ LoadConfig()
 local function LoadHub()
     if ScreenGui:FindFirstChild("KeyFrame") then ScreenGui.KeyFrame:Destroy() end
 
-    -- Variáveis de estado do Farm
     local farming = false
     local bag_full = false
     local resetting = false
@@ -271,10 +271,15 @@ local function LoadHub()
     ContentContainer.BorderSizePixel = 0
     Instance.new("UICorner", ContentContainer).CornerRadius = UDim.new(0, 10)
 
-    local MainContent = Instance.new("Frame", ContentContainer)
+    local MainContent = Instance.new("ScrollingFrame", ContentContainer) -- Transformado em ScrollingFrame para caber mais botões
     MainContent.Size = UDim2.new(1, -20, 1, -20)
     MainContent.Position = UDim2.new(0, 10, 0, 10)
     MainContent.BackgroundTransparency = 1
+    MainContent.ScrollBarThickness = 3
+    MainContent.ScrollBarImageColor3 = Theme.Accent
+    MainContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+    MainContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    MainContent.ScrollingDirection = Enum.ScrollingDirection.Y
 
     local MiscContent = Instance.new("ScrollingFrame", ContentContainer)
     MiscContent.Size = UDim2.new(1, -20, 1, -20)
@@ -287,11 +292,16 @@ local function LoadHub()
     MiscContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
     MiscContent.ScrollingDirection = Enum.ScrollingDirection.Y
 
-    local CombatContent = Instance.new("Frame", ContentContainer)
+    local CombatContent = Instance.new("ScrollingFrame", ContentContainer)
     CombatContent.Size = UDim2.new(1, -20, 1, -20)
     CombatContent.Position = UDim2.new(0, 10, 0, 10)
     CombatContent.BackgroundTransparency = 1
     CombatContent.Visible = false
+    CombatContent.ScrollBarThickness = 3
+    CombatContent.ScrollBarImageColor3 = Theme.Accent
+    CombatContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+    CombatContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    CombatContent.ScrollingDirection = Enum.ScrollingDirection.Y
 
     local function HideAllTabs()
         MainContent.Visible = false; MiscContent.Visible = false; CombatContent.Visible = false
@@ -312,7 +322,7 @@ local function LoadHub()
         CombatTab.BackgroundColor3 = Theme.Element; CombatTab.TextColor3 = Theme.Accent
     end)
 
-    -- // Função de Criar Botões (CORRIGIDA)
+    -- // Função de Criar Botões
     local function CreateToggle(parent, emoji, text, yPos, configKey, callback)
         local Toggle = Instance.new("TextButton")
         Toggle.Parent = parent
@@ -346,10 +356,7 @@ local function LoadHub()
         Circle.BorderSizePixel = 0
         Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
 
-        -- Se já estava ligado no arquivo de config, executa a função no início
-        if Config[configKey] then
-            task.spawn(function() callback(true) end)
-        end
+        if Config[configKey] then task.spawn(function() callback(true) end) end
 
         Toggle.MouseEnter:Connect(function()
             TweenService:Create(Toggle, TweenInfo.new(0.2), {BackgroundColor3 = Theme.ElementHover}):Play()
@@ -361,22 +368,56 @@ local function LoadHub()
         end)
 
         Toggle.MouseButton1Click:Connect(function()
-            Config[configKey] = not Config[configKey] -- Inverte o valor
-            callback(Config[configKey]) -- Passa o novo estado para a função
+            Config[configKey] = not Config[configKey]
+            callback(Config[configKey])
             Circle.BackgroundColor3 = Config[configKey] and Theme.Accent or Theme.Off
             SaveConfig()
         end)
     end
 
+    -- 🌟 FUNÇÕES DO MODO FANTASMA
+    local function SetGhostMode(state)
+        local char = Player.Character
+        if not char then return end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        
+        if state then
+            if hrp then
+                hrp.Anchored = true
+                hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(math.rad(-90), 0, 0) -- Deita
+            end
+            for _, v in pairs(char:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    v.CanCollide = false
+                    v.Transparency = 1
+                elseif v:IsA("Decal") or v:IsA("Texture") then
+                    v.Transparency = 1
+                end
+            end
+        else
+            if hrp then
+                hrp.Anchored = false
+                hrp.CFrame = CFrame.new(hrp.Position)
+            end
+            for _, v in pairs(char:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    v.CanCollide = true
+                    v.Transparency = 0
+                elseif v:IsA("Decal") or v:IsA("Texture") then
+                    v.Transparency = 0
+                end
+            end
+        end
+    end
+
     -- // Toggles Main
     CreateToggle(MainContent, "🍬", "AutoFarm Candies", 0, "autoFarmEnabled", function(state) end)
-
     CreateToggle(MainContent, "🥷", "Farm Seguro (Anti-Player)", 45, "safeFarmEnabled", function(state) end)
-
-    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 90, "autoResetEnabled", function(state) end)
+    CreateToggle(MainContent, "👻", "Farm Fantasma (Invisível)", 90, "ghostFarmEnabled", function(state) SetGhostMode(state) end)
+    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 135, "autoResetEnabled", function(state) end)
 
     local SpeedBox = Instance.new("TextBox", MainContent)
-    SpeedBox.Position = UDim2.new(0, 130, 0, 135)
+    SpeedBox.Position = UDim2.new(0, 130, 0, 180)
     SpeedBox.Size = UDim2.new(0, 70, 0, 30)
     SpeedBox.BackgroundColor3 = Theme.Background
     SpeedBox.TextColor3 = Theme.Accent
@@ -387,7 +428,7 @@ local function LoadHub()
     local SpeedStroke = Instance.new("UIStroke", SpeedBox); SpeedStroke.Color = Theme.Accent; SpeedStroke.Thickness = 1; SpeedStroke.Transparency = 0.5
 
     local SpeedLabel = Instance.new("TextLabel", MainContent)
-    SpeedLabel.Position = UDim2.new(0, 10, 0, 135)
+    SpeedLabel.Position = UDim2.new(0, 10, 0, 180)
     SpeedLabel.Size = UDim2.new(0, 100, 0, 30)
     SpeedLabel.BackgroundTransparency = 1
     SpeedLabel.Font = Enum.Font.GothamBold
@@ -462,7 +503,6 @@ local function LoadHub()
 
     -- // Toggles Combat
     CreateToggle(CombatContent, "🕳️", "Anti-Void", 5, "antiVoidEnabled", function(state) end)
-
     CreateToggle(CombatContent, "🏆", "Auto-Win (Bag)", 55, "autoWinEnabled", function(state) end)
 
     -- // Farm Logic
@@ -508,29 +548,23 @@ local function LoadHub()
         else return closest, dist end
     end
 
-    local function getMyRole()
-        local char = Player.Character
-        local backpack = Player:FindFirstChild("Backpack")
-        local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
-        if roleFolder then
-            local m = roleFolder:FindFirstChild("Murderer")
-            local s = roleFolder:FindFirstChild("Sheriff")
-            if m and m.Value == Player.Name then return "Murderer" end
-            if s and s.Value == Player.Name then return "Sheriff" end
-        end
-        if (backpack and backpack:FindFirstChild("Knife")) or (char and char:FindFirstChild("Knife")) then return "Murderer" end
-        if (backpack and backpack:FindFirstChild("Gun")) or (char and char:FindFirstChild("Gun")) then return "Sheriff" end
-        return "Innocent"
-    end
-
-    ReplicatedStorage:WaitForChild("Remotes").Gameplay.RoundStart.OnClientEvent:Connect(function() farming = true; start_position = getHRP().CFrame end)
-    ReplicatedStorage.Remotes.Gameplay.RoundEndFade.OnClientEvent:Connect(function() farming = false; if start_position then getHRP().CFrame = start_position end end)
+    ReplicatedStorage:WaitForChild("Remotes").Gameplay.RoundStart.OnClientEvent:Connect(function() 
+        farming = true
+        start_position = getHRP().CFrame 
+        if Config.ghostFarmEnabled then SetGhostMode(true) end
+    end)
+    
+    ReplicatedStorage.Remotes.Gameplay.RoundEndFade.OnClientEvent:Connect(function() 
+        farming = false
+        if Config.ghostFarmEnabled then SetGhostMode(false) end
+        if start_position then getHRP().CFrame = start_position end 
+    end)
 
     -- // Anti-Void Loop
     task.spawn(function()
         while true do
             task.wait(0.5)
-            if Config.antiVoidEnabled then
+            if Config.antiVoidEnabled and not Config.ghostFarmEnabled then -- Desativa se estiver fantasma
                 local char = Player.Character
                 local hrp = char and char:FindFirstChild("HumanoidRootPart")
                 if hrp and hrp.Position.Y < -50 then
@@ -541,13 +575,13 @@ local function LoadHub()
         end
     end)
 
-    -- // Auto-Unstuck Loop
+    -- // Auto-Unstuck Loop (Desativado no modo fantasma pq ele fica ancorado)
     task.spawn(function()
         local lastPos = Vector3.zero
         local stuckTimer = 0
         while true do
             task.wait(1)
-            if Config.autoFarmEnabled and farming then
+            if Config.autoFarmEnabled and farming and not Config.ghostFarmEnabled then
                 local char = Player.Character
                 local hrp = char and char:FindFirstChild("HumanoidRootPart")
                 if hrp then
@@ -570,6 +604,7 @@ local function LoadHub()
     -- // Auto-Win + Auto Reset
     ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(_, current, max)
         if current == max and not resetting then
+            if Config.ghostFarmEnabled then SetGhostMode(false) end -- Levanta pra matar
             if Config.autoWinEnabled then
                 local myRole = getMyRole()
                 if myRole == "Murderer" then
@@ -614,6 +649,21 @@ local function LoadHub()
         end
     end)
 
+    local function getMyRole()
+        local char = Player.Character
+        local backpack = Player:FindFirstChild("Backpack")
+        local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
+        if roleFolder then
+            local m = roleFolder:FindFirstChild("Murderer")
+            local s = roleFolder:FindFirstChild("Sheriff")
+            if m and m.Value == Player.Name then return "Murderer" end
+            if s and s.Value == Player.Name then return "Sheriff" end
+        end
+        if (backpack and backpack:FindFirstChild("Knife")) or (char and char:FindFirstChild("Knife")) then return "Murderer" end
+        if (backpack and backpack:FindFirstChild("Gun")) or (char and char:FindFirstChild("Gun")) then return "Sheriff" end
+        return "Innocent"
+    end
+
     -- // Loop do Farm
     task.spawn(function()
         while true do
@@ -621,13 +671,24 @@ local function LoadHub()
                 local coin, dist = get_safest_coin()
                 if coin then
                     local hrp = getHRP()
-                    if dist > 150 then
-                        hrp.CFrame = CFrame.new(coin.Position)
-                    else
-                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / Config.farmSpeed, Enum.EasingStyle.Linear), {CFrame = CFrame.new(coin.Position)})
+                    
+                    if Config.ghostFarmEnabled then
+                        -- MODO FANTASMA: Voa reto e deitado (Ancorado)
+                        local targetCF = CFrame.new(coin.Position) * CFrame.Angles(math.rad(-90), 0, 0)
+                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / Config.farmSpeed, Enum.EasingStyle.Linear), {CFrame = targetCF})
                         tw:Play()
                         repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not farming or not Config.autoFarmEnabled
                         pcall(function() tw:Cancel() end)
+                    else
+                        -- MODO NORMAL
+                        if dist > 150 then
+                            hrp.CFrame = CFrame.new(coin.Position)
+                        else
+                            local tw = TweenService:Create(hrp, TweenInfo.new(dist / Config.farmSpeed, Enum.EasingStyle.Linear), {CFrame = CFrame.new(coin.Position)})
+                            tw:Play()
+                            repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not farming or not Config.autoFarmEnabled
+                            pcall(function() tw:Cancel() end)
+                        end
                     end
                 end
             end
