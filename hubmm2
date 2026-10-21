@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Added: Key System + AutoFarm + Anti-Void + Auto-Win + FPS Boost + ESP
--- Visual: Premium Dark & Purple Theme (Sidebar Layout)
+-- Visual: Premium Dark & Purple Theme (Perfect Layout)
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -69,7 +69,7 @@ local function LoadHub()
     MainFrame.Parent = ScreenGui
     MainFrame.BackgroundColor3 = Theme.Background
     MainFrame.BorderSizePixel = 0
-    MainFrame.Size = UDim2.new(0, 520, 0, 320)
+    MainFrame.Size = UDim2.new(0, 500, 0, 320)
     MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 16)
@@ -145,23 +145,23 @@ local function LoadHub()
 
     local Divider = Instance.new("Frame", MainFrame)
     Divider.Size = UDim2.new(0.92, 0, 0, 1)
-    Divider.Position = UDim2.new(0.04, 0, 0.18, 0)
+    Divider.Position = UDim2.new(0.04, 0, 0.19, 0)
     Divider.BackgroundColor3 = Theme.Element
     Divider.BorderSizePixel = 0
 
     -- ═══════════════════════════════════════════════════════════
-    -- 🌟 SIDEBAR (ABAS UMA EMBAIXO DA OUTRA)
+    -- 🌟 SIDEBAR (ABAS UMA EMBAIXO DA OUTRA - ALINHADAS)
     -- ═══════════════════════════════════════════════════════════
     local TabsContainer = Instance.new("Frame", MainFrame)
-    TabsContainer.Size = UDim2.new(0, 130, 0, 160)
-    TabsContainer.Position = UDim2.new(0.04, 0, 0.23, 0)
+    TabsContainer.Size = UDim2.new(0, 125, 0, 185)
+    TabsContainer.Position = UDim2.new(0, 20, 0, 80)
     TabsContainer.BackgroundColor3 = Theme.Secondary
     TabsContainer.BorderSizePixel = 0
     Instance.new("UICorner", TabsContainer).CornerRadius = UDim.new(0, 10)
 
     local MainTab = Instance.new("TextButton", TabsContainer)
-    MainTab.Size = UDim2.new(0, 120, 0, 40)
-    MainTab.Position = UDim2.new(0, 5, 0, 5)
+    MainTab.Size = UDim2.new(0, 105, 0, 45)
+    MainTab.Position = UDim2.new(0, 10, 0, 10)
     MainTab.BackgroundColor3 = Theme.Element
     MainTab.BorderSizePixel = 0
     MainTab.Text = "🎯 Main"
@@ -172,8 +172,8 @@ local function LoadHub()
     Instance.new("UICorner", MainTab).CornerRadius = UDim.new(0, 8)
 
     local MiscTab = Instance.new("TextButton", TabsContainer)
-    MiscTab.Size = UDim2.new(0, 120, 0, 40)
-    MiscTab.Position = UDim2.new(0, 5, 0, 55)
+    MiscTab.Size = UDim2.new(0, 105, 0, 45)
+    MiscTab.Position = UDim2.new(0, 10, 0, 65)
     MiscTab.BackgroundColor3 = Theme.Secondary
     MiscTab.BorderSizePixel = 0
     MiscTab.Text = "⚙️ Misc"
@@ -184,8 +184,8 @@ local function LoadHub()
     Instance.new("UICorner", MiscTab).CornerRadius = UDim.new(0, 8)
 
     local CombatTab = Instance.new("TextButton", TabsContainer)
-    CombatTab.Size = UDim2.new(0, 120, 0, 40)
-    CombatTab.Position = UDim2.new(0, 5, 0, 105)
+    CombatTab.Size = UDim2.new(0, 105, 0, 45)
+    CombatTab.Position = UDim2.new(0, 10, 0, 120)
     CombatTab.BackgroundColor3 = Theme.Secondary
     CombatTab.BorderSizePixel = 0
     CombatTab.Text = "⚔️ Combat"
@@ -196,11 +196,11 @@ local function LoadHub()
     Instance.new("UICorner", CombatTab).CornerRadius = UDim.new(0, 8)
 
     -- ═══════════════════════════════════════════════════════════
-    -- CONTAINER DE CONTEÚDO
+    -- CONTAINER DE CONTEÚDO (ALINHADO COM AS ABAS)
     -- ═══════════════════════════════════════════════════════════
     local ContentContainer = Instance.new("Frame", MainFrame)
-    ContentContainer.Size = UDim2.new(0, 350, 0, 210)
-    ContentContainer.Position = UDim2.new(0, 155, 0, 0.23)
+    ContentContainer.Size = UDim2.new(0, 325, 0, 185)
+    ContentContainer.Position = UDim2.new(0, 155, 0, 80)
     ContentContainer.BackgroundColor3 = Theme.Secondary
     ContentContainer.BorderSizePixel = 0
     Instance.new("UICorner", ContentContainer).CornerRadius = UDim.new(0, 10)
@@ -315,19 +315,19 @@ local function LoadHub()
     end
 
     -- // Toggles Main
-    CreateToggle(MainContent, "🍬", "AutoFarm Candies", 10, function()
+    CreateToggle(MainContent, "🍬", "AutoFarm Candies", 5, function()
         autoFarmEnabled = not autoFarmEnabled
         return autoFarmEnabled
     end)
 
-    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 65, function()
+    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 55, function()
         autoResetEnabled = not autoResetEnabled
         return autoResetEnabled
     end)
 
     local SpeedBox = Instance.new("TextBox", MainContent)
-    SpeedBox.Position = UDim2.new(0, 140, 0, 120)
-    SpeedBox.Size = UDim2.new(0, 80, 0, 35)
+    SpeedBox.Position = UDim2.new(0, 140, 0, 110)
+    SpeedBox.Size = UDim2.new(0, 70, 0, 35)
     SpeedBox.BackgroundColor3 = Theme.Background
     SpeedBox.TextColor3 = Theme.Accent
     SpeedBox.Font = Enum.Font.GothamBold
@@ -337,7 +337,7 @@ local function LoadHub()
     local SpeedStroke = Instance.new("UIStroke", SpeedBox); SpeedStroke.Color = Theme.Accent; SpeedStroke.Thickness = 1; SpeedStroke.Transparency = 0.5
 
     local SpeedLabel = Instance.new("TextLabel", MainContent)
-    SpeedLabel.Position = UDim2.new(0, 15, 0, 120)
+    SpeedLabel.Position = UDim2.new(0, 10, 0, 110)
     SpeedLabel.Size = UDim2.new(0, 100, 0, 35)
     SpeedLabel.BackgroundTransparency = 1
     SpeedLabel.Font = Enum.Font.GothamBold
@@ -367,7 +367,7 @@ local function LoadHub()
         return antiAfkEnabled
     end)
 
-    CreateToggle(MiscContent, "🚀", "FPS Boost", 60, function()
+    CreateToggle(MiscContent, "🚀", "FPS Boost", 55, function()
         fpsBoostEnabled = not fpsBoostEnabled
         if fpsBoostEnabled then
             for _, v in pairs(Lighting:GetChildren()) do
@@ -380,7 +380,7 @@ local function LoadHub()
         return fpsBoostEnabled
     end)
 
-    CreateToggle(MiscContent, "👁️", "Ver Papéis (ESP)", 115, function()
+    CreateToggle(MiscContent, "👁️", "Ver Papéis (ESP)", 105, function()
         roleESPEnabled = not roleESPEnabled
         if not roleESPEnabled then
             for _, p in pairs(Players:GetPlayers()) do
@@ -391,12 +391,12 @@ local function LoadHub()
     end)
 
     -- // Toggles Combat
-    CreateToggle(CombatContent, "🕳️", "Anti-Void", 10, function()
+    CreateToggle(CombatContent, "🕳️", "Anti-Void", 5, function()
         antiVoidEnabled = not antiVoidEnabled
         return antiVoidEnabled
     end)
 
-    CreateToggle(CombatContent, "🏆", "Auto-Win (Bag)", 65, function()
+    CreateToggle(CombatContent, "🏆", "Auto-Win (Bag)", 55, function()
         autoWinEnabled = not autoWinEnabled
         return autoWinEnabled
     end)
