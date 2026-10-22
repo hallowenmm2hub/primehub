@@ -1,6 +1,6 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System + AutoFarm + Lie Down Farm + Close Button + Config Save + Extreme FPS
+-- Added: Key System + AutoFarm + Auto-Grab (Under Map) + Auto-Win + Optimized
 -- Visual: Premium Dark & Purple Theme
 
 -- // Wait for game to load
@@ -67,6 +67,7 @@ end
 -- ═══════════════════════════════════════════════════════════════
 local Config = {
     autoFarmEnabled = false,
+    autoGrabEnabled = false, -- NOVO: Auto Grab (Under Map)
     autoResetEnabled = false,
     lieDownEnabled = false,
     farmSpeed = 20,
@@ -111,32 +112,6 @@ local function LoadHub()
     local resetting = false
     local start_position
 
-    -- // 🌟 WATERMARK
-    local Watermark = Instance.new("TextLabel")
-    Watermark.Parent = ScreenGui
-    Watermark.Position = UDim2.new(0, 20, 1, -30)
-    Watermark.AnchorPoint = Vector2.new(0, 1)
-    Watermark.Size = UDim2.new(0, 300, 0, 20)
-    Watermark.BackgroundTransparency = 1
-    Watermark.TextColor3 = Theme.Accent
-    Watermark.Font = Enum.Font.GothamBold
-    Watermark.TextSize = 13
-    Watermark.TextXAlignment = Enum.TextXAlignment.Left
-    Watermark.Text = "Prime Hub | FPS: 60 | Ping: 0ms"
-
-    local fpsFrames, fpsTime = 0, 0
-    RunService.RenderStepped:Connect(function(dt)
-        if not Watermark or not Watermark.Parent then return end -- Para o loop se fechar
-        fpsFrames = fpsFrames + 1
-        fpsTime = fpsTime + dt
-        if fpsTime >= 0.5 then
-            local fps = math.floor(fpsFrames / fpsTime)
-            local ping = math.floor(Player:GetNetworkPing() * 1000)
-            Watermark.Text = string.format("👑 Prime Hub | FPS: %d | Ping: %dms", fps, ping)
-            fpsFrames, fpsTime = 0, 0
-        end
-    end)
-
     -- // Main window
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
@@ -160,11 +135,11 @@ local function LoadHub()
     }
     Gradient.Rotation = 90
 
-    -- // 🌟 BOTÃO DE FECHAR (X)
+    -- // BOTÃO DE FECHAR (X)
     local CloseButton = Instance.new("TextButton")
     CloseButton.Parent = MainFrame
     CloseButton.Size = UDim2.new(0, 30, 0, 30)
-    CloseButton.Position = UDim2.new(1, -35, 0, 5) -- Canto superior direito
+    CloseButton.Position = UDim2.new(1, -35, 0, 5)
     CloseButton.BackgroundTransparency = 1
     CloseButton.Text = "✖"
     CloseButton.TextColor3 = Color3.fromRGB(255, 80, 80)
@@ -172,17 +147,12 @@ local function LoadHub()
     CloseButton.TextSize = 18
     CloseButton.AutoButtonColor = false
 
-    CloseButton.MouseEnter:Connect(function() CloseButton.TextColor3 = Color3.fromRGB(255, 0, 0) end)
-    CloseButton.MouseLeave:Connect(function() CloseButton.TextColor3 = Color3.fromRGB(255, 80, 80) end)
-
     CloseButton.MouseButton1Click:Connect(function()
-        -- Limpa os ESPs do mapa antes de fechar
         for _, p in pairs(Players:GetPlayers()) do
             if p.Character and p.Character:FindFirstChild("RoleESP") then
                 p.Character.RoleESP:Destroy()
             end
         end
-        -- Destrói a tela inteira (fecha o script e o botão da coroa)
         ScreenGui:Destroy()
     end)
 
@@ -202,14 +172,14 @@ local function LoadHub()
     SubTitle.Position = UDim2.new(0, 20, 0, 34)
     SubTitle.Size = UDim2.new(0, 300, 0, 18)
     SubTitle.Font = Enum.Font.Gotham
-    SubTitle.Text = "👑 Dev: sllvzz"
+    SubTitle.Text = "👑 Desenvolvedor: sllvzz"
     SubTitle.TextColor3 = Theme.TextDim
     SubTitle.TextSize = 12
     SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 
     local UserFrame = Instance.new("Frame", MainFrame)
     UserFrame.Size = UDim2.new(0, 140, 0, 40)
-    UserFrame.Position = UDim2.new(1, -180, 0, 12) -- Movido um pouco pra esquerda pro X caber
+    UserFrame.Position = UDim2.new(1, -180, 0, 12)
     UserFrame.BackgroundTransparency = 1
 
     local Avatar = Instance.new("ImageLabel", UserFrame)
@@ -228,16 +198,6 @@ local function LoadHub()
     UserName.TextColor3 = Theme.Text
     UserName.TextSize = 12
     UserName.TextXAlignment = Enum.TextXAlignment.Left
-
-    local UserTag = Instance.new("TextLabel", UserFrame)
-    UserTag.BackgroundTransparency = 1
-    UserTag.Position = UDim2.new(0, 45, 0.55, 0)
-    UserTag.Size = UDim2.new(0, 100, 0, 14)
-    UserTag.Font = Enum.Font.Gotham
-    UserTag.Text = "@"..Player.Name
-    UserTag.TextColor3 = Theme.Accent
-    UserTag.TextSize = 10
-    UserTag.TextXAlignment = Enum.TextXAlignment.Left
 
     local Divider = Instance.new("Frame", MainFrame)
     Divider.Size = UDim2.new(1, -40, 0, 1)
@@ -431,11 +391,19 @@ local function LoadHub()
 
     -- // Toggles Main
     CreateToggle(MainContent, "🍬", "AutoFarm Candies", 0, "autoFarmEnabled", function(state) end)
-    CreateToggle(MainContent, "🛌", "Farm Deitado (Disfarçado)", 45, "lieDownEnabled", function(state) SetLieDownMode(state) end)
-    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 90, "autoResetEnabled", function(state) end)
+    CreateToggle(MainContent, "🕳️", "Auto-Grab (Under Map)", 45, "autoGrabEnabled", function(state)
+        local char = Player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if state and hrp then
+            -- Joga o jogador lá pra baixo do mapa quando ativa
+            hrp.CFrame = CFrame.new(hrp.Position.X, -100, hrp.Position.Z)
+        end
+    end)
+    CreateToggle(MainContent, "🛌", "Farm Deitado (Disfarçado)", 90, "lieDownEnabled", function(state) SetLieDownMode(state) end)
+    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 135, "autoResetEnabled", function(state) end)
 
     local SpeedBox = Instance.new("TextBox", MainContent)
-    SpeedBox.Position = UDim2.new(0, 130, 0, 135)
+    SpeedBox.Position = UDim2.new(0, 130, 0, 180)
     SpeedBox.Size = UDim2.new(0, 70, 0, 30)
     SpeedBox.BackgroundColor3 = Theme.Background
     SpeedBox.TextColor3 = Theme.Accent
@@ -446,7 +414,7 @@ local function LoadHub()
     local SpeedStroke = Instance.new("UIStroke", SpeedBox); SpeedStroke.Color = Theme.Accent; SpeedStroke.Thickness = 1; SpeedStroke.Transparency = 0.5
 
     local SpeedLabel = Instance.new("TextLabel", MainContent)
-    SpeedLabel.Position = UDim2.new(0, 10, 0, 135)
+    SpeedLabel.Position = UDim2.new(0, 10, 0, 180)
     SpeedLabel.Size = UDim2.new(0, 100, 0, 30)
     SpeedLabel.BackgroundTransparency = 1
     SpeedLabel.Font = Enum.Font.GothamBold
@@ -486,18 +454,24 @@ local function LoadHub()
         end
     end)
 
+    -- 🌟 MODO DESERTO OTIMIZADO
     CreateToggle(MiscContent, "☠️", "Modo Deserto (Extreme)", 90, "extremeFPSEnabled", function(state)
         if state then
-            for _, v in pairs(workspace:GetDescendants()) do
-                if v:IsA("BasePart") then
-                    v.CastShadow = false
-                    if v.Material ~= Enum.Material.SmoothPlastic then v.Material = Enum.Material.SmoothPlastic end
-                elseif v:IsA("Decal") or v:IsA("Texture") then
-                    v.Transparency = 1
-                elseif v:IsA("ParticleEmitter") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Trail") then
-                    v.Enabled = false
+            task.spawn(function()
+                local count = 0
+                for _, v in pairs(workspace:GetDescendants()) do
+                    if v:IsA("BasePart") then
+                        v.CastShadow = false
+                        if v.Material ~= Enum.Material.SmoothPlastic then v.Material = Enum.Material.SmoothPlastic end
+                    elseif v:IsA("Decal") or v:IsA("Texture") then
+                        v.Transparency = 1
+                    elseif v:IsA("ParticleEmitter") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Trail") then
+                        v.Enabled = false
+                    end
+                    count = count + 1
+                    if count % 100 == 0 then task.wait() end
                 end
-            end
+            end)
         end
     end)
 
@@ -524,10 +498,14 @@ local function LoadHub()
     CreateToggle(CombatContent, "🏆", "Auto-Win (Bag)", 55, "autoWinEnabled", function(state) end)
 
     -- // Farm Logic
-    local function getHRP() return (Player.Character or Player.CharacterAdded:Wait()):WaitForChild("HumanoidRootPart") end
+    local function getHRP() 
+        local char = Player.Character or Player.CharacterAdded:Wait()
+        return char:WaitForChild("HumanoidRootPart") 
+    end
     
     local function get_nearest_coin()
         local hrp = getHRP()
+        if not hrp then return nil, math.huge end
         local closest, dist = nil, math.huge
         for _, m in pairs(workspace:GetChildren()) do
             local container = m:FindFirstChild("CoinContainer")
@@ -574,8 +552,8 @@ local function LoadHub()
     task.spawn(function()
         while true do
             task.wait(1)
-            if not ScreenGui or not ScreenGui.Parent then break end -- Fecha se a UI for destruída
-            if Config.antiVoidEnabled and not Config.lieDownEnabled then
+            if not ScreenGui or not ScreenGui.Parent then break end
+            if Config.antiVoidEnabled and not Config.lieDownEnabled and not Config.autoGrabEnabled then
                 local char = Player.Character
                 local hrp = char and char:FindFirstChild("HumanoidRootPart")
                 if hrp and hrp.Position.Y < -50 then
@@ -586,35 +564,52 @@ local function LoadHub()
         end
     end)
 
-    -- // Auto-Win + Auto Reset
+    -- // Auto-Win
     ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(_, current, max)
         if current == max and not resetting then
             if Config.lieDownEnabled then SetLieDownMode(false) end
+            
             if Config.autoWinEnabled then
-                local myRole = getMyRole()
-                if myRole == "Murderer" then
-                    for _, p in pairs(Players:GetPlayers()) do
-                        if p ~= Player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                            getHRP().CFrame = p.Character.HumanoidRootPart.CFrame
-                            task.wait(0.15)
+                task.spawn(function()
+                    local myRole = getMyRole()
+                    local myChar = Player.Character
+                    if not myChar or not myChar:FindFirstChild("Humanoid") or myChar.Humanoid.Health <= 0 then return end
+
+                    if myRole == "Murderer" then
+                        local knife = myChar:FindFirstChild("Knife") or Player.Backpack:FindFirstChild("Knife")
+                        if knife and knife.Parent == Player.Backpack then
+                            myChar.Humanoid:EquipTool(knife)
+                            task.wait(0.2)
                         end
-                    end
-                elseif myRole == "Sheriff" then
-                    local murdererName
-                    local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
-                    if roleFolder and roleFolder:FindFirstChild("Murderer") then murdererName = roleFolder.Murderer.Value end
-                    if murdererName then
-                        local murderer = Players:FindFirstChild(murdererName)
-                        if murderer and murderer.Character and murderer.Character:FindFirstChild("HumanoidRootPart") then
-                            getHRP().CFrame = murderer.Character.HumanoidRootPart.CFrame
-                            local gun = Player.Character:FindFirstChild("Gun") or Player.Backpack:FindFirstChild("Gun")
-                            if gun then
-                                if gun.Parent == Player.Backpack then Player.Character.Humanoid:EquipTool(gun) end
-                                task.wait(0.1); gun:Activate()
+                        
+                        for _, p in pairs(Players:GetPlayers()) do
+                            if p ~= Player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
+                                getHRP().CFrame = p.Character.HumanoidRootPart.CFrame
+                                task.wait(0.3) 
+                            end
+                        end
+                        
+                    elseif myRole == "Sheriff" then
+                        local gun = myChar:FindFirstChild("Gun") or Player.Backpack:FindFirstChild("Gun")
+                        if gun and gun.Parent == Player.Backpack then
+                            myChar.Humanoid:EquipTool(gun)
+                            task.wait(0.2)
+                        end
+
+                        local murdererName
+                        local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
+                        if roleFolder and roleFolder:FindFirstChild("Murderer") then murdererName = roleFolder.Murderer.Value end
+                        
+                        if murdererName then
+                            local murderer = Players:FindFirstChild(murdererName)
+                            if murderer and murderer.Character and murderer.Character:FindFirstChild("HumanoidRootPart") and murderer.Character:FindFirstChild("Humanoid") and murderer.Character.Humanoid.Health > 0 then
+                                getHRP().CFrame = murderer.Character.HumanoidRootPart.CFrame
+                                task.wait(0.2)
+                                if gun then gun:Activate() end
                             end
                         end
                     end
-                end
+                end)
             end
 
             if Config.autoResetEnabled then
@@ -634,27 +629,43 @@ local function LoadHub()
         end
     end)
 
-    -- // Loop do Farm
+    -- 🌟 LOOP DO FARM (COM AUTO-GRAB)
     task.spawn(function()
         while true do
-            if not ScreenGui or not ScreenGui.Parent then break end -- Fecha se a UI for destruída
+            if not ScreenGui or not ScreenGui.Parent then break end
             if Config.autoFarmEnabled and farming and not bag_full then
                 local coin, dist = get_nearest_coin()
                 if coin then
                     local hrp = getHRP()
-                    local targetCF = CFrame.new(coin.Position)
                     
-                    if Config.lieDownEnabled then
-                        targetCF = CFrame.new(coin.Position - Vector3.new(0, 3, 0)) * CFrame.Angles(math.rad(-90), 0, 0)
-                    end
-
-                    if dist > 150 then
-                        hrp.CFrame = targetCF
+                    if Config.autoGrabEnabled then
+                        -- 🌟 MODO AUTO-GRAB (UNDER MAP)
+                        -- Teletransporta pra cima do doce
+                        hrp.CFrame = coin.CFrame
+                        task.wait(0.1) -- Espera pegar o doce
+                        -- Volta pra baixo do mapa (Y = -100)
+                        hrp.CFrame = CFrame.new(hrp.Position.X, -100, hrp.Position.Z)
                     else
-                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / Config.farmSpeed, Enum.EasingStyle.Linear), {CFrame = targetCF})
-                        tw:Play()
-                        repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not farming or not Config.autoFarmEnabled
-                        pcall(function() tw:Cancel() end)
+                        -- FARM NORMAL
+                        local targetCF = CFrame.new(coin.Position)
+                        if Config.lieDownEnabled then
+                            targetCF = CFrame.new(coin.Position - Vector3.new(0, 3, 0)) * CFrame.Angles(math.rad(-90), 0, 0)
+                        end
+
+                        if dist > 150 then
+                            hrp.CFrame = targetCF
+                        else
+                            local tw = TweenService:Create(hrp, TweenInfo.new(dist / Config.farmSpeed, Enum.EasingStyle.Linear), {CFrame = targetCF})
+                            tw:Play()
+                            
+                            local timer = 0
+                            repeat 
+                                task.wait(0.05) 
+                                timer = timer + 0.05
+                            until not coin:FindFirstChild("TouchInterest") or not farming or not Config.autoFarmEnabled or timer > 2
+                            
+                            pcall(function() tw:Cancel() end)
+                        end
                     end
                 end
             end
@@ -666,7 +677,7 @@ local function LoadHub()
     task.spawn(function()
         while true do
             task.wait(1.5)
-            if not ScreenGui or not ScreenGui.Parent then break end -- Fecha se a UI for destruída
+            if not ScreenGui or not ScreenGui.Parent then break end
             if Config.roleESPEnabled then
                 local murdererName, sheriffName
                 local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
