@@ -1,6 +1,6 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System + AutoFarm (Fixed Under Map + Huge Hitbox) + Auto-Win + Optimized
+-- Added: Key System + AutoFarm (Classic) + Auto-Win (Advanced) + Optimized Performance
 -- Visual: Premium Dark & Purple Theme
 
 -- // Wait for game to load
@@ -66,10 +66,9 @@ end
 -- 💾 SISTEMA DE SALVAR CONFIGURAÇÕES
 -- ═══════════════════════════════════════════════════════════════
 local Config = {
-    underMapFarmEnabled = false,
+    autoFarmEnabled = false,
     autoResetEnabled = false,
-    lieDownEnabled = false,
-    farmSpeed = 35,
+    farmSpeed = 20,
     fpsBoostEnabled = false,
     extremeFPSEnabled = false,
     antiAfkEnabled = false,
@@ -110,7 +109,6 @@ local function LoadHub()
     local bag_full = false
     local resetting = false
     local start_position
-    local base_position = nil -- Posição fixa 10 studs abaixo
 
     -- // Main window
     local MainFrame = Instance.new("Frame")
@@ -361,64 +359,8 @@ local function LoadHub()
         end)
     end
 
-    -- 🌟 FUNÇÕES DO MODO DEITADO
-    local function SetLieDownMode(state)
-        local char = Player.Character
-        if not char then return end
-        local humanoid = char:FindFirstChild("Humanoid")
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        if not humanoid or not hrp then return end
-
-        if state then
-            humanoid.AutoRotate = false
-            for _, v in pairs(char:GetDescendants()) do
-                if v:IsA("BasePart") then v.CanCollide = false end
-            end
-            hrp.CFrame = hrp.CFrame * CFrame.Angles(math.rad(-90), 0, 0)
-        else
-            humanoid.AutoRotate = true
-            for _, v in pairs(char:GetDescendants()) do
-                if v:IsA("BasePart") then v.CanCollide = true end
-            end
-            hrp.CFrame = CFrame.new(hrp.Position)
-        end
-    end
-
-    Player.CharacterAdded:Connect(function()
-        task.wait(1)
-        if Config.lieDownEnabled then SetLieDownMode(true) end
-    end)
-
     -- // Toggles Main
-    CreateToggle(MainContent, "🕳️", "AutoFarm (Under Map)", 0, "underMapFarmEnabled", function(state)
-        local char = Player.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            if state then
-                -- 🌟 SALVA A POSIÇÃO 10 STUDS ABAIXO DO CHÃO
-                base_position = CFrame.new(hrp.Position.X, hrp.Position.Y - 10, hrp.Position.Z)
-                hrp.CFrame = base_position
-                
-                -- 🌟 AUMENTA A HITBOX
-                hrp.Size = Vector3.new(20, 20, 20)
-                hrp.Transparency = 1
-                
-                -- 🌟 DESLIGA COLISÃO DE TUDO
-                for _, v in pairs(char:GetDescendants()) do
-                    if v:IsA("BasePart") then v.CanCollide = false end
-                end
-            else
-                -- 🌟 RESTAURA
-                for _, v in pairs(char:GetDescendants()) do
-                    if v:IsA("BasePart") then v.CanCollide = true end
-                end
-                hrp.Size = Vector3.new(2, 2, 1)
-                hrp.Transparency = 1
-                hrp.CFrame = CFrame.new(hrp.Position.X, hrp.Position.Y + 10, hrp.Position.Z)
-            end
-        end
-    end)
-
+    CreateToggle(MainContent, "🍬", "AutoFarm Candies", 0, "autoFarmEnabled", function(state) end)
     CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 45, "autoResetEnabled", function(state) end)
 
     local SpeedBox = Instance.new("TextBox", MainContent)
@@ -445,7 +387,7 @@ local function LoadHub()
     SpeedBox.FocusLost:Connect(function(ep)
         if ep then
             local v = tonumber(SpeedBox.Text)
-            Config.farmSpeed = math.clamp(v or 35, 1, 50)
+            Config.farmSpeed = math.clamp(v or 20, 1, 50)
             SpeedBox.Text = tostring(Config.farmSpeed)
             SaveConfig()
         end
@@ -557,21 +499,19 @@ local function LoadHub()
     ReplicatedStorage:WaitForChild("Remotes").Gameplay.RoundStart.OnClientEvent:Connect(function() 
         farming = true
         start_position = getHRP().CFrame 
-        if Config.lieDownEnabled then SetLieDownMode(true) end
     end)
     
     ReplicatedStorage.Remotes.Gameplay.RoundEndFade.OnClientEvent:Connect(function() 
         farming = false
-        if Config.lieDownEnabled then SetLieDownMode(false) end
         if start_position then getHRP().CFrame = start_position end 
     end)
 
-    -- // Anti-Void Loop (Desativado se estiver embaixo do mapa)
+    -- // Anti-Void Loop
     task.spawn(function()
         while true do
             task.wait(1)
             if not ScreenGui or not ScreenGui.Parent then break end
-            if Config.antiVoidEnabled and not Config.lieDownEnabled and not Config.underMapFarmEnabled then
+            if Config.antiVoidEnabled then
                 local char = Player.Character
                 local hrp = char and char:FindFirstChild("HumanoidRootPart")
                 if hrp and hrp.Position.Y < -50 then
@@ -585,8 +525,6 @@ local function LoadHub()
     -- // Auto-Win
     ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(_, current, max)
         if current == max and not resetting then
-            if Config.lieDownEnabled then SetLieDownMode(false) end
-            
             if Config.autoWinEnabled then
                 task.spawn(function()
                     local myRole = getMyRole()
@@ -647,31 +585,29 @@ local function LoadHub()
         end
     end)
 
-    -- 🌟 LOOP DO FARM (FIXO E DESLIZANDO)
+    -- 🌟 LOOP DO FARM CLÁSSICO (Original)
     task.spawn(function()
         while true do
             if not ScreenGui or not ScreenGui.Parent then break end
-            if Config.underMapFarmEnabled and farming and not bag_full then
+            if Config.autoFarmEnabled and farming and not bag_full then
                 local coin, dist = get_nearest_coin()
-                if coin and base_position then
+                if coin then
                     local hrp = getHRP()
                     
-                    -- 1. Desliza até o doce
-                    local tw1 = TweenService:Create(hrp, TweenInfo.new(dist / Config.farmSpeed, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
-                    tw1:Play()
-                    
-                    local timer = 0
-                    repeat 
-                        task.wait(0.05) 
-                        timer = timer + 0.05
-                    until not coin:FindFirstChild("TouchInterest") or not farming or not Config.underMapFarmEnabled or timer > 2
-                    
-                    pcall(function() tw1:Cancel() end)
-
-                    -- 2. Volta deslizando para a base fixa
-                    local tw2 = TweenService:Create(hrp, TweenInfo.new(1, Enum.EasingStyle.Linear), {CFrame = base_position})
-                    tw2:Play()
-                    tw2.Completed:Wait()
+                    if dist > 150 then
+                        hrp.CFrame = CFrame.new(coin.Position)
+                    else
+                        local tw = TweenService:Create(hrp, TweenInfo.new(dist / Config.farmSpeed, Enum.EasingStyle.Linear), {CFrame = CFrame.new(coin.Position)})
+                        tw:Play()
+                        
+                        local timer = 0
+                        repeat 
+                            task.wait(0.05) 
+                            timer = timer + 0.05
+                        until not coin:FindFirstChild("TouchInterest") or not farming or not Config.autoFarmEnabled or timer > 2
+                        
+                        pcall(function() tw:Cancel() end)
+                    end
                 end
             end
             task.wait(0.1)
