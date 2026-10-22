@@ -1,6 +1,6 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System + AutoFarm + Auto-Win + Auto Battle Pass (XP + Auto Buy) + Optimized
+-- Added: Key System + AutoFarm + Auto-Win + Auto Battle Pass + ScrollingFrame Layout
 -- Visual: Premium Dark & Purple Theme
 
 -- // Wait for game to load
@@ -112,7 +112,7 @@ local function LoadHub()
     local resetting = false
     local start_position
 
-    -- // Main window
+    -- // Main window (Tamanho normal)
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
@@ -257,6 +257,7 @@ local function LoadHub()
     ContentContainer.BorderSizePixel = 0
     Instance.new("UICorner", ContentContainer).CornerRadius = UDim.new(0, 10)
 
+    -- 🌟 SCROLLING FRAME CONFIGURADO PARA MOBILE
     local MainContent = Instance.new("ScrollingFrame", ContentContainer)
     MainContent.Size = UDim2.new(1, -20, 1, -20)
     MainContent.Position = UDim2.new(0, 10, 0, 10)
@@ -266,6 +267,8 @@ local function LoadHub()
     MainContent.CanvasSize = UDim2.new(0, 0, 0, 0)
     MainContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
     MainContent.ScrollingDirection = Enum.ScrollingDirection.Y
+    MainContent.ScrollingEnabled = true
+    MainContent.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
 
     local MiscContent = Instance.new("ScrollingFrame", ContentContainer)
     MiscContent.Size = UDim2.new(1, -20, 1, -20)
@@ -277,6 +280,8 @@ local function LoadHub()
     MiscContent.CanvasSize = UDim2.new(0, 0, 0, 0)
     MiscContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
     MiscContent.ScrollingDirection = Enum.ScrollingDirection.Y
+    MiscContent.ScrollingEnabled = true
+    MiscContent.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
 
     local CombatContent = Instance.new("ScrollingFrame", ContentContainer)
     CombatContent.Size = UDim2.new(1, -20, 1, -20)
@@ -288,6 +293,8 @@ local function LoadHub()
     CombatContent.CanvasSize = UDim2.new(0, 0, 0, 0)
     CombatContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
     CombatContent.ScrollingDirection = Enum.ScrollingDirection.Y
+    CombatContent.ScrollingEnabled = true
+    CombatContent.ElasticBehavior = Enum.ElasticBehavior.WhenScrollable
 
     local function HideAllTabs()
         MainContent.Visible = false; MiscContent.Visible = false; CombatContent.Visible = false
@@ -361,7 +368,7 @@ local function LoadHub()
         end)
     end
 
-    -- // Toggles Main
+    -- // Toggles Main (Um embaixo do outro, o ScrollingFrame resolve o resto)
     CreateToggle(MainContent, "🍬", "AutoFarm Candies", 0, "autoFarmEnabled", function(state) end)
     CreateToggle(MainContent, "🏆", "Auto Battle Pass (XP)", 45, "autoBattlePassXP", function(state) end)
     CreateToggle(MainContent, "🛒", "Auto Comprar Níveis (+600)", 90, "autoBuyBattlePass", function(state) end)
@@ -529,7 +536,7 @@ local function LoadHub()
     -- 🌟 AUTO BATTLE PASS (XP) + AUTO COMPRAR NÍVEIS
     task.spawn(function()
         while true do
-            task.wait(1) -- Verifica a cada 1 segundo
+            task.wait(2)
             if not ScreenGui or not ScreenGui.Parent then break end
             
             -- 1. AUTO FARM DE XP
@@ -569,16 +576,14 @@ local function LoadHub()
             if Config.autoBuyBattlePass then
                 local playerGui = Player:FindFirstChild("PlayerGui")
                 if playerGui then
-                    -- Procura o botão de comprar na tela do evento aberta
-                    for _, btn in pairs(playerGui:GetDescendants()) do
-                        if btn:IsA("TextButton") and (btn.Text == "+1" or btn.Text == "+10" or string.find(string.lower(btn.Name), "buy") or string.find(string.lower(btn.Name), "purchase")) then
-                            if btn.Visible and btn.AbsolutePosition.X > 0 then
-                                -- Simula um toque no botão
-                                local pos = btn.AbsolutePosition + (btn.AbsoluteSize / 2)
-                                VirtualUser:Button2Down(Vector2.new(pos.X, pos.Y), workspace.CurrentCamera.CFrame)
-                                task.wait(0.1)
-                                VirtualUser:Button2Up(Vector2.new(pos.X, pos.Y), workspace.CurrentCamera.CFrame)
-                                break
+                    for _, gui in pairs(playerGui:GetDescendants()) do
+                        if gui:IsA("TextButton") then
+                            local btnText = string.lower(gui.Text)
+                            if btnText == "+1" or btnText == "+10" or string.find(btnText, "comprar") then
+                                if gui.Visible and gui.AbsolutePosition.X > 0 then
+                                    gui:Activate()
+                                    task.wait(1)
+                                end
                             end
                         end
                     end
@@ -587,7 +592,7 @@ local function LoadHub()
         end
     end)
 
-    -- 🌟 LOOP DO FARM CLÁSSICO (Original)
+    -- 🌟 LOOP DO FARM CLÁSSICO
     task.spawn(function()
         while true do
             if not ScreenGui or not ScreenGui.Parent then break end
