@@ -1,6 +1,6 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System + AutoFarm (Classic) + Auto-Win (Advanced) + Optimized Performance
+-- Added: Key System + AutoFarm + Auto-Win + Auto Battle Pass (XP + Auto Buy) + Optimized
 -- Visual: Premium Dark & Purple Theme
 
 -- // Wait for game to load
@@ -68,6 +68,8 @@ end
 local Config = {
     autoFarmEnabled = false,
     autoResetEnabled = false,
+    autoBattlePassXP = false,
+    autoBuyBattlePass = false,
     farmSpeed = 20,
     fpsBoostEnabled = false,
     extremeFPSEnabled = false,
@@ -361,10 +363,12 @@ local function LoadHub()
 
     -- // Toggles Main
     CreateToggle(MainContent, "🍬", "AutoFarm Candies", 0, "autoFarmEnabled", function(state) end)
-    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 45, "autoResetEnabled", function(state) end)
+    CreateToggle(MainContent, "🏆", "Auto Battle Pass (XP)", 45, "autoBattlePassXP", function(state) end)
+    CreateToggle(MainContent, "🛒", "Auto Comprar Níveis (+600)", 90, "autoBuyBattlePass", function(state) end)
+    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 135, "autoResetEnabled", function(state) end)
 
     local SpeedBox = Instance.new("TextBox", MainContent)
-    SpeedBox.Position = UDim2.new(0, 130, 0, 90)
+    SpeedBox.Position = UDim2.new(0, 130, 0, 180)
     SpeedBox.Size = UDim2.new(0, 70, 0, 30)
     SpeedBox.BackgroundColor3 = Theme.Background
     SpeedBox.TextColor3 = Theme.Accent
@@ -375,7 +379,7 @@ local function LoadHub()
     local SpeedStroke = Instance.new("UIStroke", SpeedBox); SpeedStroke.Color = Theme.Accent; SpeedStroke.Thickness = 1; SpeedStroke.Transparency = 0.5
 
     local SpeedLabel = Instance.new("TextLabel", MainContent)
-    SpeedLabel.Position = UDim2.new(0, 10, 0, 90)
+    SpeedLabel.Position = UDim2.new(0, 10, 0, 180)
     SpeedLabel.Size = UDim2.new(0, 100, 0, 30)
     SpeedLabel.BackgroundTransparency = 1
     SpeedLabel.Font = Enum.Font.GothamBold
@@ -522,36 +526,25 @@ local function LoadHub()
         end
     end)
 
-    -- // Auto-Win
-    ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(_, current, max)
-        if current == max and not resetting then
-            if Config.autoWinEnabled then
-                task.spawn(function()
-                    local myRole = getMyRole()
-                    local myChar = Player.Character
-                    if not myChar or not myChar:FindFirstChild("Humanoid") or myChar.Humanoid.Health <= 0 then return end
-
+    -- 🌟 AUTO BATTLE PASS (XP) + AUTO COMPRAR NÍVEIS
+    task.spawn(function()
+        while true do
+            task.wait(1) -- Verifica a cada 1 segundo
+            if not ScreenGui or not ScreenGui.Parent then break end
+            
+            -- 1. AUTO FARM DE XP
+            if Config.autoBattlePassXP and farming then
+                local myRole = getMyRole()
+                local myChar = Player.Character
+                if myChar and myChar:FindFirstChild("Humanoid") and myChar.Humanoid.Health > 0 then
                     if myRole == "Murderer" then
-                        local knife = myChar:FindFirstChild("Knife") or Player.Backpack:FindFirstChild("Knife")
-                        if knife and knife.Parent == Player.Backpack then
-                            myChar.Humanoid:EquipTool(knife)
-                            task.wait(0.2)
-                        end
-                        
                         for _, p in pairs(Players:GetPlayers()) do
                             if p ~= Player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
                                 getHRP().CFrame = p.Character.HumanoidRootPart.CFrame
-                                task.wait(0.3) 
+                                task.wait(0.3)
                             end
                         end
-                        
                     elseif myRole == "Sheriff" then
-                        local gun = myChar:FindFirstChild("Gun") or Player.Backpack:FindFirstChild("Gun")
-                        if gun and gun.Parent == Player.Backpack then
-                            myChar.Humanoid:EquipTool(gun)
-                            task.wait(0.2)
-                        end
-
                         local murdererName
                         local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
                         if roleFolder and roleFolder:FindFirstChild("Murderer") then murdererName = roleFolder.Murderer.Value end
@@ -560,27 +553,36 @@ local function LoadHub()
                             local murderer = Players:FindFirstChild(murdererName)
                             if murderer and murderer.Character and murderer.Character:FindFirstChild("HumanoidRootPart") and murderer.Character:FindFirstChild("Humanoid") and murderer.Character.Humanoid.Health > 0 then
                                 getHRP().CFrame = murderer.Character.HumanoidRootPart.CFrame
-                                task.wait(0.2)
-                                if gun then gun:Activate() end
+                                local gun = myChar:FindFirstChild("Gun") or Player.Backpack:FindFirstChild("Gun")
+                                if gun then
+                                    if gun.Parent == Player.Backpack then myChar.Humanoid:EquipTool(gun) end
+                                    task.wait(0.1)
+                                    gun:Activate()
+                                end
                             end
                         end
                     end
-                end)
+                end
             end
 
-            if Config.autoResetEnabled then
-                resetting, bag_full = true, true
-                local hrp = getHRP()
-                if start_position then
-                    local tw = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), {CFrame = start_position})
-                    tw:Play(); tw.Completed:Wait()
+            -- 2. AUTO COMPRAR NÍVEIS (QUANDO TIVER 600+ CANDYS)
+            if Config.autoBuyBattlePass then
+                local playerGui = Player:FindFirstChild("PlayerGui")
+                if playerGui then
+                    -- Procura o botão de comprar na tela do evento aberta
+                    for _, btn in pairs(playerGui:GetDescendants()) do
+                        if btn:IsA("TextButton") and (btn.Text == "+1" or btn.Text == "+10" or string.find(string.lower(btn.Name), "buy") or string.find(string.lower(btn.Name), "purchase")) then
+                            if btn.Visible and btn.AbsolutePosition.X > 0 then
+                                -- Simula um toque no botão
+                                local pos = btn.AbsolutePosition + (btn.AbsoluteSize / 2)
+                                VirtualUser:Button2Down(Vector2.new(pos.X, pos.Y), workspace.CurrentCamera.CFrame)
+                                task.wait(0.1)
+                                VirtualUser:Button2Up(Vector2.new(pos.X, pos.Y), workspace.CurrentCamera.CFrame)
+                                break
+                            end
+                        end
+                    end
                 end
-                task.wait(0.5)
-                if Player.Character and Player.Character:FindFirstChild("Humanoid") then
-                    Player.Character.Humanoid.Health = 0
-                    Player.CharacterAdded:Wait(); task.wait(1.5)
-                end
-                resetting, bag_full = false, false
             end
         end
     end)
