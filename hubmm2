@@ -1,6 +1,6 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System + AutoFarm (Under Map Smooth) + Auto-Win + Optimized
+-- Added: Key System + AutoFarm (Fixed Under Map + Huge Hitbox) + Auto-Win + Optimized
 -- Visual: Premium Dark & Purple Theme
 
 -- // Wait for game to load
@@ -66,10 +66,10 @@ end
 -- 💾 SISTEMA DE SALVAR CONFIGURAÇÕES
 -- ═══════════════════════════════════════════════════════════════
 local Config = {
-    underMapFarmEnabled = false, -- NOVO NOME: Farm embaixo do mapa
+    underMapFarmEnabled = false,
     autoResetEnabled = false,
     lieDownEnabled = false,
-    farmSpeed = 35, -- Aumentei um pouco a velocidade padrão para compensar a distância
+    farmSpeed = 35,
     fpsBoostEnabled = false,
     extremeFPSEnabled = false,
     antiAfkEnabled = false,
@@ -110,7 +110,7 @@ local function LoadHub()
     local bag_full = false
     local resetting = false
     local start_position
-    local base_position = nil -- Posição base embaixo do mapa
+    local base_position = nil -- Posição fixa 10 studs abaixo
 
     -- // Main window
     local MainFrame = Instance.new("Frame")
@@ -389,24 +389,32 @@ local function LoadHub()
         if Config.lieDownEnabled then SetLieDownMode(true) end
     end)
 
-    -- // Toggles Main (Apenas o AutoFarm Under Map agora)
+    -- // Toggles Main
     CreateToggle(MainContent, "🕳️", "AutoFarm (Under Map)", 0, "underMapFarmEnabled", function(state)
         local char = Player.Character
         local hrp = char and char:FindFirstChild("HumanoidRootPart")
         if hrp then
             if state then
-                -- 🌟 SALVA A POSIÇÃO BASE 5 STUDS ABAIXO E DESLIGA COLISÃO
-                base_position = CFrame.new(hrp.Position.X, hrp.Position.Y - 5, hrp.Position.Z)
+                -- 🌟 SALVA A POSIÇÃO 10 STUDS ABAIXO DO CHÃO
+                base_position = CFrame.new(hrp.Position.X, hrp.Position.Y - 10, hrp.Position.Z)
                 hrp.CFrame = base_position
+                
+                -- 🌟 AUMENTA A HITBOX
+                hrp.Size = Vector3.new(20, 20, 20)
+                hrp.Transparency = 1
+                
+                -- 🌟 DESLIGA COLISÃO DE TUDO
                 for _, v in pairs(char:GetDescendants()) do
                     if v:IsA("BasePart") then v.CanCollide = false end
                 end
             else
-                -- 🌟 LIGA A COLISÃO NOVAMENTE E VOLTA PRO CHÃO
+                -- 🌟 RESTAURA
                 for _, v in pairs(char:GetDescendants()) do
                     if v:IsA("BasePart") then v.CanCollide = true end
                 end
-                if hrp then hrp.CFrame = CFrame.new(hrp.Position.X, hrp.Position.Y + 5, hrp.Position.Z) end
+                hrp.Size = Vector3.new(2, 2, 1)
+                hrp.Transparency = 1
+                hrp.CFrame = CFrame.new(hrp.Position.X, hrp.Position.Y + 10, hrp.Position.Z)
             end
         end
     end)
@@ -639,7 +647,7 @@ local function LoadHub()
         end
     end)
 
-    -- 🌟 LOOP DO FARM UNDER MAP (Smooth, sem TP)
+    -- 🌟 LOOP DO FARM (FIXO E DESLIZANDO)
     task.spawn(function()
         while true do
             if not ScreenGui or not ScreenGui.Parent then break end
@@ -648,7 +656,7 @@ local function LoadHub()
                 if coin and base_position then
                     local hrp = getHRP()
                     
-                    -- 1. Vai deslizando (Tween) até o doce
+                    -- 1. Desliza até o doce
                     local tw1 = TweenService:Create(hrp, TweenInfo.new(dist / Config.farmSpeed, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
                     tw1:Play()
                     
@@ -660,7 +668,7 @@ local function LoadHub()
                     
                     pcall(function() tw1:Cancel() end)
 
-                    -- 2. Volta deslizando (Tween) para debaixo do mapa
+                    -- 2. Volta deslizando para a base fixa
                     local tw2 = TweenService:Create(hrp, TweenInfo.new(1, Enum.EasingStyle.Linear), {CFrame = base_position})
                     tw2:Play()
                     tw2.Completed:Wait()
