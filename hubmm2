@@ -1,6 +1,6 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System + AutoFarm + Auto-Grab (Under Map) + Auto-Win + Optimized
+-- Added: Key System + AutoFarm (Under Map Smooth) + Auto-Win + Optimized
 -- Visual: Premium Dark & Purple Theme
 
 -- // Wait for game to load
@@ -66,11 +66,10 @@ end
 -- 💾 SISTEMA DE SALVAR CONFIGURAÇÕES
 -- ═══════════════════════════════════════════════════════════════
 local Config = {
-    autoFarmEnabled = false,
-    autoGrabEnabled = false, -- NOVO: Auto Grab (Under Map)
+    underMapFarmEnabled = false, -- NOVO NOME: Farm embaixo do mapa
     autoResetEnabled = false,
     lieDownEnabled = false,
-    farmSpeed = 20,
+    farmSpeed = 35, -- Aumentei um pouco a velocidade padrão para compensar a distância
     fpsBoostEnabled = false,
     extremeFPSEnabled = false,
     antiAfkEnabled = false,
@@ -111,6 +110,7 @@ local function LoadHub()
     local bag_full = false
     local resetting = false
     local start_position
+    local base_position = nil -- Posição base embaixo do mapa
 
     -- // Main window
     local MainFrame = Instance.new("Frame")
@@ -172,7 +172,7 @@ local function LoadHub()
     SubTitle.Position = UDim2.new(0, 20, 0, 34)
     SubTitle.Size = UDim2.new(0, 300, 0, 18)
     SubTitle.Font = Enum.Font.Gotham
-    SubTitle.Text = "👑 Desenvolvedor: sllvzz"
+    SubTitle.Text = "👑 Dev: sllvzz"
     SubTitle.TextColor3 = Theme.TextDim
     SubTitle.TextSize = 12
     SubTitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -389,21 +389,32 @@ local function LoadHub()
         if Config.lieDownEnabled then SetLieDownMode(true) end
     end)
 
-    -- // Toggles Main
-    CreateToggle(MainContent, "🍬", "AutoFarm Candies", 0, "autoFarmEnabled", function(state) end)
-    CreateToggle(MainContent, "🕳️", "Auto-Grab (Under Map)", 45, "autoGrabEnabled", function(state)
+    -- // Toggles Main (Apenas o AutoFarm Under Map agora)
+    CreateToggle(MainContent, "🕳️", "AutoFarm (Under Map)", 0, "underMapFarmEnabled", function(state)
         local char = Player.Character
         local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if state and hrp then
-            -- Joga o jogador lá pra baixo do mapa quando ativa
-            hrp.CFrame = CFrame.new(hrp.Position.X, -100, hrp.Position.Z)
+        if hrp then
+            if state then
+                -- 🌟 SALVA A POSIÇÃO BASE 5 STUDS ABAIXO E DESLIGA COLISÃO
+                base_position = CFrame.new(hrp.Position.X, hrp.Position.Y - 5, hrp.Position.Z)
+                hrp.CFrame = base_position
+                for _, v in pairs(char:GetDescendants()) do
+                    if v:IsA("BasePart") then v.CanCollide = false end
+                end
+            else
+                -- 🌟 LIGA A COLISÃO NOVAMENTE E VOLTA PRO CHÃO
+                for _, v in pairs(char:GetDescendants()) do
+                    if v:IsA("BasePart") then v.CanCollide = true end
+                end
+                if hrp then hrp.CFrame = CFrame.new(hrp.Position.X, hrp.Position.Y + 5, hrp.Position.Z) end
+            end
         end
     end)
-    CreateToggle(MainContent, "🛌", "Farm Deitado (Disfarçado)", 90, "lieDownEnabled", function(state) SetLieDownMode(state) end)
-    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 135, "autoResetEnabled", function(state) end)
+
+    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 45, "autoResetEnabled", function(state) end)
 
     local SpeedBox = Instance.new("TextBox", MainContent)
-    SpeedBox.Position = UDim2.new(0, 130, 0, 180)
+    SpeedBox.Position = UDim2.new(0, 130, 0, 90)
     SpeedBox.Size = UDim2.new(0, 70, 0, 30)
     SpeedBox.BackgroundColor3 = Theme.Background
     SpeedBox.TextColor3 = Theme.Accent
@@ -414,7 +425,7 @@ local function LoadHub()
     local SpeedStroke = Instance.new("UIStroke", SpeedBox); SpeedStroke.Color = Theme.Accent; SpeedStroke.Thickness = 1; SpeedStroke.Transparency = 0.5
 
     local SpeedLabel = Instance.new("TextLabel", MainContent)
-    SpeedLabel.Position = UDim2.new(0, 10, 0, 180)
+    SpeedLabel.Position = UDim2.new(0, 10, 0, 90)
     SpeedLabel.Size = UDim2.new(0, 100, 0, 30)
     SpeedLabel.BackgroundTransparency = 1
     SpeedLabel.Font = Enum.Font.GothamBold
@@ -426,7 +437,7 @@ local function LoadHub()
     SpeedBox.FocusLost:Connect(function(ep)
         if ep then
             local v = tonumber(SpeedBox.Text)
-            Config.farmSpeed = math.clamp(v or 20, 1, 50)
+            Config.farmSpeed = math.clamp(v or 35, 1, 50)
             SpeedBox.Text = tostring(Config.farmSpeed)
             SaveConfig()
         end
@@ -454,7 +465,6 @@ local function LoadHub()
         end
     end)
 
-    -- 🌟 MODO DESERTO OTIMIZADO
     CreateToggle(MiscContent, "☠️", "Modo Deserto (Extreme)", 90, "extremeFPSEnabled", function(state)
         if state then
             task.spawn(function()
@@ -548,12 +558,12 @@ local function LoadHub()
         if start_position then getHRP().CFrame = start_position end 
     end)
 
-    -- // Anti-Void Loop
+    -- // Anti-Void Loop (Desativado se estiver embaixo do mapa)
     task.spawn(function()
         while true do
             task.wait(1)
             if not ScreenGui or not ScreenGui.Parent then break end
-            if Config.antiVoidEnabled and not Config.lieDownEnabled and not Config.autoGrabEnabled then
+            if Config.antiVoidEnabled and not Config.lieDownEnabled and not Config.underMapFarmEnabled then
                 local char = Player.Character
                 local hrp = char and char:FindFirstChild("HumanoidRootPart")
                 if hrp and hrp.Position.Y < -50 then
@@ -629,44 +639,31 @@ local function LoadHub()
         end
     end)
 
-    -- 🌟 LOOP DO FARM (COM AUTO-GRAB)
+    -- 🌟 LOOP DO FARM UNDER MAP (Smooth, sem TP)
     task.spawn(function()
         while true do
             if not ScreenGui or not ScreenGui.Parent then break end
-            if Config.autoFarmEnabled and farming and not bag_full then
+            if Config.underMapFarmEnabled and farming and not bag_full then
                 local coin, dist = get_nearest_coin()
-                if coin then
+                if coin and base_position then
                     local hrp = getHRP()
                     
-                    if Config.autoGrabEnabled then
-                        -- 🌟 MODO AUTO-GRAB (UNDER MAP)
-                        -- Teletransporta pra cima do doce
-                        hrp.CFrame = coin.CFrame
-                        task.wait(0.1) -- Espera pegar o doce
-                        -- Volta pra baixo do mapa (Y = -100)
-                        hrp.CFrame = CFrame.new(hrp.Position.X, -100, hrp.Position.Z)
-                    else
-                        -- FARM NORMAL
-                        local targetCF = CFrame.new(coin.Position)
-                        if Config.lieDownEnabled then
-                            targetCF = CFrame.new(coin.Position - Vector3.new(0, 3, 0)) * CFrame.Angles(math.rad(-90), 0, 0)
-                        end
+                    -- 1. Vai deslizando (Tween) até o doce
+                    local tw1 = TweenService:Create(hrp, TweenInfo.new(dist / Config.farmSpeed, Enum.EasingStyle.Linear), {CFrame = coin.CFrame})
+                    tw1:Play()
+                    
+                    local timer = 0
+                    repeat 
+                        task.wait(0.05) 
+                        timer = timer + 0.05
+                    until not coin:FindFirstChild("TouchInterest") or not farming or not Config.underMapFarmEnabled or timer > 2
+                    
+                    pcall(function() tw1:Cancel() end)
 
-                        if dist > 150 then
-                            hrp.CFrame = targetCF
-                        else
-                            local tw = TweenService:Create(hrp, TweenInfo.new(dist / Config.farmSpeed, Enum.EasingStyle.Linear), {CFrame = targetCF})
-                            tw:Play()
-                            
-                            local timer = 0
-                            repeat 
-                                task.wait(0.05) 
-                                timer = timer + 0.05
-                            until not coin:FindFirstChild("TouchInterest") or not farming or not Config.autoFarmEnabled or timer > 2
-                            
-                            pcall(function() tw:Cancel() end)
-                        end
-                    end
+                    -- 2. Volta deslizando (Tween) para debaixo do mapa
+                    local tw2 = TweenService:Create(hrp, TweenInfo.new(1, Enum.EasingStyle.Linear), {CFrame = base_position})
+                    tw2:Play()
+                    tw2.Completed:Wait()
                 end
             end
             task.wait(0.1)
