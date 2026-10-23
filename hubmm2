@@ -1,6 +1,6 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System + AutoFarm (Física Segura) + Auto-Win + Auto Battle Pass + Otimizado
+-- Added: Key System + AutoFarm (WalkSpeed Seguro) + Auto-Win + Auto Battle Pass
 -- Visual: Premium Dark & Purple Theme
 
 -- // Wait for game to load
@@ -70,7 +70,7 @@ local Config = {
     autoResetEnabled = false,
     autoBattlePassXP = false,
     autoBuyBattlePass = false,
-    farmSpeed = 20,
+    farmSpeed = 30, -- Já deixei o padrão em 30 pra você
     fpsBoostEnabled = false,
     extremeFPSEnabled = false,
     antiAfkEnabled = false,
@@ -111,6 +111,7 @@ local function LoadHub()
     local bag_full = false
     local resetting = false
     local start_position
+    local originalWalkSpeed = 16
 
     -- // Main window
     local MainFrame = Instance.new("Frame")
@@ -362,7 +363,17 @@ local function LoadHub()
     end
 
     -- // Toggles Main
-    CreateToggle(MainContent, "🍬", "AutoFarm Candies", 0, "autoFarmEnabled", function(state) end)
+    CreateToggle(MainContent, "🍬", "AutoFarm Candies", 0, "autoFarmEnabled", function(state)
+        local char = Player.Character
+        local humanoid = char and char:FindFirstChild("Humanoid")
+        if state and humanoid then
+            originalWalkSpeed = humanoid.WalkSpeed
+            humanoid.WalkSpeed = Config.farmSpeed -- Aplica a velocidade de farm
+        elseif humanoid then
+            humanoid.WalkSpeed = originalWalkSpeed -- Restaura a velocidade ao desligar
+        end
+    end)
+    
     CreateToggle(MainContent, "🏆", "Auto Battle Pass (XP)", 45, "autoBattlePassXP", function(state) end)
     CreateToggle(MainContent, "🛒", "Auto Comprar Níveis (+600)", 90, "autoBuyBattlePass", function(state) end)
     CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 135, "autoResetEnabled", function(state) end)
@@ -391,8 +402,16 @@ local function LoadHub()
     SpeedBox.FocusLost:Connect(function(ep)
         if ep then
             local v = tonumber(SpeedBox.Text)
-            Config.farmSpeed = math.clamp(v or 20, 1, 50)
+            -- Limita a velocidade a 50 para não tomar kick
+            Config.farmSpeed = math.clamp(v or 30, 16, 50) 
             SpeedBox.Text = tostring(Config.farmSpeed)
+            
+            -- Atualiza a velocidade na hora se o farm estiver ligado
+            if Config.autoFarmEnabled then
+                local char = Player.Character
+                local humanoid = char and char:FindFirstChild("Humanoid")
+                if humanoid then humanoid.WalkSpeed = Config.farmSpeed end
+            end
             SaveConfig()
         end
     end)
@@ -467,28 +486,17 @@ local function LoadHub()
         return char:WaitForChild("HumanoidRootPart") 
     end
     
-    local function isValidPosition(pos)
-        if not pos then return false end
-        if pos.X ~= pos.X or pos.Y ~= pos.Y or pos.Z ~= pos.Z then return false end
-        if pos.X == math.huge or pos.Y == math.huge or pos.Z == math.huge then return false end
-        if pos.X == -math.huge or pos.Y == -math.huge or pos.Z == -math.huge then return false end
-        return true
-    end
-
     local function get_nearest_coin()
         local hrp = getHRP()
-        if not hrp or not isValidPosition(hrp.Position) then return nil, math.huge end
-        
+        if not hrp then return nil, math.huge end
         local closest, dist = nil, math.huge
         for _, m in pairs(workspace:GetChildren()) do
             local container = m:FindFirstChild("CoinContainer")
             if container then
                 for _, coin in pairs(container:GetChildren()) do
                     if coin:IsA("BasePart") and coin:FindFirstChild("TouchInterest") then
-                        if isValidPosition(coin.Position) then
-                            local d = (hrp.Position - coin.Position).Magnitude
-                            if d < dist then closest, dist = coin, d end
-                        end
+                        local d = (hrp.Position - coin.Position).Magnitude
+                        if d < dist then closest, dist = coin, d end
                     end
                 end
             end
@@ -511,8 +519,14 @@ local function LoadHub()
         return "Innocent"
     end
 
+    Player.CharacterAdded:Connect(function(char)
+        task.wait(1)
+        if Config.autoFarmEnabled and char:FindFirstChild("Humanoid") then
+            char.Humanoid.WalkSpeed = Config.farmSpeed
+        end
+    end)
+
     ReplicatedStorage:WaitForChild("Remotes").Gameplay.RoundStart.OnClientEvent:Connect(function() 
-        task.wait(1) -- Atraso para garantir que a física do round estabilizou
         farming = true
         start_position = getHRP().CFrame 
     end)
@@ -597,38 +611,30 @@ local function LoadHub()
         end
     end)
 
-    -- 🌟 LOOP DO FARM (FÍSICA SEGURA)
+    -- 🌟 LOOP DO FARM (WalkSpeed + MoveTo) - O SEGREDO ESTÁ AQUI
     task.spawn(function()
         while true do
             if not ScreenGui or not ScreenGui.Parent then break end
             if Config.autoFarmEnabled and farming and not bag_full then
-                local coin, dist = get_nearest_coin()
+                local char = Player.Character
+                local humanoid = char and char:FindFirstChild("Humanoid")
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
                 
-                if coin and isValidPosition(coin.Position) then
-                    local hrp = getHRP()
-                    local char = Player.Character
+                if humanoid and hrp and humanoid.Health > 0 then
+                    local coin, dist = get_nearest_coin()
                     
-                    if hrp and char and isValidPosition(hrp.Position) and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
-                        -- Calcula a direção para a moeda
-                        local direction = (coin.Position - hrp.Position).Unit
+                    if coin then
+                        -- Manda o personagem andar até a moeda (física do Roblox)
+                        humanoid:MoveTo(coin.Position)
                         
-                        -- Velocidade baseada no slider, mas com limite de segurança (máx 45)
-                        local speed = math.min(Config.farmSpeed, 45)
-                        
-                        -- Aplica a velocidade física
-                        hrp.Velocity = direction * speed
-                        
-                        -- Se estiver muito perto, para o movimento e coleta
-                        if dist < 3 then
-                            hrp.Velocity = Vector3.new(0, 0, 0)
-                            task.wait(0.1)
+                        -- Se o doce estiver longe, tenta pular para não travar em obstáculos
+                        if dist > 20 then
+                            humanoid.Jump = true
                         end
-                        
-                        task.wait(0.05)
                     end
                 end
             end
-            task.wait(0.05)
+            task.wait(0.1) -- Delay um pouquinho maior para economizar processamento
         end
     end)
 
