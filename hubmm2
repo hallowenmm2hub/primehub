@@ -1,11 +1,12 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Added: Key System + AutoFarm (WalkSpeed Seguro) + Auto-Win + Auto Battle Pass
--- Visual: Premium Dark & Purple Theme
+-- Cleaned: removed remote HttpGet/loadstring and replaced with local Anti-AFK
+-- Added: Anti-Kick Toggle
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
 
+-- // Roblox services
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -13,808 +14,781 @@ local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
-local Lighting = game:GetService("Lighting")
-local HttpService = game:GetService("HttpService")
 
--- ═══════════════════════════════════════════════════════════════
--- 🔑 SISTEMA DE KEY (COM SALVAMENTO DE 24 HORAS)
--- ═══════════════════════════════════════════════════════════════
-local VALID_KEY = "PRIME2024"
-local KEY_FILE = "primehub_key.txt"
-local CONFIG_FILE = "primehub_config.json"
-local TIME_24H = 86400
-
-local Theme = {
-    Background = Color3.fromRGB(15, 15, 20),
-    Secondary = Color3.fromRGB(25, 25, 35),
-    Element = Color3.fromRGB(35, 35, 50),
-    ElementHover = Color3.fromRGB(45, 45, 65),
-    Text = Color3.fromRGB(240, 240, 240),
-    TextDim = Color3.fromRGB(150, 150, 170),
-    Accent = Color3.fromRGB(160, 100, 255),
-    Off = Color3.fromRGB(60, 60, 80)
-}
-
+-- // Main GUI
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "sllvzz_hub"
+ScreenGui.Name = "prime hub hallowen"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = game.CoreGui
 
-local function CheckSavedKey()
-    local success, result = pcall(function()
-        if isfile and isfile(KEY_FILE) then
-            local savedTime = tonumber(readfile(KEY_FILE))
-            if savedTime and (os.time() - savedTime) < TIME_24H then
-                return true
-            else
-                delfile(KEY_FILE)
-            end
-        end
-        return false
-    end)
-    return success and result
-end
+-- // Main window
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 0, 45)
+MainFrame.BackgroundTransparency = 0.25
+MainFrame.BorderSizePixel = 0
+MainFrame.Size = UDim2.new(0, 500, 0, 360)
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 
-local function SaveKey()
-    pcall(function()
-        if writefile then writefile(KEY_FILE, tostring(os.time())) end
-    end)
-end
+local UICorner = Instance.new("UICorner", MainFrame)
+UICorner.CornerRadius = UDim.new(0, 10)
 
--- ═══════════════════════════════════════════════════════════════
--- 💾 SISTEMA DE SALVAR CONFIGURAÇÕES
--- ═══════════════════════════════════════════════════════════════
-local Config = {
-    autoFarmEnabled = false,
-    autoResetEnabled = false,
-    autoBattlePassXP = false,
-    autoBuyBattlePass = false,
-    farmSpeed = 30, -- Já deixei o padrão em 30 pra você
-    fpsBoostEnabled = false,
-    extremeFPSEnabled = false,
-    antiAfkEnabled = false,
-    roleESPEnabled = false,
-    antiVoidEnabled = false,
-    autoWinEnabled = false,
-    autoRejoinEnabled = false
+local UIStroke = Instance.new("UIStroke", MainFrame)
+UIStroke.Color = Color3.fromRGB(200, 100, 255)
+UIStroke.Thickness = 1.3
+UIStroke.Transparency = 0.35
+
+-- // Title
+local Title = Instance.new("TextLabel", MainFrame)
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0.04, 0, 0.03, 0)
+Title.Size = UDim2.new(0, 260, 0, 22)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "Murder Mystery 2 | Halloween"
+Title.TextColor3 = Color3.fromRGB(140, 100, 255)
+Title.TextSize = 15
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local SubTitle = Instance.new("TextLabel", MainFrame)
+SubTitle.BackgroundTransparency = 1
+SubTitle.Position = UDim2.new(0.04, 0, 0.11, 0)
+SubTitle.Size = UDim2.new(0, 200, 0, 18)
+SubTitle.Font = Enum.Font.Gotham
+SubTitle.Text = "By: sllvzz ( discord : prime hub )"
+SubTitle.TextColor3 = Color3.fromRGB(255, 160, 255)
+SubTitle.TextSize = 12
+SubTitle.TextXAlignment = Enum.TextXAlignment.Left
+SubTitle.TextTransparency = 0.1
+
+-- // Tabs container
+local TabsContainer = Instance.new("Frame", MainFrame)
+TabsContainer.Size = UDim2.new(0, 150, 0, 45)
+TabsContainer.Position = UDim2.new(0.025, 0, 0.22, 0)
+TabsContainer.BackgroundColor3 = Color3.fromRGB(40, 0, 60)
+TabsContainer.BackgroundTransparency = 0.25
+TabsContainer.BorderSizePixel = 0
+Instance.new("UICorner", TabsContainer).CornerRadius = UDim.new(0, 10)
+local TabsStroke = Instance.new("UIStroke", TabsContainer)
+TabsStroke.Color = Color3.fromRGB(200, 100, 255)
+TabsStroke.Thickness = 1.2
+TabsStroke.Transparency = 0.4
+
+-- // Tab buttons
+local MainTab = Instance.new("TextButton", TabsContainer)
+MainTab.Size = UDim2.new(0, 65, 0, 30)
+MainTab.Position = UDim2.new(0, 5, 0, 7)
+MainTab.BackgroundColor3 = Color3.fromRGB(60, 0, 90)
+MainTab.BackgroundTransparency = 0.2
+MainTab.BorderSizePixel = 0
+MainTab.Text = "Main"
+MainTab.TextColor3 = Color3.fromRGB(255, 180, 255)
+MainTab.TextSize = 13
+MainTab.Font = Enum.Font.GothamBold
+Instance.new("UICorner", MainTab).CornerRadius = UDim.new(0, 6)
+
+local MiscTab = Instance.new("TextButton", TabsContainer)
+MiscTab.Size = UDim2.new(0, 65, 0, 30)
+MiscTab.Position = UDim2.new(0, 80, 0, 7)
+MiscTab.BackgroundColor3 = Color3.fromRGB(40, 0, 60)
+MiscTab.BackgroundTransparency = 0.2
+MiscTab.BorderSizePixel = 0
+MiscTab.Text = "Misc"
+MiscTab.TextColor3 = Color3.fromRGB(180, 120, 255)
+MiscTab.TextSize = 13
+MiscTab.Font = Enum.Font.GothamBold
+Instance.new("UICorner", MiscTab).CornerRadius = UDim.new(0, 6)
+
+-- // Content container
+local ContentContainer = Instance.new("Frame", MainFrame)
+ContentContainer.Size = UDim2.new(0, 280, 0, 250)
+ContentContainer.Position = UDim2.new(0.43, 0, 0.22, 0)
+ContentContainer.BackgroundColor3 = Color3.fromRGB(40, 0, 60)
+ContentContainer.BackgroundTransparency = 0.35
+ContentContainer.BorderSizePixel = 0
+Instance.new("UICorner", ContentContainer).CornerRadius = UDim.new(0, 8)
+local ContentStroke = Instance.new("UIStroke", ContentContainer)
+ContentStroke.Color = Color3.fromRGB(190, 120, 255)
+ContentStroke.Thickness = 1.2
+ContentStroke.Transparency = 0.4
+
+-- // Content frames
+local MainContent = Instance.new("Frame", ContentContainer)
+MainContent.Size = UDim2.new(1, -20, 1, -20)
+MainContent.Position = UDim2.new(0, 10, 0, 10)
+MainContent.BackgroundTransparency = 1
+
+local MiscContent = Instance.new("Frame", ContentContainer)
+MiscContent.Size = UDim2.new(1, -20, 1, -20)
+MiscContent.Position = UDim2.new(0, 10, 0, 10)
+MiscContent.BackgroundTransparency = 1
+MiscContent.Visible = false
+
+-- // Tab switching
+MainTab.MouseButton1Click:Connect(function()
+	MainContent.Visible = true
+	MiscContent.Visible = false
+	MainTab.BackgroundColor3 = Color3.fromRGB(60, 0, 90)
+	MiscTab.BackgroundColor3 = Color3.fromRGB(40, 0, 60)
+	MainTab.TextColor3 = Color3.fromRGB(255, 180, 255)
+	MiscTab.TextColor3 = Color3.fromRGB(180, 120, 255)
+end)
+
+MiscTab.MouseButton1Click:Connect(function()
+	MainContent.Visible = false
+	MiscContent.Visible = true
+	MainTab.BackgroundColor3 = Color3.fromRGB(40, 0, 60)
+	MiscTab.BackgroundColor3 = Color3.fromRGB(60, 0, 90)
+	MainTab.TextColor3 = Color3.fromRGB(180, 120, 255)
+	MiscTab.TextColor3 = Color3.fromRGB(255, 180, 255)
+end)
+
+-------------------------------------------------------------------
+-- 🍬 AUTO FARM CANDIES
+-------------------------------------------------------------------
+local autoFarmEnabled = false
+local antiKickEnabled = false -- NOVA VARIÁVEL
+local farming = false
+local bag_full = false
+local start_position
+local farmSpeed = 20 
+local autoResetEnabled = false
+local resetting = false
+
+-- // Coin tracking system
+local coinStats = {
+    totalCollected = 0,
+    sessionStart = tick(),
+    lastCoinTime = tick(),
+    recentCoins = {},
+    coinsPerHour = 0,
+    coinsPerMinute = 0,
+    sessionCoins = 0
 }
 
-local function LoadConfig()
-    pcall(function()
-        if isfile and isfile(CONFIG_FILE) then
-            local data = HttpService:JSONDecode(readfile(CONFIG_FILE))
-            for k, v in pairs(data) do
-                if Config[k] ~= nil then Config[k] = v end
-            end
-        end
-    end)
-end
+local MAX_RECENT_SAMPLES = 50
+local CoinRateLabel 
 
-local function SaveConfig()
-    pcall(function()
-        if writefile then
-            writefile(CONFIG_FILE, HttpService:JSONEncode(Config))
-        end
-    end)
-end
+-- // AutoFarm Toggle
+local AutoFarmToggle = Instance.new("TextButton")
+AutoFarmToggle.Parent = MainContent
+AutoFarmToggle.Size = UDim2.new(0, 230, 0, 35)
+AutoFarmToggle.Position = UDim2.new(0, 20, 0, 30)
+AutoFarmToggle.BackgroundColor3 = Color3.fromRGB(50, 0, 80)
+AutoFarmToggle.BorderSizePixel = 0
+AutoFarmToggle.Text = ""
+AutoFarmToggle.AutoButtonColor = false
 
-LoadConfig()
+local AutoFarmCorner = Instance.new("UICorner", AutoFarmToggle)
+AutoFarmCorner.CornerRadius = UDim.new(1, 0)
 
--- ═══════════════════════════════════════════════════════════════
--- ⚙️ HUB PRINCIPAL
--- ═══════════════════════════════════════════════════════════════
-local function LoadHub()
-    if ScreenGui:FindFirstChild("KeyFrame") then ScreenGui.KeyFrame:Destroy() end
+local AutoFarmStroke = Instance.new("UIStroke", AutoFarmToggle)
+AutoFarmStroke.Color = Color3.fromRGB(200, 100, 255)
+AutoFarmStroke.Thickness = 1.2
+AutoFarmStroke.Transparency = 0.4
 
-    local farming = false
-    local bag_full = false
-    local resetting = false
-    local start_position
-    local originalWalkSpeed = 16
+local AutoFarmLabel = Instance.new("TextLabel", AutoFarmToggle)
+AutoFarmLabel.BackgroundTransparency = 1
+AutoFarmLabel.Position = UDim2.new(0.1, 0, 0, 0)
+AutoFarmLabel.Size = UDim2.new(0.8, 0, 1, 0)
+AutoFarmLabel.Font = Enum.Font.GothamBold
+AutoFarmLabel.Text = "🍬 AutoFarm Candies"
+AutoFarmLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoFarmLabel.TextSize = 14
+AutoFarmLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- // Main window
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Name = "MainFrame"
-    MainFrame.Parent = ScreenGui
-    MainFrame.BackgroundColor3 = Theme.Background
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Size = UDim2.new(0, 500, 0, 290)
-    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 16)
+local ToggleCircle = Instance.new("Frame", AutoFarmToggle)
+ToggleCircle.Size = UDim2.new(0, 18, 0, 18)
+ToggleCircle.Position = UDim2.new(0.87, 0, 0.23, 0)
+ToggleCircle.BackgroundColor3 = Color3.fromRGB(100, 40, 140)
+ToggleCircle.BorderSizePixel = 0
+Instance.new("UICorner", ToggleCircle).CornerRadius = UDim.new(1, 0)
 
-    local UIStroke = Instance.new("UIStroke", MainFrame)
-    UIStroke.Color = Theme.Accent
-    UIStroke.Thickness = 1.5
-    UIStroke.Transparency = 0.3
+AutoFarmToggle.MouseButton1Click:Connect(function()
+	autoFarmEnabled = not autoFarmEnabled
+	if autoFarmEnabled then
+		ToggleCircle.BackgroundColor3 = Color3.fromRGB(200, 120, 255)
+	else
+		ToggleCircle.BackgroundColor3 = Color3.fromRGB(100, 40, 140)
+	end
+end)
 
-    local Gradient = Instance.new("UIGradient", MainFrame)
-    Gradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 45)),
-        ColorSequenceKeypoint.new(1, Theme.Background)
-    }
-    Gradient.Rotation = 90
+-- // Auto Reset Toggle
+local AutoResetToggle = Instance.new("TextButton")
+AutoResetToggle.Parent = MainContent
+AutoResetToggle.Size = UDim2.new(0, 230, 0, 35)
+AutoResetToggle.Position = UDim2.new(0, 20, 0, 120)
+AutoResetToggle.BackgroundColor3 = Color3.fromRGB(50, 0, 80)
+AutoResetToggle.BorderSizePixel = 0
+AutoResetToggle.Text = ""
+AutoResetToggle.AutoButtonColor = false
 
-    -- // BOTÃO DE FECHAR (X)
-    local CloseButton = Instance.new("TextButton")
-    CloseButton.Parent = MainFrame
-    CloseButton.Size = UDim2.new(0, 30, 0, 30)
-    CloseButton.Position = UDim2.new(1, -35, 0, 5)
-    CloseButton.BackgroundTransparency = 1
-    CloseButton.Text = "✖"
-    CloseButton.TextColor3 = Color3.fromRGB(255, 80, 80)
-    CloseButton.Font = Enum.Font.GothamBold
-    CloseButton.TextSize = 18
-    CloseButton.AutoButtonColor = false
+local AutoResetCorner = Instance.new("UICorner", AutoResetToggle)
+AutoResetCorner.CornerRadius = UDim.new(1, 0)
 
-    CloseButton.MouseButton1Click:Connect(function()
-        for _, p in pairs(Players:GetPlayers()) do
-            if p.Character and p.Character:FindFirstChild("RoleESP") then
-                p.Character.RoleESP:Destroy()
-            end
-        end
-        ScreenGui:Destroy()
-    end)
+local AutoResetStroke = Instance.new("UIStroke", AutoResetToggle)
+AutoResetStroke.Color = Color3.fromRGB(200, 100, 255)
+AutoResetStroke.Thickness = 1.2
+AutoResetStroke.Transparency = 0.4
 
-    -- // Header
-    local Title = Instance.new("TextLabel", MainFrame)
-    Title.BackgroundTransparency = 1
-    Title.Position = UDim2.new(0, 20, 0, 12)
-    Title.Size = UDim2.new(0, 300, 0, 24)
-    Title.Font = Enum.Font.GothamBold
-    Title.Text = "✨ Prime Hub | Halloween ✨"
-    Title.TextColor3 = Theme.Accent
-    Title.TextSize = 18
-    Title.TextXAlignment = Enum.TextXAlignment.Left
+local AutoResetLabel = Instance.new("TextLabel", AutoResetToggle)
+AutoResetLabel.BackgroundTransparency = 1
+AutoResetLabel.Position = UDim2.new(0.1, 0, 0, 0)
+AutoResetLabel.Size = UDim2.new(0.8, 0, 1, 0)
+AutoResetLabel.Font = Enum.Font.GothamBold
+AutoResetLabel.Text = "🔄 Auto Reset"
+AutoResetLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoResetLabel.TextSize = 14
+AutoResetLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    local SubTitle = Instance.new("TextLabel", MainFrame)
-    SubTitle.BackgroundTransparency = 1
-    SubTitle.Position = UDim2.new(0, 20, 0, 34)
-    SubTitle.Size = UDim2.new(0, 300, 0, 18)
-    SubTitle.Font = Enum.Font.Gotham
-    SubTitle.Text = "👑 Dev: sllvzz"
-    SubTitle.TextColor3 = Theme.TextDim
-    SubTitle.TextSize = 12
-    SubTitle.TextXAlignment = Enum.TextXAlignment.Left
+local ResetToggleCircle = Instance.new("Frame", AutoResetToggle)
+ResetToggleCircle.Size = UDim2.new(0, 18, 0, 18)
+ResetToggleCircle.Position = UDim2.new(0.87, 0, 0.23, 0)
+ResetToggleCircle.BackgroundColor3 = Color3.fromRGB(100, 40, 140)
+ResetToggleCircle.BorderSizePixel = 0
+Instance.new("UICorner", ResetToggleCircle).CornerRadius = UDim.new(1, 0)
 
-    local UserFrame = Instance.new("Frame", MainFrame)
-    UserFrame.Size = UDim2.new(0, 140, 0, 40)
-    UserFrame.Position = UDim2.new(1, -180, 0, 12)
-    UserFrame.BackgroundTransparency = 1
+AutoResetToggle.MouseButton1Click:Connect(function()
+	autoResetEnabled = not autoResetEnabled
+	if autoResetEnabled then
+		ResetToggleCircle.BackgroundColor3 = Color3.fromRGB(200, 120, 255)
+	else
+		ResetToggleCircle.BackgroundColor3 = Color3.fromRGB(100, 40, 140)
+	end
+end)
 
-    local Avatar = Instance.new("ImageLabel", UserFrame)
-    Avatar.BackgroundTransparency = 1
-    Avatar.Size = UDim2.new(0, 36, 0, 36)
-    Avatar.Position = UDim2.new(0, 0, 0, 0)
-    Avatar.Image = "rbxthumb://type=AvatarHeadShot&id="..Player.UserId.."&w=420&h=420"
-    Instance.new("UICorner", Avatar).CornerRadius = UDim.new(1, 0)
+-- // Speed Input
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.Parent = MainContent
+SpeedLabel.Position = UDim2.new(0, 25, 0, 70)
+SpeedLabel.Size = UDim2.new(0, 80, 0, 25)
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Font = Enum.Font.GothamBold
+SpeedLabel.Text = "Speed:"
+SpeedLabel.TextColor3 = Color3.fromRGB(255, 200, 255)
+SpeedLabel.TextSize = 13
+SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    local UserName = Instance.new("TextLabel", UserFrame)
-    UserName.BackgroundTransparency = 1
-    UserName.Position = UDim2.new(0, 45, 0.1, 0)
-    UserName.Size = UDim2.new(0, 100, 0, 16)
-    UserName.Font = Enum.Font.GothamBold
-    UserName.Text = Player.DisplayName
-    UserName.TextColor3 = Theme.Text
-    UserName.TextSize = 12
-    UserName.TextXAlignment = Enum.TextXAlignment.Left
+local SpeedBox = Instance.new("TextBox")
+SpeedBox.Parent = MainContent
+SpeedBox.Position = UDim2.new(0, 95, 0, 70)
+SpeedBox.Size = UDim2.new(0, 60, 0, 25)
+SpeedBox.BackgroundColor3 = Color3.fromRGB(50, 0, 80)
+SpeedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedBox.PlaceholderText = tostring(farmSpeed)
+SpeedBox.Font = Enum.Font.GothamBold
+SpeedBox.TextSize = 13
+SpeedBox.Text = tostring(farmSpeed)
+Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 6)
+local SpeedStroke = Instance.new("UIStroke", SpeedBox)
+SpeedStroke.Color = Color3.fromRGB(190, 120, 255)
+SpeedStroke.Thickness = 1.1
+SpeedStroke.Transparency = 0.4
 
-    local Divider = Instance.new("Frame", MainFrame)
-    Divider.Size = UDim2.new(1, -40, 0, 1)
-    Divider.Position = UDim2.new(0, 20, 0, 60)
-    Divider.BackgroundColor3 = Theme.Element
-    Divider.BorderSizePixel = 0
+local WarningText = Instance.new("TextLabel")
+WarningText.Parent = MainContent
+WarningText.Position = UDim2.new(0, 25, 0, 97)
+WarningText.Size = UDim2.new(0, 220, 0, 15)
+WarningText.BackgroundTransparency = 1
+WarningText.Font = Enum.Font.Gotham
+WarningText.Text = "⚠️ Over 25 = Kick"
+WarningText.TextColor3 = Color3.fromRGB(255, 130, 130)
+WarningText.TextSize = 11
+WarningText.TextXAlignment = Enum.TextXAlignment.Left
+WarningText.TextTransparency = 0.1
 
-    -- // Tabs
-    local TabsContainer = Instance.new("Frame", MainFrame)
-    TabsContainer.Size = UDim2.new(0, 125, 0, 195)
-    TabsContainer.Position = UDim2.new(0, 20, 0, 75)
-    TabsContainer.BackgroundColor3 = Theme.Secondary
-    TabsContainer.BorderSizePixel = 0
-    Instance.new("UICorner", TabsContainer).CornerRadius = UDim.new(0, 10)
+SpeedBox.FocusLost:Connect(function(enterPressed)
+	if enterPressed then
+		local value = tonumber(SpeedBox.Text)
+		if value then
+			if value < 1 then value = 1 end
+			if value > 50 then value = 50 end
+			farmSpeed = value
+			SpeedBox.Text = tostring(farmSpeed)
+			if farmSpeed > 25 then
+				WarningText.TextColor3 = Color3.fromRGB(255, 50, 50)
+			else
+				WarningText.TextColor3 = Color3.fromRGB(255, 130, 130)
+			end
+		else
+			SpeedBox.Text = tostring(farmSpeed)
+		end
+	end
+end)
 
-    local MainTab = Instance.new("TextButton", TabsContainer)
-    MainTab.Size = UDim2.new(0, 105, 0, 50)
-    MainTab.Position = UDim2.new(0, 10, 0, 10)
-    MainTab.BackgroundColor3 = Theme.Element
-    MainTab.BorderSizePixel = 0
-    MainTab.Text = "🎯 Main"
-    MainTab.TextColor3 = Theme.Accent
-    MainTab.TextSize = 13
-    MainTab.Font = Enum.Font.GothamBold
-    MainTab.AutoButtonColor = false
-    Instance.new("UICorner", MainTab).CornerRadius = UDim.new(0, 8)
+-------------------------------------------------------------------
+-- 📊 COIN STATS PANEL
+-------------------------------------------------------------------
+local StatsPanel = Instance.new("Frame")
+StatsPanel.Parent = MainContent
+StatsPanel.Size = UDim2.new(0, 230, 0, 60)
+StatsPanel.Position = UDim2.new(0, 20, 0, 165)
+StatsPanel.BackgroundColor3 = Color3.fromRGB(45, 0, 70)
+StatsPanel.BackgroundTransparency = 0.3
+StatsPanel.BorderSizePixel = 0
+Instance.new("UICorner", StatsPanel).CornerRadius = UDim.new(0, 8)
 
-    local MiscTab = Instance.new("TextButton", TabsContainer)
-    MiscTab.Size = UDim2.new(0, 105, 0, 50)
-    MiscTab.Position = UDim2.new(0, 10, 0, 72)
-    MiscTab.BackgroundColor3 = Theme.Secondary
-    MiscTab.BorderSizePixel = 0
-    MiscTab.Text = "⚙️ Misc"
-    MiscTab.TextColor3 = Theme.TextDim
-    MiscTab.TextSize = 13
-    MiscTab.Font = Enum.Font.GothamBold
-    MiscTab.AutoButtonColor = false
-    Instance.new("UICorner", MiscTab).CornerRadius = UDim.new(0, 8)
+local StatsStroke = Instance.new("UIStroke", StatsPanel)
+StatsStroke.Color = Color3.fromRGB(200, 100, 255)
+StatsStroke.Thickness = 1.2
+StatsStroke.Transparency = 0.4
 
-    local CombatTab = Instance.new("TextButton", TabsContainer)
-    CombatTab.Size = UDim2.new(0, 105, 0, 50)
-    CombatTab.Position = UDim2.new(0, 10, 0, 134)
-    CombatTab.BackgroundColor3 = Theme.Secondary
-    CombatTab.BorderSizePixel = 0
-    CombatTab.Text = "⚔️ Combat"
-    CombatTab.TextColor3 = Theme.TextDim
-    CombatTab.TextSize = 13
-    CombatTab.Font = Enum.Font.GothamBold
-    CombatTab.AutoButtonColor = false
-    Instance.new("UICorner", CombatTab).CornerRadius = UDim.new(0, 8)
+local StatsTitle = Instance.new("TextLabel", StatsPanel)
+StatsTitle.BackgroundTransparency = 1
+StatsTitle.Position = UDim2.new(0.05, 0, 0.04, 0)
+StatsTitle.Size = UDim2.new(0.6, 0, 0, 15)
+StatsTitle.Font = Enum.Font.GothamBold
+StatsTitle.Text = "📊 Taxa de Coleta"
+StatsTitle.TextColor3 = Color3.fromRGB(255, 180, 255)
+StatsTitle.TextSize = 12
+StatsTitle.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- // Content
-    local ContentContainer = Instance.new("Frame", MainFrame)
-    ContentContainer.Size = UDim2.new(0, 325, 0, 195)
-    ContentContainer.Position = UDim2.new(0, 155, 0, 75)
-    ContentContainer.BackgroundColor3 = Theme.Secondary
-    ContentContainer.BorderSizePixel = 0
-    Instance.new("UICorner", ContentContainer).CornerRadius = UDim.new(0, 10)
+local ResetStatsBtn = Instance.new("TextButton")
+ResetStatsBtn.Parent = StatsPanel
+ResetStatsBtn.Size = UDim2.new(0, 50, 0, 15)
+ResetStatsBtn.Position = UDim2.new(0.72, 0, 0.05, 0)
+ResetStatsBtn.BackgroundColor3 = Color3.fromRGB(80, 20, 110)
+ResetStatsBtn.BorderSizePixel = 0
+ResetStatsBtn.Text = "Reset"
+ResetStatsBtn.TextColor3 = Color3.fromRGB(255, 200, 255)
+ResetStatsBtn.Font = Enum.Font.GothamBold
+ResetStatsBtn.TextSize = 10
+Instance.new("UICorner", ResetStatsBtn).CornerRadius = UDim.new(0, 4)
 
-    local MainContent = Instance.new("ScrollingFrame", ContentContainer)
-    MainContent.Size = UDim2.new(1, -20, 1, -20)
-    MainContent.Position = UDim2.new(0, 10, 0, 10)
-    MainContent.BackgroundTransparency = 1
-    MainContent.ScrollBarThickness = 3
-    MainContent.ScrollBarImageColor3 = Theme.Accent
-    MainContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-    MainContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    MainContent.ScrollingDirection = Enum.ScrollingDirection.Y
+CoinRateLabel = Instance.new("TextLabel", StatsPanel)
+CoinRateLabel.Name = "CoinRateLabel"
+CoinRateLabel.BackgroundTransparency = 1
+CoinRateLabel.Position = UDim2.new(0.05, 0, 0.33, 0)
+CoinRateLabel.Size = UDim2.new(0.9, 0, 0, 16)
+CoinRateLabel.Font = Enum.Font.GothamBold
+CoinRateLabel.Text = "💰 0/h  •  0/min  •  0 total"
+CoinRateLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+CoinRateLabel.TextSize = 12
+CoinRateLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    local MiscContent = Instance.new("ScrollingFrame", ContentContainer)
-    MiscContent.Size = UDim2.new(1, -20, 1, -20)
-    MiscContent.Position = UDim2.new(0, 10, 0, 10)
-    MiscContent.BackgroundTransparency = 1
-    MiscContent.Visible = false
-    MiscContent.ScrollBarThickness = 3
-    MiscContent.ScrollBarImageColor3 = Theme.Accent
-    MiscContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-    MiscContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    MiscContent.ScrollingDirection = Enum.ScrollingDirection.Y
+local SessionLabel = Instance.new("TextLabel", StatsPanel)
+SessionLabel.Name = "SessionLabel"
+SessionLabel.BackgroundTransparency = 1
+SessionLabel.Position = UDim2.new(0.05, 0, 0.62, 0)
+SessionLabel.Size = UDim2.new(0.9, 0, 0, 14)
+SessionLabel.Font = Enum.Font.Gotham
+SessionLabel.Text = "⏱️ Sessão: 00:00:00"
+SessionLabel.TextColor3 = Color3.fromRGB(200, 150, 255)
+SessionLabel.TextSize = 10
+SessionLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    local CombatContent = Instance.new("ScrollingFrame", ContentContainer)
-    CombatContent.Size = UDim2.new(1, -20, 1, -20)
-    CombatContent.Position = UDim2.new(0, 10, 0, 10)
-    CombatContent.BackgroundTransparency = 1
-    CombatContent.Visible = false
-    CombatContent.ScrollBarThickness = 3
-    CombatContent.ScrollBarImageColor3 = Theme.Accent
-    CombatContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-    CombatContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    CombatContent.ScrollingDirection = Enum.ScrollingDirection.Y
+ResetStatsBtn.MouseButton1Click:Connect(function()
+    coinStats.recentCoins = {}
+    coinStats.sessionCoins = 0
+    coinStats.coinsPerHour = 0
+    coinStats.coinsPerMinute = 0
+    coinStats.sessionStart = tick()
+    CoinRateLabel.Text = "💰 0/h  •  0/min  •  0 total"
+end)
 
-    local function HideAllTabs()
-        MainContent.Visible = false; MiscContent.Visible = false; CombatContent.Visible = false
-        MainTab.BackgroundColor3 = Theme.Secondary; MiscTab.BackgroundColor3 = Theme.Secondary; CombatTab.BackgroundColor3 = Theme.Secondary
-        MainTab.TextColor3 = Theme.TextDim; MiscTab.TextColor3 = Theme.TextDim; CombatTab.TextColor3 = Theme.TextDim
-    end
-
-    MainTab.MouseButton1Click:Connect(function()
-        HideAllTabs(); MainContent.Visible = true
-        MainTab.BackgroundColor3 = Theme.Element; MainTab.TextColor3 = Theme.Accent
-    end)
-    MiscTab.MouseButton1Click:Connect(function()
-        HideAllTabs(); MiscContent.Visible = true
-        MiscTab.BackgroundColor3 = Theme.Element; MiscTab.TextColor3 = Theme.Accent
-    end)
-    CombatTab.MouseButton1Click:Connect(function()
-        HideAllTabs(); CombatContent.Visible = true
-        CombatTab.BackgroundColor3 = Theme.Element; CombatTab.TextColor3 = Theme.Accent
-    end)
-
-    -- // Função de Criar Botões
-    local function CreateToggle(parent, emoji, text, yPos, configKey, callback)
-        local Toggle = Instance.new("TextButton")
-        Toggle.Parent = parent
-        Toggle.Size = UDim2.new(1, 0, 0, 40)
-        Toggle.Position = UDim2.new(0, 0, 0, yPos)
-        Toggle.BackgroundColor3 = Theme.Element
-        Toggle.BorderSizePixel = 0
-        Toggle.Text = ""
-        Toggle.AutoButtonColor = false
-        Instance.new("UICorner", Toggle).CornerRadius = UDim.new(0, 8)
-
-        local HoverStroke = Instance.new("UIStroke", Toggle)
-        HoverStroke.Color = Theme.Accent
-        HoverStroke.Thickness = 1
-        HoverStroke.Transparency = 1
-
-        local Label = Instance.new("TextLabel", Toggle)
-        Label.BackgroundTransparency = 1
-        Label.Position = UDim2.new(0, 15, 0, 0)
-        Label.Size = UDim2.new(0.8, 0, 1, 0)
-        Label.Font = Enum.Font.GothamBold
-        Label.Text = emoji .. "  " .. text
-        Label.TextColor3 = Theme.Text
-        Label.TextSize = 13
-        Label.TextXAlignment = Enum.TextXAlignment.Left
-
-        local Circle = Instance.new("Frame", Toggle)
-        Circle.Size = UDim2.new(0, 18, 0, 18)
-        Circle.Position = UDim2.new(0.9, 0, 0.3, 0)
-        Circle.BackgroundColor3 = Config[configKey] and Theme.Accent or Theme.Off
-        Circle.BorderSizePixel = 0
-        Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
-
-        if Config[configKey] then task.spawn(function() callback(true) end) end
-
-        Toggle.MouseEnter:Connect(function()
-            TweenService:Create(Toggle, TweenInfo.new(0.2), {BackgroundColor3 = Theme.ElementHover}):Play()
-            HoverStroke.Transparency = 0.5
-        end)
-        Toggle.MouseLeave:Connect(function()
-            TweenService:Create(Toggle, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Element}):Play()
-            HoverStroke.Transparency = 1
-        end)
-
-        Toggle.MouseButton1Click:Connect(function()
-            Config[configKey] = not Config[configKey]
-            callback(Config[configKey])
-            Circle.BackgroundColor3 = Config[configKey] and Theme.Accent or Theme.Off
-            SaveConfig()
-        end)
-    end
-
-    -- // Toggles Main
-    CreateToggle(MainContent, "🍬", "AutoFarm Candies", 0, "autoFarmEnabled", function(state)
-        local char = Player.Character
-        local humanoid = char and char:FindFirstChild("Humanoid")
-        if state and humanoid then
-            originalWalkSpeed = humanoid.WalkSpeed
-            humanoid.WalkSpeed = Config.farmSpeed -- Aplica a velocidade de farm
-        elseif humanoid then
-            humanoid.WalkSpeed = originalWalkSpeed -- Restaura a velocidade ao desligar
-        end
-    end)
-    
-    CreateToggle(MainContent, "🏆", "Auto Battle Pass (XP)", 45, "autoBattlePassXP", function(state) end)
-    CreateToggle(MainContent, "🛒", "Auto Comprar Níveis (+600)", 90, "autoBuyBattlePass", function(state) end)
-    CreateToggle(MainContent, "🔄", "Auto Reset (Bag)", 135, "autoResetEnabled", function(state) end)
-
-    local SpeedBox = Instance.new("TextBox", MainContent)
-    SpeedBox.Position = UDim2.new(0, 130, 0, 180)
-    SpeedBox.Size = UDim2.new(0, 70, 0, 30)
-    SpeedBox.BackgroundColor3 = Theme.Background
-    SpeedBox.TextColor3 = Theme.Accent
-    SpeedBox.Font = Enum.Font.GothamBold
-    SpeedBox.TextSize = 14
-    SpeedBox.Text = tostring(Config.farmSpeed)
-    Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 8)
-    local SpeedStroke = Instance.new("UIStroke", SpeedBox); SpeedStroke.Color = Theme.Accent; SpeedStroke.Thickness = 1; SpeedStroke.Transparency = 0.5
-
-    local SpeedLabel = Instance.new("TextLabel", MainContent)
-    SpeedLabel.Position = UDim2.new(0, 10, 0, 180)
-    SpeedLabel.Size = UDim2.new(0, 100, 0, 30)
-    SpeedLabel.BackgroundTransparency = 1
-    SpeedLabel.Font = Enum.Font.GothamBold
-    SpeedLabel.Text = "⚡ Speed:"
-    SpeedLabel.TextColor3 = Theme.TextDim
-    SpeedLabel.TextSize = 14
-    SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-    SpeedBox.FocusLost:Connect(function(ep)
-        if ep then
-            local v = tonumber(SpeedBox.Text)
-            -- Limita a velocidade a 50 para não tomar kick
-            Config.farmSpeed = math.clamp(v or 30, 16, 50) 
-            SpeedBox.Text = tostring(Config.farmSpeed)
-            
-            -- Atualiza a velocidade na hora se o farm estiver ligado
-            if Config.autoFarmEnabled then
-                local char = Player.Character
-                local humanoid = char and char:FindFirstChild("Humanoid")
-                if humanoid then humanoid.WalkSpeed = Config.farmSpeed end
-            end
-            SaveConfig()
-        end
-    end)
-
-    -- // Toggles Misc
-    CreateToggle(MiscContent, "🛡️", "Anti-AFK", 0, "antiAfkEnabled", function(state)
-        if state then
-            Player.Idled:Connect(function()
-                VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-                task.wait(0.5)
-                VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-            end)
-        end
-    end)
-
-    CreateToggle(MiscContent, "🚀", "FPS Boost (Padrão)", 45, "fpsBoostEnabled", function(state)
-        if state then
-            for _, v in pairs(Lighting:GetChildren()) do
-                if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") then v.Enabled = false end
-            end
-            settings().Rendering.QualityLevel = 1
-        else
-            settings().Rendering.QualityLevel = 10
-        end
-    end)
-
-    CreateToggle(MiscContent, "☠️", "Modo Deserto (Extreme)", 90, "extremeFPSEnabled", function(state)
-        if state then
-            task.spawn(function()
-                local count = 0
-                for _, v in pairs(workspace:GetDescendants()) do
-                    if v:IsA("BasePart") then
-                        v.CastShadow = false
-                        if v.Material ~= Enum.Material.SmoothPlastic then v.Material = Enum.Material.SmoothPlastic end
-                    elseif v:IsA("Decal") or v:IsA("Texture") then
-                        v.Transparency = 1
-                    elseif v:IsA("ParticleEmitter") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Trail") then
-                        v.Enabled = false
-                    end
-                    count = count + 1
-                    if count % 100 == 0 then task.wait() end
-                end
-            end)
-        end
-    end)
-
-    CreateToggle(MiscContent, "👁️", "Ver Papéis (ESP)", 135, "roleESPEnabled", function(state)
-        if not state then
-            for _, p in pairs(Players:GetPlayers()) do
-                if p.Character and p.Character:FindFirstChild("RoleESP") then p.Character.RoleESP:Destroy() end
-            end
-        end
-    end)
-
-    CreateToggle(MiscContent, "🔄", "Auto-Rejoin (24h)", 180, "autoRejoinEnabled", function(state)
-        if state then
-            local qot = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
-            if qot then
-                local scriptUrl = "https://raw.githubusercontent.com/hallowenmm2hub/primehub/refs/heads/main/hubmm2"
-                pcall(qot, string.format('loadstring(game:HttpGet("%s?v=" .. os.time()))()', scriptUrl))
-            end
-        end
-    end)
-
-    -- // Toggles Combat
-    CreateToggle(CombatContent, "🕳️", "Anti-Void", 5, "antiVoidEnabled", function(state) end)
-    CreateToggle(CombatContent, "🏆", "Auto-Win (Bag)", 55, "autoWinEnabled", function(state) end)
-
-    -- // Farm Logic
-    local function getHRP() 
-        local char = Player.Character or Player.CharacterAdded:Wait()
-        return char:WaitForChild("HumanoidRootPart") 
-    end
-    
-    local function get_nearest_coin()
-        local hrp = getHRP()
-        if not hrp then return nil, math.huge end
-        local closest, dist = nil, math.huge
-        for _, m in pairs(workspace:GetChildren()) do
-            local container = m:FindFirstChild("CoinContainer")
-            if container then
-                for _, coin in pairs(container:GetChildren()) do
-                    if coin:IsA("BasePart") and coin:FindFirstChild("TouchInterest") then
-                        local d = (hrp.Position - coin.Position).Magnitude
-                        if d < dist then closest, dist = coin, d end
-                    end
-                end
-            end
-        end
-        return closest, dist
-    end
-
-    local function getMyRole()
-        local char = Player.Character
-        local backpack = Player:FindFirstChild("Backpack")
-        local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
-        if roleFolder then
-            local m = roleFolder:FindFirstChild("Murderer")
-            local s = roleFolder:FindFirstChild("Sheriff")
-            if m and m.Value == Player.Name then return "Murderer" end
-            if s and s.Value == Player.Name then return "Sheriff" end
-        end
-        if (backpack and backpack:FindFirstChild("Knife")) or (char and char:FindFirstChild("Knife")) then return "Murderer" end
-        if (backpack and backpack:FindFirstChild("Gun")) or (char and char:FindFirstChild("Gun")) then return "Sheriff" end
-        return "Innocent"
-    end
-
-    Player.CharacterAdded:Connect(function(char)
+task.spawn(function()
+    while true do
         task.wait(1)
-        if Config.autoFarmEnabled and char:FindFirstChild("Humanoid") then
-            char.Humanoid.WalkSpeed = Config.farmSpeed
+        if SessionLabel then
+            local elapsed = math.floor(tick() - coinStats.sessionStart)
+            local hours = math.floor(elapsed / 3600)
+            local minutes = math.floor((elapsed % 3600) / 60)
+            local seconds = elapsed % 60
+            SessionLabel.Text = string.format("⏱️ Sessão: %02d:%02d:%02d", hours, minutes, seconds)
         end
-    end)
+    end
+end)
 
-    ReplicatedStorage:WaitForChild("Remotes").Gameplay.RoundStart.OnClientEvent:Connect(function() 
-        farming = true
-        start_position = getHRP().CFrame 
-    end)
-    
-    ReplicatedStorage.Remotes.Gameplay.RoundEndFade.OnClientEvent:Connect(function() 
-        farming = false
-        if start_position then getHRP().CFrame = start_position end 
-    end)
+-------------------------------------------------------------------
+-- 🔁 Auto-farm logic
+-------------------------------------------------------------------
+local function getCharacter()
+	return Player.Character or Player.CharacterAdded:Wait()
+end
 
-    -- // Anti-Void Loop
-    task.spawn(function()
-        while true do
-            task.wait(1)
-            if not ScreenGui or not ScreenGui.Parent then break end
-            if Config.antiVoidEnabled then
-                local char = Player.Character
-                local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                if hrp and hrp.Position.Y < -50 then
-                    if start_position then hrp.CFrame = start_position
-                    else hrp.CFrame = CFrame.new(0, 50, 0) end
-                end
-            end
+local function getHRP()
+	return getCharacter():WaitForChild("HumanoidRootPart")
+end
+
+local function get_nearest_coin()
+	local hrp = getHRP()
+	local closest, dist = nil, math.huge
+	for _, m in pairs(workspace:GetChildren()) do
+		if m:FindFirstChild("CoinContainer") then
+			for _, coin in pairs(m.CoinContainer:GetChildren()) do
+				if coin:IsA("BasePart") and coin:FindFirstChild("TouchInterest") then
+					local d = (hrp.Position - coin.Position).Magnitude
+					if d < dist then
+						closest, dist = coin, d
+					end
+				end
+			end
+		end
+	end
+	return closest, dist
+end
+
+local RoundStart = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Gameplay"):WaitForChild("RoundStart")
+local RoundEnd = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Gameplay"):WaitForChild("RoundEndFade")
+
+RoundStart.OnClientEvent:Connect(function()
+	farming = true
+	start_position = getHRP().CFrame
+end)
+
+RoundEnd.OnClientEvent:Connect(function()
+	farming = false
+	if start_position then
+		getHRP().CFrame = start_position
+	end
+end)
+
+-- // Auto Reset Logic
+local CoinCollected = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Gameplay"):WaitForChild("CoinCollected")
+
+CoinCollected.OnClientEvent:Connect(function(_, current, max)
+    if current == max and not resetting and autoResetEnabled then
+        resetting = true
+        bag_full = true
+        local hrp = getHRP()
+        if start_position then
+            local tween = TweenService:Create(hrp, TweenInfo.new(2, Enum.EasingStyle.Linear), {CFrame = start_position})
+            tween:Play()
+            tween.Completed:Wait()
         end
-    end)
-
-    -- 🌟 AUTO BATTLE PASS (XP) + AUTO COMPRAR NÍVEIS
-    task.spawn(function()
-        while true do
-            task.wait(2)
-            if not ScreenGui or not ScreenGui.Parent then break end
-            
-            -- 1. AUTO FARM DE XP
-            if Config.autoBattlePassXP and farming then
-                local myRole = getMyRole()
-                local myChar = Player.Character
-                if myChar and myChar:FindFirstChild("Humanoid") and myChar.Humanoid.Health > 0 then
-                    if myRole == "Murderer" then
-                        for _, p in pairs(Players:GetPlayers()) do
-                            if p ~= Player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
-                                getHRP().CFrame = p.Character.HumanoidRootPart.CFrame
-                                task.wait(0.3)
-                            end
-                        end
-                    elseif myRole == "Sheriff" then
-                        local murdererName
-                        local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
-                        if roleFolder and roleFolder:FindFirstChild("Murderer") then murdererName = roleFolder.Murderer.Value end
-                        
-                        if murdererName then
-                            local murderer = Players:FindFirstChild(murdererName)
-                            if murderer and murderer.Character and murderer.Character:FindFirstChild("HumanoidRootPart") and murderer.Character:FindFirstChild("Humanoid") and murderer.Character.Humanoid.Health > 0 then
-                                getHRP().CFrame = murderer.Character.HumanoidRootPart.CFrame
-                                local gun = myChar:FindFirstChild("Gun") or Player.Backpack:FindFirstChild("Gun")
-                                if gun then
-                                    if gun.Parent == Player.Backpack then myChar.Humanoid:EquipTool(gun) end
-                                    task.wait(0.1)
-                                    gun:Activate()
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-
-            -- 2. AUTO COMPRAR NÍVEIS
-            if Config.autoBuyBattlePass then
-                local playerGui = Player:FindFirstChild("PlayerGui")
-                if playerGui then
-                    for _, gui in pairs(playerGui:GetDescendants()) do
-                        if gui:IsA("TextButton") then
-                            local btnText = string.lower(gui.Text)
-                            if btnText == "+1" or btnText == "+10" or string.find(btnText, "comprar") then
-                                if gui.Visible and gui.AbsolutePosition.X > 0 then
-                                    gui:Activate()
-                                    task.wait(1)
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end)
-
-    -- 🌟 LOOP DO FARM (WalkSpeed + MoveTo) - O SEGREDO ESTÁ AQUI
-    task.spawn(function()
-        while true do
-            if not ScreenGui or not ScreenGui.Parent then break end
-            if Config.autoFarmEnabled and farming and not bag_full then
-                local char = Player.Character
-                local humanoid = char and char:FindFirstChild("Humanoid")
-                local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                
-                if humanoid and hrp and humanoid.Health > 0 then
-                    local coin, dist = get_nearest_coin()
-                    
-                    if coin then
-                        -- Manda o personagem andar até a moeda (física do Roblox)
-                        humanoid:MoveTo(coin.Position)
-                        
-                        -- Se o doce estiver longe, tenta pular para não travar em obstáculos
-                        if dist > 20 then
-                            humanoid.Jump = true
-                        end
-                    end
-                end
-            end
-            task.wait(0.1) -- Delay um pouquinho maior para economizar processamento
-        end
-    end)
-
-    -- // Role ESP
-    task.spawn(function()
-        while true do
+        task.wait(0.5)
+        local chr = Player.Character
+        if chr and chr:FindFirstChild("Humanoid") then
+            chr.Humanoid.Health = 0
+            Player.CharacterAdded:Wait()
             task.wait(1.5)
-            if not ScreenGui or not ScreenGui.Parent then break end
-            if Config.roleESPEnabled then
-                local murdererName, sheriffName
-                local roleFolder = ReplicatedStorage:FindFirstChild("Roles")
-                if roleFolder then
-                    murdererName = roleFolder:FindFirstChild("Murderer") and roleFolder.Murderer.Value
-                    sheriffName = roleFolder:FindFirstChild("Sheriff") and roleFolder.Sheriff.Value
-                end
-                for _, p in pairs(Players:GetPlayers()) do
-                    if p ~= Player and p.Character then
-                        local char = p.Character
-                        local roleColor = Color3.fromRGB(0, 255, 0)
-                        if p.Name == murdererName then roleColor = Color3.fromRGB(255, 0, 0)
-                        elseif p.Name == sheriffName then roleColor = Color3.fromRGB(0, 100, 255)
-                        else
-                            local backpack = p:FindFirstChild("Backpack")
-                            local hasKnife = (backpack and backpack:FindFirstChild("Knife")) or char:FindFirstChild("Knife")
-                            local hasGun = (backpack and backpack:FindFirstChild("Gun")) or char:FindFirstChild("Gun")
-                            if hasKnife then roleColor = Color3.fromRGB(255, 0, 0)
-                            elseif hasGun then roleColor = Color3.fromRGB(0, 100, 255) end
-                        end
-                        
-                        local esp = char:FindFirstChild("RoleESP")
-                        if not esp then
-                            esp = Instance.new("Highlight"); esp.Name = "RoleESP"; esp.Parent = char; esp.Adornee = char; esp.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop; esp.FillTransparency = 0.6; esp.OutlineTransparency = 0
-                        end
-                        esp.FillColor = roleColor; esp.OutlineColor = roleColor
-                    end
-                end
-            end
         end
-    end)
+        resetting = false
+        bag_full = false
+    end
+end)
 
-    -- // Arrastar a Janela Principal
-    local dragging, dragStart, startPos
-    MainFrame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true; dragStart = input.Position; startPos = MainFrame.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+-- // Coin tracking
+CoinCollected.OnClientEvent:Connect(function(_, current, max)
+    local now = tick()
+    coinStats.totalCollected = coinStats.totalCollected + 1
+    coinStats.sessionCoins = coinStats.sessionCoins + 1
+    coinStats.lastCoinTime = now
+
+    table.insert(coinStats.recentCoins, now)
+    if #coinStats.recentCoins > MAX_RECENT_SAMPLES then
+        table.remove(coinStats.recentCoins, 1)
+    end
+
+    if #coinStats.recentCoins >= 2 then
+        local oldest = coinStats.recentCoins[1]
+        local newest = coinStats.recentCoins[#coinStats.recentCoins]
+        local timeSpan = newest - oldest
+        if timeSpan > 0 then
+            local coinsInWindow = #coinStats.recentCoins - 1
+            local coinsPerSecond = coinsInWindow / timeSpan
+            coinStats.coinsPerHour = math.floor(coinsPerSecond * 3600)
+            coinStats.coinsPerMinute = math.floor(coinsPerSecond * 60)
         end
-    end)
-    MainFrame.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStart
-            MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
+    end
 
-    -- // Botão Flutuante Arrastável
-    local ToggleButton = Instance.new("TextButton")
-    ToggleButton.Parent = ScreenGui
-    ToggleButton.Size = UDim2.new(0, 50, 0, 50)
-    ToggleButton.Position = UDim2.new(0.06, 0, 0.12, 0)
-    ToggleButton.BackgroundColor3 = Theme.Background
-    ToggleButton.Text = "👑"
-    ToggleButton.TextColor3 = Theme.Accent
-    ToggleButton.Font = Enum.Font.GothamBold
-    ToggleButton.TextSize = 24
-    ToggleButton.AutoButtonColor = false
-    Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(1, 0)
-    local BtnStroke = Instance.new("UIStroke", ToggleButton); BtnStroke.Color = Theme.Accent; BtnStroke.Thickness = 1.5; BtnStroke.Transparency = 0.3
+    if CoinRateLabel then
+        CoinRateLabel.Text = string.format(
+            "💰 %d/h  •  %d/min  •  %d total",
+            coinStats.coinsPerHour,
+            coinStats.coinsPerMinute,
+            coinStats.sessionCoins
+        )
+    end
+end)
 
-    local draggingButton = false
-    local dragStartButton, startPosButton
-    local buttonWasDragged = false
+-- LOOP DO FARM COM PROTEÇÃO ANTI-KICK
+task.spawn(function()
+	while true do
+		if autoFarmEnabled and farming and not bag_full then
+			local coin, dist = get_nearest_coin()
+			if coin then
+				local hrp = getHRP()
+				if dist > 150 then
+					hrp.CFrame = CFrame.new(coin.Position)
+				else
+					local travelTime = dist / farmSpeed
+					local targetCFrame = coin.CFrame
+					
+					-- Se o Anti-Kick estiver ligado, aplica as proteções
+					if antiKickEnabled then
+						targetCFrame = CFrame.new(coin.Position) -- Tira a rotação bugada
+						travelTime = math.max(travelTime, 0.15) -- Tempo mínimo
+						travelTime = travelTime * (math.random(85, 115) / 100) -- Variação humana
+					end
 
-    ToggleButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            draggingButton = true; buttonWasDragged = false
-            dragStartButton = input.Position; startPosButton = ToggleButton.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then draggingButton = false end end)
-        end
-    end)
+					local tween = TweenService:Create(hrp, TweenInfo.new(travelTime, Enum.EasingStyle.Linear), {CFrame = targetCFrame})
+					tween:Play()
+					repeat
+						task.wait()
+					until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled
+					pcall(function() tween:Cancel() end)
+				end
+			end
+		end
+		task.wait(0.2)
+	end
+end)
 
-    ToggleButton.InputChanged:Connect(function(input)
-        if draggingButton and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStartButton
-            if delta.Magnitude > 5 then buttonWasDragged = true end
-            ToggleButton.Position = UDim2.new(startPosButton.X.Scale, startPosButton.X.Offset + delta.X, startPosButton.Y.Scale, startPosButton.Y.Offset + delta.Y)
-        end
-    end)
+-------------------------------------------------------------------
+-- ⚙️ MISC FUNCTIONS
+-------------------------------------------------------------------
+local antiAfkEnabled = false
+local antiAfkConn
 
-    UserInputService.InputChanged:Connect(function(input)
-        if draggingButton and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStartButton
-            if delta.Magnitude > 5 then buttonWasDragged = true end
-            ToggleButton.Position = UDim2.new(startPosButton.X.Scale, startPosButton.X.Offset + delta.X, startPosButton.Y.Scale, startPosButton.Y.Offset + delta.Y)
-        end
-    end)
+-- // Anti-AFK Toggle
+local AntiAFKToggle = Instance.new("TextButton")
+AntiAFKToggle.Parent = MiscContent
+AntiAFKToggle.Size = UDim2.new(0, 230, 0, 35)
+AntiAFKToggle.Position = UDim2.new(0, 20, 0, 30)
+AntiAFKToggle.BackgroundColor3 = Color3.fromRGB(50, 0, 80)
+AntiAFKToggle.BorderSizePixel = 0
+AntiAFKToggle.Text = ""
+AntiAFKToggle.AutoButtonColor = false
 
-    local isVisible = true
-    ToggleButton.MouseButton1Click:Connect(function()
-        if not buttonWasDragged then
-            isVisible = not isVisible
-            MainFrame.Visible = isVisible
-        end
-    end)
+local AntiAFKCorner = Instance.new("UICorner", AntiAFKToggle)
+AntiAFKCorner.CornerRadius = UDim.new(1, 0)
 
-    UserInputService.InputBegan:Connect(function(input, gp)
-        if not gp and input.KeyCode == Enum.KeyCode.H then
-            isVisible = not isVisible
-            MainFrame.Visible = isVisible
-        end
-    end)
+local AntiAFKStroke = Instance.new("UIStroke", AntiAFKToggle)
+AntiAFKStroke.Color = Color3.fromRGB(200, 100, 255)
+AntiAFKStroke.Thickness = 1.2
+AntiAFKStroke.Transparency = 0.4
+
+local AntiAFKLabel = Instance.new("TextLabel", AntiAFKToggle)
+AntiAFKLabel.BackgroundTransparency = 1
+AntiAFKLabel.Position = UDim2.new(0.1, 0, 0, 0)
+AntiAFKLabel.Size = UDim2.new(0.8, 0, 1, 0)
+AntiAFKLabel.Font = Enum.Font.GothamBold
+AntiAFKLabel.Text = "⏰ Anti-AFK"
+AntiAFKLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+AntiAFKLabel.TextSize = 14
+AntiAFKLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local AntiAFKToggleCircle = Instance.new("Frame", AntiAFKToggle)
+AntiAFKToggleCircle.Size = UDim2.new(0, 18, 0, 18)
+AntiAFKToggleCircle.Position = UDim2.new(0.87, 0, 0.23, 0)
+AntiAFKToggleCircle.BackgroundColor3 = Color3.fromRGB(100, 40, 140)
+AntiAFKToggleCircle.BorderSizePixel = 0
+Instance.new("UICorner", AntiAFKToggleCircle).CornerRadius = UDim.new(1, 0)
+
+AntiAFKToggle.MouseButton1Click:Connect(function()
+	if not antiAfkEnabled then
+		antiAfkEnabled = true
+		AntiAFKToggleCircle.BackgroundColor3 = Color3.fromRGB(200, 120, 255)
+		AntiAFKLabel.Text = "⏰ Anti-AFK ✓"
+		AntiAFKLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
+
+		antiAfkConn = Player.Idled:Connect(function()
+			VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+			task.wait(0.5)
+			VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+		end)
+
+		AntiAFKToggle.AutoButtonColor = false
+		AntiAFKToggle.Active = false
+	end
+end)
+
+-- // 🛡️ ANTI-KICK TOGGLE (NOVO)
+local AntiKickToggle = Instance.new("TextButton")
+AntiKickToggle.Parent = MiscContent
+AntiKickToggle.Size = UDim2.new(0, 230, 0, 35)
+AntiKickToggle.Position = UDim2.new(0, 20, 0, 80) -- Posição logo abaixo do Anti-AFK
+AntiKickToggle.BackgroundColor3 = Color3.fromRGB(50, 0, 80)
+AntiKickToggle.BorderSizePixel = 0
+AntiKickToggle.Text = ""
+AntiKickToggle.AutoButtonColor = false
+
+local AntiKickCorner = Instance.new("UICorner", AntiKickToggle)
+AntiKickCorner.CornerRadius = UDim.new(1, 0)
+
+local AntiKickStroke = Instance.new("UIStroke", AntiKickToggle)
+AntiKickStroke.Color = Color3.fromRGB(200, 100, 255)
+AntiKickStroke.Thickness = 1.2
+AntiKickStroke.Transparency = 0.4
+
+local AntiKickLabel = Instance.new("TextLabel", AntiKickToggle)
+AntiKickLabel.BackgroundTransparency = 1
+AntiKickLabel.Position = UDim2.new(0.1, 0, 0, 0)
+AntiKickLabel.Size = UDim2.new(0.8, 0, 1, 0)
+AntiKickLabel.Font = Enum.Font.GothamBold
+AntiKickLabel.Text = "🛡️ Anti-Kick (Farm Seguro)"
+AntiKickLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+AntiKickLabel.TextSize = 14
+AntiKickLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local AntiKickToggleCircle = Instance.new("Frame", AntiKickToggle)
+AntiKickToggleCircle.Size = UDim2.new(0, 18, 0, 18)
+AntiKickToggleCircle.Position = UDim2.new(0.87, 0, 0.23, 0)
+AntiKickToggleCircle.BackgroundColor3 = Color3.fromRGB(100, 40, 140)
+AntiKickToggleCircle.BorderSizePixel = 0
+Instance.new("UICorner", AntiKickToggleCircle).CornerRadius = UDim.new(1, 0)
+
+AntiKickToggle.MouseButton1Click:Connect(function()
+	antiKickEnabled = not antiKickEnabled
+	if antiKickEnabled then
+		AntiKickToggleCircle.BackgroundColor3 = Color3.fromRGB(200, 120, 255)
+		AntiKickLabel.Text = "🛡️ Anti-Kick ✓"
+		AntiKickLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
+	else
+		AntiKickToggleCircle.BackgroundColor3 = Color3.fromRGB(100, 40, 140)
+		AntiKickLabel.Text = "🛡️ Anti-Kick (Farm Seguro)"
+		AntiKickLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	end
+end)
+
+-------------------------------------------------------------------
+-- // Player profile UI
+-------------------------------------------------------------------
+local ProfileContainer = Instance.new("Frame", MainFrame)
+ProfileContainer.Size = UDim2.new(0, 180, 0, 60)
+ProfileContainer.Position = UDim2.new(0.035, 0, 1, -75)
+ProfileContainer.BackgroundColor3 = Color3.fromRGB(40, 0, 60)
+ProfileContainer.BackgroundTransparency = 0.35
+ProfileContainer.BorderSizePixel = 0
+Instance.new("UICorner", ProfileContainer).CornerRadius = UDim.new(0, 8)
+local ProfileStroke = Instance.new("UIStroke", ProfileContainer)
+ProfileStroke.Color = Color3.fromRGB(190, 120, 255)
+ProfileStroke.Thickness = 1.2
+ProfileStroke.Transparency = 0.4
+
+local ProfileIcon = Instance.new("ImageLabel", ProfileContainer)
+ProfileIcon.BackgroundTransparency = 1
+ProfileIcon.Size = UDim2.new(0, 38, 0, 38)
+ProfileIcon.Position = UDim2.new(0.05, 0, 0.18, 0)
+ProfileIcon.Image = "rbxthumb://type=AvatarHeadShot&id="..Player.UserId.."&w=420&h=420"
+
+local NameLabel = Instance.new("TextLabel", ProfileContainer)
+NameLabel.BackgroundTransparency = 1
+NameLabel.Position = UDim2.new(0.32, 0, 0.18, 0)
+NameLabel.Size = UDim2.new(0, 100, 0, 18)
+NameLabel.Font = Enum.Font.GothamBold
+NameLabel.Text = Player.DisplayName or "Player"
+NameLabel.TextColor3 = Color3.fromRGB(255, 150, 255)
+NameLabel.TextSize = 13
+NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local SubName = Instance.new("TextLabel", ProfileContainer)
+SubName.BackgroundTransparency = 1
+SubName.Position = UDim2.new(0.32, 0, 0.52, 0)
+SubName.Size = UDim2.new(0, 100, 0, 16)
+SubName.Font = Enum.Font.Gotham
+SubName.Text = Player.Name or "anonymous"
+SubName.TextColor3 = Color3.fromRGB(200, 120, 255)
+SubName.TextSize = 11
+SubName.TextXAlignment = Enum.TextXAlignment.Left
+
+-------------------------------------------------------------------
+-- // Drag support for window
+-------------------------------------------------------------------
+local dragging = false
+local dragStart, startPos
+
+local function update(input)
+	local delta = input.Position - dragStart
+	MainFrame.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
 end
 
--- ═══════════════════════════════════════════════════════════════
--- INICIALIZAÇÃO (Key)
--- ═══════════════════════════════════════════════════════════════
-if CheckSavedKey() then
-    LoadHub()
-else
-    local KeyFrame = Instance.new("Frame")
-    KeyFrame.Name = "KeyFrame"
-    KeyFrame.Parent = ScreenGui
-    KeyFrame.BackgroundColor3 = Theme.Background
-    KeyFrame.BorderSizePixel = 0
-    KeyFrame.Size = UDim2.new(0, 300, 0, 220)
-    KeyFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    KeyFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-    Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 16)
-    local KStroke = Instance.new("UIStroke", KeyFrame); KStroke.Color = Theme.Accent; KStroke.Thickness = 1.5; KStroke.Transparency = 0.2
-    
-    local KeyTitle = Instance.new("TextLabel", KeyFrame)
-    KeyTitle.BackgroundTransparency = 1
-    KeyTitle.Position = UDim2.new(0, 0, 0, 20)
-    KeyTitle.Size = UDim2.new(1, 0, 0, 30)
-    KeyTitle.Font = Enum.Font.GothamBold
-    KeyTitle.Text = "👑 Prime Hub | Login"
-    KeyTitle.TextColor3 = Theme.Accent
-    KeyTitle.TextSize = 18
+MainFrame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = MainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
 
-    local KeyInput = Instance.new("TextBox", KeyFrame)
-    KeyInput.Position = UDim2.new(0, 30, 0, 70)
-    KeyInput.Size = UDim2.new(0, 240, 0, 40)
-    KeyInput.BackgroundColor3 = Theme.Element
-    KeyInput.TextColor3 = Theme.Text
-    KeyInput.Font = Enum.Font.GothamBold
-    KeyInput.TextSize = 14
-    KeyInput.PlaceholderText = "Insira a Key..."
-    KeyInput.Text = ""
-    Instance.new("UICorner", KeyInput).CornerRadius = UDim.new(0, 8)
+MainFrame.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		update(input)
+	end
+end)
 
-    local KeyButton = Instance.new("TextButton", KeyFrame)
-    KeyButton.Position = UDim2.new(0, 30, 0, 130)
-    KeyButton.Size = UDim2.new(0, 240, 0, 40)
-    KeyButton.BackgroundColor3 = Theme.Accent
-    KeyButton.Text = "Verificar"
-    KeyButton.TextColor3 = Theme.Text
-    KeyButton.Font = Enum.Font.GothamBold
-    KeyButton.TextSize = 14
-    KeyButton.AutoButtonColor = false
-    Instance.new("UICorner", KeyButton).CornerRadius = UDim.new(0, 8)
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		update(input)
+	end
+end)
 
-    local KeyStatus = Instance.new("TextLabel", KeyFrame)
-    KeyStatus.BackgroundTransparency = 1
-    KeyStatus.Position = UDim2.new(0, 0, 0, 180)
-    KeyStatus.Size = UDim2.new(1, 0, 20, 0)
-    KeyStatus.Font = Enum.Font.Gotham
-    KeyStatus.Text = ""
-    KeyStatus.TextColor3 = Color3.fromRGB(255, 50, 50)
-    KeyStatus.TextSize = 12
+-------------------------------------------------------------------
+-- // Toggle open/close button
+-------------------------------------------------------------------
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 60, 0, 60)
+ToggleButton.Position = UDim2.new(0.06, 0, 0.12, 0)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 0, 45)
+ToggleButton.BackgroundTransparency = 0.25
+ToggleButton.Text = ""
+ToggleButton.AutoButtonColor = false
 
-    KeyButton.MouseButton1Click:Connect(function()
-        if KeyInput.Text == VALID_KEY then
-            KeyStatus.Text = "✅ Acesso Liberado!"
-            KeyStatus.TextColor3 = Color3.fromRGB(120, 255, 120)
-            SaveKey()
-            task.wait(1)
-            LoadHub()
-        else
-            KeyStatus.Text = "❌ Key incorreta."
-            KeyStatus.TextColor3 = Color3.fromRGB(255, 50, 50)
-        end
-    end)
+local ButtonCorner = Instance.new("UICorner", ToggleButton)
+ButtonCorner.CornerRadius = UDim.new(1, 0)
+
+local ButtonStroke = Instance.new("UIStroke", ToggleButton)
+ButtonStroke.Color = Color3.fromRGB(200, 100, 255)
+ButtonStroke.Thickness = 1.3
+ButtonStroke.Transparency = 0.35
+
+local draggingButton = false
+local dragStartButton, startPosButton
+
+local function updateButton(input)
+	local delta = input.Position - dragStartButton
+	ToggleButton.Position = UDim2.new(
+		startPosButton.X.Scale,
+		startPosButton.X.Offset + delta.X,
+		startPosButton.Y.Scale,
+		startPosButton.Y.Offset + delta.Y
+	)
 end
+
+ToggleButton.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingButton = true
+		dragStartButton = input.Position
+		startPosButton = ToggleButton.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				draggingButton = false
+			end
+		end)
+	end
+end)
+
+ToggleButton.InputChanged:Connect(function(input)
+	if draggingButton and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		updateButton(input)
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if draggingButton and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		updateButton(input)
+	end
+end)
+
+local isVisible = true
+ToggleButton.MouseButton1Click:Connect(function()
+	isVisible = not isVisible
+	MainFrame.Visible = isVisible
+end)
+
+-- script end
