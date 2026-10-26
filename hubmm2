@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Colors: Orange Theme
--- Added: Fly Farm (Smooth) + Accurate Nearest Coin + Auto-Win + Sniper Crosshair + Anti-Lobby Bug
+-- Added: Fly Farm + Accurate Nearest Coin + Auto-Win + Sniper Crosshair + Anti-Lobby Bug
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -323,25 +323,44 @@ ResetStatsBtn.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------------------------------------------
--- 🔁 FARM LOGIC
+-- 🔁 FARM LOGIC (CORRIGIDA)
 -------------------------------------------------------------------
 local function getCharacter() return Player.Character or Player.CharacterAdded:Wait() end
 local function getHRP() return getCharacter():WaitForChild("HumanoidRootPart") end
 
+-- 🌟 BUSCA DE MOEDA INFALÍVEL (Padrão MM2)
 local function getNearestCoin()
 	local hrp = getHRP()
 	if not hrp then return nil, math.huge end
 	local closest, dist = nil, math.huge
-	for _, m in pairs(workspace:GetDescendants()) do
-		if m.Name == "CoinContainer" then
-			for _, coin in pairs(m:GetChildren()) do
+	
+	-- Procura dentro do Workspace
+	for _, m in pairs(workspace:GetChildren()) do
+		local container = m:FindFirstChild("CoinContainer")
+		if container then
+			for _, coin in pairs(container:GetChildren()) do
 				if coin:IsA("BasePart") and coin:FindFirstChild("TouchInterest") then
 					local d = (hrp.Position - coin.Position).Magnitude
-					if d < dist then closest, dist = coin, d end
+					if d < dist then
+						closest, dist = coin, d
+					end
 				end
 			end
 		end
 	end
+	
+	-- Fallback: Se não achou no Workspace, procura direto nas pastas do mapa
+	if not closest then
+		for _, obj in pairs(workspace:GetDescendants()) do
+			if obj.Name == "Coin" or obj.Name == "Candy" then
+				if obj:IsA("BasePart") and obj:FindFirstChild("TouchInterest") then
+					local d = (hrp.Position - obj.Position).Magnitude
+					if d < dist then closest, dist = obj, d end
+				end
+			end
+		end
+	end
+	
 	return closest, dist
 end
 
@@ -361,7 +380,6 @@ end
 
 -- 🌟 CORREÇÃO: Desliga o farm ao morrer
 Player.CharacterAdded:Connect(function(char)
-    -- Sempre que o personagem nascer, o farm para e só liga no próximo RoundStart
     farming = false
     
     task.wait(1)
@@ -436,7 +454,7 @@ ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(
     end
 end)
 
--- 🌟 LOOP DO FARM VOANDO
+-- 🌟 LOOP DO FARM VOANDO (CORRIGIDO)
 task.spawn(function()
 	while true do
 		if autoFarmEnabled and farming and not bag_full then
@@ -444,7 +462,6 @@ task.spawn(function()
 			local char = Player.Character
 			local hum = char and char:FindFirstChild("Humanoid")
 			
-			-- 🌟 TRAVA DE SEGURANÇA: Se estiver morto, para o loop imediatamente
 			if not coin or not char or not hum or hum.Health <= 0 then
 				farming = false
 				task.wait(0.5)
