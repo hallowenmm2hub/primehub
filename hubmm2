@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Colors: Orange Theme
--- Added: Fly Farm (Smooth) + Accurate Nearest Coin + Auto-Win + Sniper Crosshair
+-- Added: Fly Farm (Smooth) + Accurate Nearest Coin + Auto-Win + Sniper Crosshair + Anti-Lobby Bug
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -177,7 +177,6 @@ local start_position
 local farmSpeed = 30 
 local autoResetEnabled = false
 local resetting = false
-local cachedCoins = {}
 
 local coinStats = { sessionStart = tick(), sessionCoins = 0 }
 local CoinRateLabel 
@@ -214,7 +213,6 @@ AutoFarmToggle.MouseButton1Click:Connect(function()
 	autoFarmEnabled = not autoFarmEnabled
 	ToggleCircle.BackgroundColor3 = autoFarmEnabled and Color3.fromRGB(255, 140, 0) or Color3.fromRGB(120, 60, 20)
 	
-	-- Ativa/Desativa a colisão para o boneco atravessar as paredes voando
 	local char = Player.Character
 	if char then
 		for _, v in pairs(char:GetDescendants()) do
@@ -330,39 +328,20 @@ end)
 local function getCharacter() return Player.Character or Player.CharacterAdded:Wait() end
 local function getHRP() return getCharacter():WaitForChild("HumanoidRootPart") end
 
--- 🌟 BUSCA DE MOEDA CORRIGIDA (Olha TODAS as moedas do mapa)
 local function getNearestCoin()
 	local hrp = getHRP()
 	if not hrp then return nil, math.huge end
-	
 	local closest, dist = nil, math.huge
-	
 	for _, m in pairs(workspace:GetDescendants()) do
-		if m.Name == "CoinContainer" or m:FindFirstChild("CoinContainer") then
-			local container = m.Name == "CoinContainer" and m or m.CoinContainer
-			for _, coin in pairs(container:GetChildren()) do
+		if m.Name == "CoinContainer" then
+			for _, coin in pairs(m:GetChildren()) do
 				if coin:IsA("BasePart") and coin:FindFirstChild("TouchInterest") then
 					local d = (hrp.Position - coin.Position).Magnitude
-					if d < dist then
-						closest, dist = coin, d
-					end
+					if d < dist then closest, dist = coin, d end
 				end
 			end
 		end
 	end
-	
-	-- Se não achou na workspace, tenta procurar direto nos modelos
-	if not closest then
-	    for _, coin in pairs(workspace:GetDescendants()) do
-	        if coin:IsA("BasePart") and coin.Name:lower():find("coin") or coin.Name:lower():find("candy") then
-	            if coin:FindFirstChild("TouchInterest") then
-	                local d = (hrp.Position - coin.Position).Magnitude
-	                if d < dist then closest, dist = coin, d end
-	            end
-	        end
-	    end
-	end
-	
 	return closest, dist
 end
 
@@ -380,7 +359,11 @@ local function getMyRole()
     return "Innocent"
 end
 
+-- 🌟 CORREÇÃO: Desliga o farm ao morrer
 Player.CharacterAdded:Connect(function(char)
+    -- Sempre que o personagem nascer, o farm para e só liga no próximo RoundStart
+    farming = false
+    
     task.wait(1)
     if autoFarmEnabled then
         for _, v in pairs(char:GetDescendants()) do
@@ -458,19 +441,21 @@ task.spawn(function()
 	while true do
 		if autoFarmEnabled and farming and not bag_full then
 			local coin, dist = getNearestCoin()
-			if coin then
-				local hrp = getHRP()
-				local char = Player.Character
-				
-				if hrp and char and char:FindFirstChild("Humanoid") then
-					-- Garante que está sem colisão para voar
+			local char = Player.Character
+			local hum = char and char:FindFirstChild("Humanoid")
+			
+			-- 🌟 TRAVA DE SEGURANÇA: Se estiver morto, para o loop imediatamente
+			if not coin or not char or not hum or hum.Health <= 0 then
+				farming = false
+				task.wait(0.5)
+			else
+				local hrp = char:FindFirstChild("HumanoidRootPart")
+				if hrp then
 					for _, v in pairs(char:GetDescendants()) do
 						if v:IsA("BasePart") then v.CanCollide = false end
 					end
 					
-					-- Move a posição (Voando), mas mantém em pé para não kickar
 					local targetPos = CFrame.new(coin.Position)
-					
 					local travelTime = math.max(dist / farmSpeed, 0.25) 
 					
 					local tween = TweenService:Create(hrp, TweenInfo.new(travelTime, Enum.EasingStyle.Linear), {CFrame = targetPos})
