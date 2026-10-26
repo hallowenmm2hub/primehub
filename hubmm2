@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Colors: Orange Theme
--- Added: Auto-Win + Sniper Crosshair + Accurate Tracker + Crown Button
+-- Fix: Removed Teleport (Invalid Position kick) - Now using safe WalkSpeed movement
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -175,7 +175,7 @@ local autoWinEnabled = false
 local farming = false
 local bag_full = false
 local start_position
-local farmSpeed = 20 
+local farmSpeed = 25 -- Velocidade padrão segura (WalkSpeed)
 local autoResetEnabled = false
 local resetting = false
 local cachedCoins = {}
@@ -214,6 +214,15 @@ Instance.new("UICorner", ToggleCircle).CornerRadius = UDim.new(1, 0)
 AutoFarmToggle.MouseButton1Click:Connect(function()
 	autoFarmEnabled = not autoFarmEnabled
 	ToggleCircle.BackgroundColor3 = autoFarmEnabled and Color3.fromRGB(255, 140, 0) or Color3.fromRGB(120, 60, 20)
+	
+	local char = Player.Character
+	if char and char:FindFirstChild("Humanoid") then
+		if autoFarmEnabled then
+			char.Humanoid.WalkSpeed = farmSpeed
+		else
+			char.Humanoid.WalkSpeed = 16 -- Volta ao normal
+		end
+	end
 end)
 
 local AutoResetToggle = Instance.new("TextButton", MainContent)
@@ -267,7 +276,8 @@ SpeedStroke.Color = Color3.fromRGB(255, 140, 0); SpeedStroke.Thickness = 1.1; Sp
 local WarningText = Instance.new("TextLabel", MainContent)
 WarningText.Position = UDim2.new(0, 25, 0, 97); WarningText.Size = UDim2.new(0, 220, 0, 15)
 WarningText.BackgroundTransparency = 1; WarningText.Font = Enum.Font.Gotham
-WarningText.Text = "⚠️ Over 25 = Kick"; WarningText.TextColor3 = Color3.fromRGB(255, 130, 130)
+WarningText.Text = "⚠️ Over 45 = Kick (In-Game)" 
+WarningText.TextColor3 = Color3.fromRGB(255, 130, 130)
 WarningText.TextSize = 11; WarningText.TextXAlignment = Enum.TextXAlignment.Left
 WarningText.TextTransparency = 0.1
 
@@ -277,7 +287,10 @@ SpeedBox.FocusLost:Connect(function(enterPressed)
 		if value then
 			farmSpeed = math.clamp(value, 1, 50)
 			SpeedBox.Text = tostring(farmSpeed)
-			WarningText.TextColor3 = farmSpeed > 25 and Color3.fromRGB(255, 50, 50) or Color3.fromRGB(255, 130, 130)
+			if autoFarmEnabled then
+				local char = Player.Character
+				if char and char:FindFirstChild("Humanoid") then char.Humanoid.WalkSpeed = farmSpeed end
+			end
 		else
 			SpeedBox.Text = tostring(farmSpeed)
 		end
@@ -331,8 +344,6 @@ local function getHRP() return getCharacter():WaitForChild("HumanoidRootPart") e
 
 local function updateCoinCache()
 	cachedCoins = {}
-	local hrp = getHRP()
-	if not hrp then return end
 	for _, m in pairs(workspace:GetChildren()) do
 		if m:FindFirstChild("CoinContainer") then
 			for _, coin in pairs(m.CoinContainer:GetChildren()) do
@@ -346,7 +357,7 @@ end
 
 local function getNearestCoin()
 	local hrp = getHRP()
-	if not hrp then return nil, math.huge end
+	if not hrp then return nil end
 	local closest, dist = nil, math.huge
 	for _, coin in pairs(cachedCoins) do
 		if coin.Parent and coin:FindFirstChild("TouchInterest") then
@@ -370,6 +381,13 @@ local function getMyRole()
     if (backpack and backpack:FindFirstChild("Gun")) or (char and char:FindFirstChild("Gun")) then return "Sheriff" end
     return "Innocent"
 end
+
+Player.CharacterAdded:Connect(function(char)
+    task.wait(1)
+    if autoFarmEnabled and char:FindFirstChild("Humanoid") then
+        char.Humanoid.WalkSpeed = farmSpeed
+    end
+end)
 
 ReplicatedStorage:WaitForChild("Remotes").Gameplay.RoundStart.OnClientEvent:Connect(function()
 	farming = true
@@ -438,29 +456,26 @@ ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(
     end
 end)
 
+-- 🌟 LOOP DO FARM (SEM TP - USANDO WALKSPEED E MOVETO)
 task.spawn(function()
 	while true do
 		if autoFarmEnabled and farming and not bag_full then
 			local coin, dist = getNearestCoin()
-			if coin then
-				local hrp = getHRP()
-				if dist > 150 then
-					hrp.CFrame = CFrame.new(coin.Position)
-				else
-					local travelTime = math.max(dist / farmSpeed, antiKickEnabled and 0.15 or 0.05)
-					if antiKickEnabled then travelTime = travelTime * (math.random(85, 115) / 100) end
-					local targetCFrame = antiKickEnabled and CFrame.new(coin.Position) or coin.CFrame
-
-					local tween = TweenService:Create(hrp, TweenInfo.new(travelTime, Enum.EasingStyle.Linear), {CFrame = targetCFrame})
-					tween:Play()
-					repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled
-					pcall(function() tween:Cancel() end)
+			local char = Player.Character
+			
+			if coin and char and char:FindFirstChild("Humanoid") and char:FindFirstChild("HumanoidRootPart") then
+				-- Manda o personagem CORRER até a moeda (Movimento Seguro)
+				char.Humanoid:MoveTo(coin.Position)
+				
+				-- Se estiver longe, dá um pulo para não travar em rampas
+				if dist > 15 then
+					char.Humanoid.Jump = true
 				end
 			else
 				updateCoinCache()
 			end
 		end
-		task.wait(0.15)
+		task.wait(0.1)
 	end
 end)
 
@@ -518,17 +533,12 @@ CreateMiscToggle("⏰ Anti-AFK", 30, function()
     return true
 end)
 
-CreateMiscToggle("🛡️ Anti-Kick (Farm Seguro)", 80, function()
-    antiKickEnabled = not antiKickEnabled
-    return antiKickEnabled
-end)
-
-CreateMiscToggle("🏆 Auto-Win (Bag Cheia)", 130, function()
+CreateMiscToggle("🏆 Auto-Win (Bag Cheia)", 80, function()
     autoWinEnabled = not autoWinEnabled
     return autoWinEnabled
 end)
 
-CreateMiscToggle("🎯 Mira de Sniper", 180, function()
+CreateMiscToggle("🎯 Mira de Sniper", 130, function()
     CrosshairGUI.Visible = not CrosshairGUI.Visible
     return CrosshairGUI.Visible
 end)
