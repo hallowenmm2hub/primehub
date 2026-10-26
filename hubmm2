@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
 -- Colors: Orange Theme
--- Fix: Removed Teleport (Invalid Position kick) - Now using safe WalkSpeed movement
+-- Added: Fly Farm (Smooth) + Accurate Nearest Coin + Auto-Win + Sniper Crosshair
 
 -- // Wait for game to load
 if not game:IsLoaded() then game.Loaded:Wait() end
@@ -167,15 +167,14 @@ MiscTab.MouseButton1Click:Connect(function()
 end)
 
 -------------------------------------------------------------------
--- 🍬 AUTO FARM CONFIG
+-- 🍬 AUTO FARM CONFIG (FLY MODE)
 -------------------------------------------------------------------
 local autoFarmEnabled = false
-local antiKickEnabled = false
 local autoWinEnabled = false
 local farming = false
 local bag_full = false
 local start_position
-local farmSpeed = 25 -- Velocidade padrão segura (WalkSpeed)
+local farmSpeed = 30 
 local autoResetEnabled = false
 local resetting = false
 local cachedCoins = {}
@@ -199,7 +198,7 @@ AutoFarmLabel.BackgroundTransparency = 1
 AutoFarmLabel.Position = UDim2.new(0.1, 0, 0, 0)
 AutoFarmLabel.Size = UDim2.new(0.8, 0, 1, 0)
 AutoFarmLabel.Font = Enum.Font.GothamBold
-AutoFarmLabel.Text = "🍬 AutoFarm Candies"
+AutoFarmLabel.Text = "🍬 AutoFarm (Fly Mode)"
 AutoFarmLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 AutoFarmLabel.TextSize = 14
 AutoFarmLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -215,12 +214,13 @@ AutoFarmToggle.MouseButton1Click:Connect(function()
 	autoFarmEnabled = not autoFarmEnabled
 	ToggleCircle.BackgroundColor3 = autoFarmEnabled and Color3.fromRGB(255, 140, 0) or Color3.fromRGB(120, 60, 20)
 	
+	-- Ativa/Desativa a colisão para o boneco atravessar as paredes voando
 	local char = Player.Character
-	if char and char:FindFirstChild("Humanoid") then
-		if autoFarmEnabled then
-			char.Humanoid.WalkSpeed = farmSpeed
-		else
-			char.Humanoid.WalkSpeed = 16 -- Volta ao normal
+	if char then
+		for _, v in pairs(char:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.CanCollide = not autoFarmEnabled
+			end
 		end
 	end
 end)
@@ -273,24 +273,12 @@ Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 6)
 local SpeedStroke = Instance.new("UIStroke", SpeedBox)
 SpeedStroke.Color = Color3.fromRGB(255, 140, 0); SpeedStroke.Thickness = 1.1; SpeedStroke.Transparency = 0.4
 
-local WarningText = Instance.new("TextLabel", MainContent)
-WarningText.Position = UDim2.new(0, 25, 0, 97); WarningText.Size = UDim2.new(0, 220, 0, 15)
-WarningText.BackgroundTransparency = 1; WarningText.Font = Enum.Font.Gotham
-WarningText.Text = "⚠️ Over 45 = Kick (In-Game)" 
-WarningText.TextColor3 = Color3.fromRGB(255, 130, 130)
-WarningText.TextSize = 11; WarningText.TextXAlignment = Enum.TextXAlignment.Left
-WarningText.TextTransparency = 0.1
-
 SpeedBox.FocusLost:Connect(function(enterPressed)
 	if enterPressed then
 		local value = tonumber(SpeedBox.Text)
 		if value then
 			farmSpeed = math.clamp(value, 1, 50)
 			SpeedBox.Text = tostring(farmSpeed)
-			if autoFarmEnabled then
-				local char = Player.Character
-				if char and char:FindFirstChild("Humanoid") then char.Humanoid.WalkSpeed = farmSpeed end
-			end
 		else
 			SpeedBox.Text = tostring(farmSpeed)
 		end
@@ -342,29 +330,39 @@ end)
 local function getCharacter() return Player.Character or Player.CharacterAdded:Wait() end
 local function getHRP() return getCharacter():WaitForChild("HumanoidRootPart") end
 
-local function updateCoinCache()
-	cachedCoins = {}
-	for _, m in pairs(workspace:GetChildren()) do
-		if m:FindFirstChild("CoinContainer") then
-			for _, coin in pairs(m.CoinContainer:GetChildren()) do
+-- 🌟 BUSCA DE MOEDA CORRIGIDA (Olha TODAS as moedas do mapa)
+local function getNearestCoin()
+	local hrp = getHRP()
+	if not hrp then return nil, math.huge end
+	
+	local closest, dist = nil, math.huge
+	
+	for _, m in pairs(workspace:GetDescendants()) do
+		if m.Name == "CoinContainer" or m:FindFirstChild("CoinContainer") then
+			local container = m.Name == "CoinContainer" and m or m.CoinContainer
+			for _, coin in pairs(container:GetChildren()) do
 				if coin:IsA("BasePart") and coin:FindFirstChild("TouchInterest") then
-					table.insert(cachedCoins, coin)
+					local d = (hrp.Position - coin.Position).Magnitude
+					if d < dist then
+						closest, dist = coin, d
+					end
 				end
 			end
 		end
 	end
-end
-
-local function getNearestCoin()
-	local hrp = getHRP()
-	if not hrp then return nil end
-	local closest, dist = nil, math.huge
-	for _, coin in pairs(cachedCoins) do
-		if coin.Parent and coin:FindFirstChild("TouchInterest") then
-			local d = (hrp.Position - coin.Position).Magnitude
-			if d < dist then closest, dist = coin, d end
-		end
+	
+	-- Se não achou na workspace, tenta procurar direto nos modelos
+	if not closest then
+	    for _, coin in pairs(workspace:GetDescendants()) do
+	        if coin:IsA("BasePart") and coin.Name:lower():find("coin") or coin.Name:lower():find("candy") then
+	            if coin:FindFirstChild("TouchInterest") then
+	                local d = (hrp.Position - coin.Position).Magnitude
+	                if d < dist then closest, dist = coin, d end
+	            end
+	        end
+	    end
 	end
+	
 	return closest, dist
 end
 
@@ -384,15 +382,16 @@ end
 
 Player.CharacterAdded:Connect(function(char)
     task.wait(1)
-    if autoFarmEnabled and char:FindFirstChild("Humanoid") then
-        char.Humanoid.WalkSpeed = farmSpeed
+    if autoFarmEnabled then
+        for _, v in pairs(char:GetDescendants()) do
+            if v:IsA("BasePart") then v.CanCollide = false end
+        end
     end
 end)
 
 ReplicatedStorage:WaitForChild("Remotes").Gameplay.RoundStart.OnClientEvent:Connect(function()
 	farming = true
 	start_position = getHRP().CFrame
-	updateCoinCache()
 end)
 
 ReplicatedStorage.Remotes.Gameplay.RoundEndFade.OnClientEvent:Connect(function()
@@ -407,8 +406,6 @@ ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(
         local coinsPerSecond = coinStats.sessionCoins / timeElapsed
         CoinRateLabel.Text = string.format("💰 %d/h  •  %d/min  •  %d total", math.floor(coinsPerSecond * 3600), math.floor(coinsPerSecond * 60), coinStats.sessionCoins)
     end
-    
-    task.delay(0.5, updateCoinCache)
 
     if current == max and not resetting then
         resetting = true; bag_full = true
@@ -456,23 +453,32 @@ ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(
     end
 end)
 
--- 🌟 LOOP DO FARM (SEM TP - USANDO WALKSPEED E MOVETO)
+-- 🌟 LOOP DO FARM VOANDO
 task.spawn(function()
 	while true do
 		if autoFarmEnabled and farming and not bag_full then
 			local coin, dist = getNearestCoin()
-			local char = Player.Character
-			
-			if coin and char and char:FindFirstChild("Humanoid") and char:FindFirstChild("HumanoidRootPart") then
-				-- Manda o personagem CORRER até a moeda (Movimento Seguro)
-				char.Humanoid:MoveTo(coin.Position)
+			if coin then
+				local hrp = getHRP()
+				local char = Player.Character
 				
-				-- Se estiver longe, dá um pulo para não travar em rampas
-				if dist > 15 then
-					char.Humanoid.Jump = true
+				if hrp and char and char:FindFirstChild("Humanoid") then
+					-- Garante que está sem colisão para voar
+					for _, v in pairs(char:GetDescendants()) do
+						if v:IsA("BasePart") then v.CanCollide = false end
+					end
+					
+					-- Move a posição (Voando), mas mantém em pé para não kickar
+					local targetPos = CFrame.new(coin.Position)
+					
+					local travelTime = math.max(dist / farmSpeed, 0.25) 
+					
+					local tween = TweenService:Create(hrp, TweenInfo.new(travelTime, Enum.EasingStyle.Linear), {CFrame = targetPos})
+					tween:Play()
+					
+					repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not farming or not autoFarmEnabled
+					pcall(function() tween:Cancel() end)
 				end
-			else
-				updateCoinCache()
 			end
 		end
 		task.wait(0.1)
@@ -574,7 +580,7 @@ SubName.Text = Player.Name or "anonymous"; SubName.TextColor3 = Color3.fromRGB(2
 SubName.TextSize = 11; SubName.TextXAlignment = Enum.TextXAlignment.Left
 
 -------------------------------------------------------------------
--- // TOGGLE BUTTON (COM COROA E BORDA LARANJA)
+-- // TOGGLE BUTTON
 -------------------------------------------------------------------
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Name = "ToggleButton"
