@@ -1,7 +1,7 @@
 -- Murder Mystery 2 | Halloween
 -- Author: sllvzz
--- Cleaned & Fixed
--- Colors: Orange Theme
+-- Colors: Blue #0077B6 Premium Theme
+-- Added: Fly Farm + Auto-Win + Sniper Crosshair
 
 if not game:IsLoaded() then game.Loaded:Wait() end
 
@@ -12,51 +12,44 @@ local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualUser = game:GetService("VirtualUser")
 
+-- // CORES DO TEMA (#0077B6)
+local Theme = {
+    Background = Color3.fromRGB(10, 15, 20),
+    Secondary = Color3.fromRGB(20, 30, 40),
+    Element = Color3.fromRGB(25, 40, 50),
+    Accent = Color3.fromRGB(0, 119, 182),
+    AccentLight = Color3.fromRGB(120, 220, 255),
+    Text = Color3.fromRGB(240, 240, 240),
+    Off = Color3.fromRGB(50, 60, 70)
+}
+
 -- // SERVICES
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "prime_hub_orange"
+ScreenGui.Name = "prime_hub_blue"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = game.CoreGui
-
--- // MIRA DE SNIPER
-local Crosshair = Instance.new("Frame", ScreenGui)
-Crosshair.Size = UDim2.new(0, 40, 0, 40)
-Crosshair.AnchorPoint = Vector2.new(0.5, 0.5)
-Crosshair.Position = UDim2.new(0.5, 0, 0.5, 0)
-Crosshair.BackgroundTransparency = 1
-Crosshair.Visible = false
-
-local Dot = Instance.new("Frame", Crosshair)
-Dot.Size = UDim2.new(0, 4, 0, 4)
-Dot.Position = UDim2.new(0.5, -2, 0.5, -2)
-Dot.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
-Dot.BorderSizePixel = 0
-Instance.new("UICorner", Dot).CornerRadius = UDim.new(1, 0)
-
-local LineH = Instance.new("Frame", Crosshair)
-LineH.Size = UDim2.new(0, 30, 0, 2)
-LineH.Position = UDim2.new(0.5, -15, 0.5, -1)
-LineH.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
-LineH.BorderSizePixel = 0
-
-local LineV = Instance.new("Frame", Crosshair)
-LineV.Size = UDim2.new(0, 2, 0, 30)
-LineV.Position = UDim2.new(0.5, -1, 0.5, -15)
-LineV.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
-LineV.BorderSizePixel = 0
 
 -- // MAIN UI
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Size = UDim2.new(0, 500, 0, 360)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 15, 10)
-MainFrame.BackgroundTransparency = 0.2
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+MainFrame.BackgroundColor3 = Theme.Background
+MainFrame.BackgroundTransparency = 0.25
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 14)
+
+local Gradient = Instance.new("UIGradient", MainFrame)
+Gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 30, 45)),
+    ColorSequenceKeypoint.new(1, Theme.Background)
+}
+Gradient.Rotation = 90
 
 local Stroke = Instance.new("UIStroke", MainFrame)
-Stroke.Color = Color3.fromRGB(255, 140, 0)
+Stroke.Color = Theme.Accent
 Stroke.Thickness = 1.5
+Stroke.Transparency = 0.2
 
 -- // TITLE
 local Title = Instance.new("TextLabel", MainFrame)
@@ -64,54 +57,54 @@ Title.Position = UDim2.new(0, 20, 0, 15)
 Title.Size = UDim2.new(0, 300, 0, 20)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
-Title.Text = "Murder Mystery 2 | Halloween"
-Title.TextColor3 = Color3.fromRGB(255, 140, 0)
-Title.TextSize = 16
+Title.Text = "Prime Hub | MM2"
+Title.TextColor3 = Theme.AccentLight
+Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 local SubTitle = Instance.new("TextLabel", MainFrame)
-SubTitle.Position = UDim2.new(0, 20, 0, 35)
+SubTitle.Position = UDim2.new(0, 20, 0, 40)
 SubTitle.Size = UDim2.new(0, 300, 0, 15)
 SubTitle.BackgroundTransparency = 1
-SubTitle.Font = Enum.Font.Gotham
-SubTitle.Text = "By: sllvzz ( discord : prime hub )"
-SubTitle.TextColor3 = Color3.fromRGB(255, 180, 100)
+SubTitle.Font = Enum.Font.GothamMedium
+SubTitle.Text = "By: sllvzz"
+SubTitle.TextColor3 = Color3.fromRGB(150, 180, 200)
 SubTitle.TextSize = 12
 SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 
 -- // TABS
 local TabFrame = Instance.new("Frame", MainFrame)
 TabFrame.Size = UDim2.new(0, 130, 0, 180)
-TabFrame.Position = UDim2.new(0, 20, 0, 70)
-TabFrame.BackgroundColor3 = Color3.fromRGB(40, 20, 10)
-TabFrame.BackgroundTransparency = 0.3
-Instance.new("UICorner", TabFrame).CornerRadius = UDim.new(0, 8)
+TabFrame.Position = UDim2.new(0, 20, 0, 75)
+TabFrame.BackgroundColor3 = Theme.Secondary
+TabFrame.BackgroundTransparency = 0.2
+Instance.new("UICorner", TabFrame).CornerRadius = UDim.new(0, 10)
 
 local BtnMain = Instance.new("TextButton", TabFrame)
 BtnMain.Size = UDim2.new(0, 110, 0, 35)
 BtnMain.Position = UDim2.new(0, 10, 0, 10)
-BtnMain.BackgroundColor3 = Color3.fromRGB(80, 40, 10)
+BtnMain.BackgroundColor3 = Theme.Accent
 BtnMain.Text = "🎯 Main"
-BtnMain.TextColor3 = Color3.fromRGB(255, 180, 100)
+BtnMain.TextColor3 = Color3.fromRGB(255, 255, 255)
 BtnMain.Font = Enum.Font.GothamBold
 Instance.new("UICorner", BtnMain).CornerRadius = UDim.new(0, 6)
 
 local BtnMisc = Instance.new("TextButton", TabFrame)
 BtnMisc.Size = UDim2.new(0, 110, 0, 35)
 BtnMisc.Position = UDim2.new(0, 10, 0, 55)
-BtnMisc.BackgroundColor3 = Color3.fromRGB(40, 20, 10)
+BtnMisc.BackgroundColor3 = Theme.Secondary
 BtnMisc.Text = "⚙️ Misc"
-BtnMisc.TextColor3 = Color3.fromRGB(255, 140, 0)
+BtnMisc.TextColor3 = Theme.Accent
 BtnMisc.Font = Enum.Font.GothamBold
 Instance.new("UICorner", BtnMisc).CornerRadius = UDim.new(0, 6)
 
 -- // CONTENT
 local ContentFrame = Instance.new("Frame", MainFrame)
 ContentFrame.Size = UDim2.new(0, 310, 0, 240)
-ContentFrame.Position = UDim2.new(0, 165, 0, 70)
-ContentFrame.BackgroundColor3 = Color3.fromRGB(40, 20, 10)
-ContentFrame.BackgroundTransparency = 0.3
-Instance.new("UICorner", ContentFrame).CornerRadius = UDim.new(0, 8)
+ContentFrame.Position = UDim2.new(0, 165, 0, 75)
+ContentFrame.BackgroundColor3 = Theme.Secondary
+ContentFrame.BackgroundTransparency = 0.15
+Instance.new("UICorner", ContentFrame).CornerRadius = UDim.new(0, 10)
 
 local PageMain = Instance.new("Frame", ContentFrame)
 PageMain.Size = UDim2.new(1, 0, 1, 0)
@@ -124,14 +117,14 @@ PageMisc.Visible = false
 
 BtnMain.MouseButton1Click:Connect(function()
     PageMain.Visible = true; PageMisc.Visible = false
-    BtnMain.BackgroundColor3 = Color3.fromRGB(80, 40, 10); BtnMisc.BackgroundColor3 = Color3.fromRGB(40, 20, 10)
-    BtnMain.TextColor3 = Color3.fromRGB(255, 180, 100); BtnMisc.TextColor3 = Color3.fromRGB(255, 140, 0)
+    BtnMain.BackgroundColor3 = Theme.Accent; BtnMisc.BackgroundColor3 = Theme.Secondary
+    BtnMain.TextColor3 = Color3.fromRGB(255, 255, 255); BtnMisc.TextColor3 = Theme.Accent
 end)
 
 BtnMisc.MouseButton1Click:Connect(function()
     PageMain.Visible = false; PageMisc.Visible = true
-    BtnMain.BackgroundColor3 = Color3.fromRGB(40, 20, 10); BtnMisc.BackgroundColor3 = Color3.fromRGB(80, 40, 10)
-    BtnMain.TextColor3 = Color3.fromRGB(255, 140, 0); BtnMisc.TextColor3 = Color3.fromRGB(255, 180, 100)
+    BtnMain.BackgroundColor3 = Theme.Secondary; BtnMisc.BackgroundColor3 = Theme.Accent
+    BtnMain.TextColor3 = Theme.Accent; BtnMisc.TextColor3 = Color3.fromRGB(255, 255, 255)
 end)
 
 -- // FARM CONFIG
@@ -142,23 +135,27 @@ local farming = false
 
 local function createBtn(parent, text, yPos, callback)
     local btn = Instance.new("TextButton", parent)
-    btn.Size = UDim2.new(0, 280, 0, 35)
+    btn.Size = UDim2.new(0, 280, 0, 40)
     btn.Position = UDim2.new(0, 15, 0, yPos)
-    btn.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
-    btn.Text = text
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.BackgroundColor3 = Theme.Element
+    btn.Text = "  " .. text
+    btn.TextColor3 = Theme.Text
     btn.Font = Enum.Font.GothamBold
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
     
+    btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Accent}):Play() end)
+    btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Element}):Play() end)
+
     local c = Instance.new("Frame", btn)
-    c.Size = UDim2.new(0, 16, 0, 16)
+    c.Size = UDim2.new(0, 18, 0, 18)
     c.Position = UDim2.new(0.92, 0, 0.28, 0)
-    c.BackgroundColor3 = Color3.fromRGB(120, 60, 20)
+    c.BackgroundColor3 = Theme.Off
     Instance.new("UICorner", c).CornerRadius = UDim.new(1, 0)
     
     btn.MouseButton1Click:Connect(function()
         local state = callback()
-        c.BackgroundColor3 = state and Color3.fromRGB(255, 140, 0) or Color3.fromRGB(120, 60, 20)
+        c.BackgroundColor3 = state and Theme.AccentLight or Theme.Off
     end)
 end
 
@@ -175,13 +172,13 @@ createBtn(PageMain, "🍬 AutoFarm (Fly Mode)", 20, function()
 end)
 
 local SpeedBox = Instance.new("TextBox", PageMain)
-SpeedBox.Size = UDim2.new(0, 60, 0, 30)
-SpeedBox.Position = UDim2.new(0, 80, 0, 70)
-SpeedBox.BackgroundColor3 = Color3.fromRGB(60, 30, 10)
+SpeedBox.Size = UDim2.new(0, 60, 0, 35)
+SpeedBox.Position = UDim2.new(0, 80, 0, 75)
+SpeedBox.BackgroundColor3 = Theme.Element
 SpeedBox.Text = tostring(speed)
-SpeedBox.TextColor3 = Color3.fromRGB(255, 140, 0)
+SpeedBox.TextColor3 = Theme.AccentLight
 SpeedBox.Font = Enum.Font.GothamBold
-Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 8)
 
 SpeedBox.FocusLost:Connect(function()
     local v = tonumber(SpeedBox.Text)
@@ -190,11 +187,11 @@ SpeedBox.FocusLost:Connect(function()
 end)
 
 local SpdLbl = Instance.new("TextLabel", PageMain)
-SpdLbl.Size = UDim2.new(0, 100, 0, 30)
-SpdLbl.Position = UDim2.new(0, 15, 0, 70)
+SpdLbl.Size = UDim2.new(0, 100, 0, 35)
+SpdLbl.Position = UDim2.new(0, 15, 0, 75)
 SpdLbl.BackgroundTransparency = 1
 SpdLbl.Text = "⚡ Speed:"
-SpdLbl.TextColor3 = Color3.fromRGB(255, 180, 100)
+SpdLbl.TextColor3 = Color3.fromRGB(150, 180, 200)
 SpdLbl.Font = Enum.Font.GothamBold
 SpdLbl.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -221,7 +218,7 @@ createBtn(PageMisc, "🎯 Mira de Sniper", 120, function()
     return Crosshair.Visible
 end)
 
--- // LOGIC (CORRIGIDA)
+-- // LOGIC
 local function getHRP() return Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") end
 
 local function getCoin()
@@ -229,7 +226,6 @@ local function getCoin()
     if not hrp then return nil end
     local closest, dist = nil, math.huge
     
-    -- Busca Universal (Funciona em qualquer mapa do MM2)
     for _, v in pairs(workspace:GetDescendants()) do
         if v:IsA("BasePart") and v:FindFirstChild("TouchInterest") then
             local name = string.lower(v.Name)
@@ -257,8 +253,11 @@ end)
 -- // AUTO WIN
 local function checkRole()
     local p = Player
-    for _, v in pairs(ReplicatedStorage:FindFirstChild("Roles"):GetChildren()) do
-        if v.Value == p.Name then return v.Name end
+    local roles = ReplicatedStorage:FindFirstChild("Roles")
+    if roles then
+        for _, v in pairs(roles:GetChildren()) do
+            if v.Value == p.Name then return v.Name end
+        end
     end
     return "Innocent"
 end
@@ -280,13 +279,16 @@ ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(
             elseif role == "Sheriff" then
                 local gun = Player.Character:FindFirstChild("Gun") or Player.Backpack:FindFirstChild("Gun")
                 if gun then Player.Character.Humanoid:EquipTool(gun) end
-                for _, v in pairs(ReplicatedStorage.Roles:GetChildren()) do
-                    if v.Name == "Murderer" then
-                        local m = Players:FindFirstChild(v.Value)
-                        if m and m.Character then
-                            hrp.CFrame = m.Character.HumanoidRootPart.CFrame
-                            task.wait(0.2)
-                            if gun then gun:Activate() end
+                local roles = ReplicatedStorage:FindFirstChild("Roles")
+                if roles then
+                    for _, v in pairs(roles:GetChildren()) do
+                        if v.Name == "Murderer" then
+                            local m = Players:FindFirstChild(v.Value)
+                            if m and m.Character then
+                                hrp.CFrame = m.Character.HumanoidRootPart.CFrame
+                                task.wait(0.2)
+                                if gun then gun:Activate() end
+                            end
                         end
                     end
                 end
@@ -325,6 +327,33 @@ task.spawn(function()
     end
 end)
 
+-- // MIRA DE SNIPER
+local Crosshair = Instance.new("Frame", ScreenGui)
+Crosshair.Size = UDim2.new(0, 40, 0, 40)
+Crosshair.AnchorPoint = Vector2.new(0.5, 0.5)
+Crosshair.Position = UDim2.new(0.5, 0, 0.5, 0)
+Crosshair.BackgroundTransparency = 1
+Crosshair.Visible = false
+
+local Dot = Instance.new("Frame", Crosshair)
+Dot.Size = UDim2.new(0, 4, 0, 4)
+Dot.Position = UDim2.new(0.5, -2, 0.5, -2)
+Dot.BackgroundColor3 = Theme.Accent
+Dot.BorderSizePixel = 0
+Instance.new("UICorner", Dot).CornerRadius = UDim.new(1, 0)
+
+local LineH = Instance.new("Frame", Crosshair)
+LineH.Size = UDim2.new(0, 30, 0, 2)
+LineH.Position = UDim2.new(0.5, -15, 0.5, -1)
+LineH.BackgroundColor3 = Theme.Accent
+LineH.BorderSizePixel = 0
+
+local LineV = Instance.new("Frame", Crosshair)
+LineV.Size = UDim2.new(0, 2, 0, 30)
+LineV.Position = UDim2.new(0.5, -1, 0.5, -15)
+LineV.BackgroundColor3 = Theme.Accent
+LineV.BorderSizePixel = 0
+
 -- // DRAG UI
 local dragging, dragInput, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
@@ -351,16 +380,17 @@ end)
 local ToggleBtn = Instance.new("TextButton", ScreenGui)
 ToggleBtn.Size = UDim2.new(0, 60, 0, 60)
 ToggleBtn.Position = UDim2.new(0, 20, 0, 100)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(25, 15, 10)
+ToggleBtn.BackgroundColor3 = Theme.Background
 ToggleBtn.Text = "👑"
-ToggleBtn.TextColor3 = Color3.fromRGB(255, 140, 0)
+ToggleBtn.TextColor3 = Theme.AccentLight
 ToggleBtn.TextSize = 30
 ToggleBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
 local TStroke = Instance.new("UIStroke", ToggleBtn)
-TStroke.Color = Color3.fromRGB(255, 140, 0)
+TStroke.Color = Theme.Accent
 TStroke.Thickness = 2
+TStroke.Transparency = 0.2
 
 local tDrag, tStart, tPos
 ToggleBtn.InputBegan:Connect(function(input)
