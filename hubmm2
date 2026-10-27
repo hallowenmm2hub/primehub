@@ -1,7 +1,6 @@
--- Murder Mystery 2 | Halloween
--- Author: sllvzz
--- Colors: Blue #0077B6 Premium Theme
--- Added: Fly Farm + Auto-Win + Sniper Crosshair
+-- Arkeman Hub | MM2
+-- Colors: Neon Blue & Cyan
+-- Added: Fly Farm + Auto-Win + Sniper Crosshair + Custom Logo
 
 if not game:IsLoaded() then game.Loaded:Wait() end
 
@@ -12,20 +11,20 @@ local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualUser = game:GetService("VirtualUser")
 
--- // CORES DO TEMA (#0077B6)
+-- // CORES DO TEMA (Neon Blue)
 local Theme = {
-    Background = Color3.fromRGB(10, 15, 20),
-    Secondary = Color3.fromRGB(20, 30, 40),
-    Element = Color3.fromRGB(25, 40, 50),
-    Accent = Color3.fromRGB(0, 119, 182),
-    AccentLight = Color3.fromRGB(120, 220, 255),
+    Background = Color3.fromRGB(5, 15, 25),
+    Secondary = Color3.fromRGB(10, 25, 40),
+    Element = Color3.fromRGB(15, 40, 60),
+    Accent = Color3.fromRGB(0, 150, 255), -- Azul Neon
+    AccentLight = Color3.fromRGB(0, 255, 255), -- Ciano
     Text = Color3.fromRGB(240, 240, 240),
-    Off = Color3.fromRGB(50, 60, 70)
+    Off = Color3.fromRGB(30, 50, 70)
 }
 
 -- // SERVICES
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "prime_hub_blue"
+ScreenGui.Name = "Arkeman_Hub"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = game.CoreGui
@@ -36,39 +35,39 @@ MainFrame.Size = UDim2.new(0, 500, 0, 360)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.BackgroundColor3 = Theme.Background
-MainFrame.BackgroundTransparency = 0.25
+MainFrame.BackgroundTransparency = 0.15
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 14)
 
 local Gradient = Instance.new("UIGradient", MainFrame)
 Gradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 30, 45)),
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 50, 100)),
     ColorSequenceKeypoint.new(1, Theme.Background)
 }
 Gradient.Rotation = 90
 
 local Stroke = Instance.new("UIStroke", MainFrame)
-Stroke.Color = Theme.Accent
-Stroke.Thickness = 1.5
+Stroke.Color = Theme.AccentLight
+Stroke.Thickness = 2
 Stroke.Transparency = 0.2
 
 -- // TITLE
 local Title = Instance.new("TextLabel", MainFrame)
 Title.Position = UDim2.new(0, 20, 0, 15)
-Title.Size = UDim2.new(0, 300, 0, 20)
+Title.Size = UDim2.new(0, 300, 0, 25)
 Title.BackgroundTransparency = 1
-Title.Font = Enum.Font.GothamBold
-Title.Text = "Prime Hub | MM2"
+Title.Font = Enum.Font.GothamBlack
+Title.Text = "ARKEMAN HUB"
 Title.TextColor3 = Theme.AccentLight
-Title.TextSize = 18
+Title.TextSize = 22
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 local SubTitle = Instance.new("TextLabel", MainFrame)
-SubTitle.Position = UDim2.new(0, 20, 0, 40)
+SubTitle.Position = UDim2.new(0, 20, 0, 45)
 SubTitle.Size = UDim2.new(0, 300, 0, 15)
 SubTitle.BackgroundTransparency = 1
 SubTitle.Font = Enum.Font.GothamMedium
 SubTitle.Text = "By: sllvzz"
-SubTitle.TextColor3 = Color3.fromRGB(150, 180, 200)
+SubTitle.TextColor3 = Color3.fromRGB(150, 200, 255)
 SubTitle.TextSize = 12
 SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -79,6 +78,9 @@ TabFrame.Position = UDim2.new(0, 20, 0, 75)
 TabFrame.BackgroundColor3 = Theme.Secondary
 TabFrame.BackgroundTransparency = 0.2
 Instance.new("UICorner", TabFrame).CornerRadius = UDim.new(0, 10)
+local TabStroke = Instance.new("UIStroke", TabFrame)
+TabStroke.Color = Theme.Accent
+TabStroke.Transparency = 0.5
 
 local BtnMain = Instance.new("TextButton", TabFrame)
 BtnMain.Size = UDim2.new(0, 110, 0, 35)
@@ -105,6 +107,9 @@ ContentFrame.Position = UDim2.new(0, 165, 0, 75)
 ContentFrame.BackgroundColor3 = Theme.Secondary
 ContentFrame.BackgroundTransparency = 0.15
 Instance.new("UICorner", ContentFrame).CornerRadius = UDim.new(0, 10)
+local ContentStroke = Instance.new("UIStroke", ContentFrame)
+ContentStroke.Color = Theme.Accent
+ContentStroke.Transparency = 0.6
 
 local PageMain = Instance.new("Frame", ContentFrame)
 PageMain.Size = UDim2.new(1, 0, 1, 0)
@@ -191,7 +196,7 @@ SpdLbl.Size = UDim2.new(0, 100, 0, 35)
 SpdLbl.Position = UDim2.new(0, 15, 0, 75)
 SpdLbl.BackgroundTransparency = 1
 SpdLbl.Text = "⚡ Speed:"
-SpdLbl.TextColor3 = Color3.fromRGB(150, 180, 200)
+SpdLbl.TextColor3 = Theme.AccentLight
 SpdLbl.Font = Enum.Font.GothamBold
 SpdLbl.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -338,20 +343,20 @@ Crosshair.Visible = false
 local Dot = Instance.new("Frame", Crosshair)
 Dot.Size = UDim2.new(0, 4, 0, 4)
 Dot.Position = UDim2.new(0.5, -2, 0.5, -2)
-Dot.BackgroundColor3 = Theme.Accent
+Dot.BackgroundColor3 = Theme.AccentLight
 Dot.BorderSizePixel = 0
 Instance.new("UICorner", Dot).CornerRadius = UDim.new(1, 0)
 
 local LineH = Instance.new("Frame", Crosshair)
 LineH.Size = UDim2.new(0, 30, 0, 2)
 LineH.Position = UDim2.new(0.5, -15, 0.5, -1)
-LineH.BackgroundColor3 = Theme.Accent
+LineH.BackgroundColor3 = Theme.AccentLight
 LineH.BorderSizePixel = 0
 
 local LineV = Instance.new("Frame", Crosshair)
 LineV.Size = UDim2.new(0, 2, 0, 30)
 LineV.Position = UDim2.new(0.5, -1, 0.5, -15)
-LineV.BackgroundColor3 = Theme.Accent
+LineV.BackgroundColor3 = Theme.AccentLight
 LineV.BorderSizePixel = 0
 
 -- // DRAG UI
@@ -376,19 +381,18 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- // TOGGLE BUTTON
-local ToggleBtn = Instance.new("TextButton", ScreenGui)
-ToggleBtn.Size = UDim2.new(0, 60, 0, 60)
+-- // BOTÃO FLUTUANTE COM A SUA LOGO
+local ToggleBtn = Instance.new("ImageButton", ScreenGui)
+ToggleBtn.Size = UDim2.new(0, 70, 0, 70)
 ToggleBtn.Position = UDim2.new(0, 20, 0, 100)
 ToggleBtn.BackgroundColor3 = Theme.Background
-ToggleBtn.Text = "👑"
-ToggleBtn.TextColor3 = Theme.AccentLight
-ToggleBtn.TextSize = 30
-ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.BackgroundTransparency = 1
+ToggleBtn.Image = "rbxassetid://118606096609503" -- ID da sua logo
+ToggleBtn.ScaleType = Enum.ScaleType.Fit
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
 local TStroke = Instance.new("UIStroke", ToggleBtn)
-TStroke.Color = Theme.Accent
+TStroke.Color = Theme.AccentLight
 TStroke.Thickness = 2
 TStroke.Transparency = 0.2
 
@@ -416,4 +420,4 @@ ToggleBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
-print("PRIME HUB EXECUTADO COM SUCESSO!")
+print("ARKEMAN HUB EXECUTADO COM SUCESSO!")
