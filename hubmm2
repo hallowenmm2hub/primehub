@@ -16,8 +16,8 @@ local Theme = {
     Background = Color3.fromRGB(5, 15, 25),
     Secondary = Color3.fromRGB(10, 25, 40),
     Element = Color3.fromRGB(15, 40, 60),
-    Accent = Color3.fromRGB(0, 150, 255), -- Azul Neon
-    AccentLight = Color3.fromRGB(0, 255, 255), -- Ciano
+    Accent = Color3.fromRGB(0, 150, 255), 
+    AccentLight = Color3.fromRGB(0, 255, 255), 
     Text = Color3.fromRGB(240, 240, 240),
     Off = Color3.fromRGB(30, 50, 70)
 }
@@ -381,28 +381,30 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- // BOTÃO FLUTUANTE COM A SUA LOGO
+-- // BOTÃO FLUTUANTE COM A SUA LOGO (ID: 80502648763647)
 local ToggleBtn = Instance.new("TextButton", ScreenGui)
 ToggleBtn.Size = UDim2.new(0, 70, 0, 70)
 ToggleBtn.Position = UDim2.new(0, 20, 0, 100)
-ToggleBtn.BackgroundColor3 = Theme.Background
-ToggleBtn.BackgroundTransparency = 0.3
-ToggleBtn.Text = ""
+ToggleBtn.BackgroundColor3 = Theme.Accent 
+ToggleBtn.BackgroundTransparency = 0.2
+ToggleBtn.Text = "👑" 
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.TextSize = 30
+ToggleBtn.Font = Enum.Font.GothamBold
 ToggleBtn.AutoButtonColor = false
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
--- Borda Azul Neon
 local TStroke = Instance.new("UIStroke", ToggleBtn)
 TStroke.Color = Theme.AccentLight
 TStroke.Thickness = 2
 TStroke.Transparency = 0.2
 
--- 🌟 A IMAGEM DENTRO DO BOTÃO
+-- A Imagem
 local LogoImage = Instance.new("ImageLabel", ToggleBtn)
 LogoImage.Size = UDim2.new(1, -10, 1, -10)
 LogoImage.Position = UDim2.new(0, 5, 0, 5)
 LogoImage.BackgroundTransparency = 1
-LogoImage.Image = "rbxassetid://118606096609503"
+LogoImage.Image = "rbxassetid://80502648763647"
 LogoImage.ScaleType = Enum.ScaleType.Fit
 Instance.new("UICorner", LogoImage).CornerRadius = UDim.new(1, 0)
 
