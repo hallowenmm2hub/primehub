@@ -382,20 +382,31 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 -- // BOTÃO FLUTUANTE COM A SUA LOGO
-local ToggleBtn = Instance.new("ImageButton", ScreenGui)
+local ToggleBtn = Instance.new("TextButton", ScreenGui)
 ToggleBtn.Size = UDim2.new(0, 70, 0, 70)
 ToggleBtn.Position = UDim2.new(0, 20, 0, 100)
 ToggleBtn.BackgroundColor3 = Theme.Background
-ToggleBtn.BackgroundTransparency = 1
-ToggleBtn.Image = "rbxassetid://118606096609503" -- ID da sua logo
-ToggleBtn.ScaleType = Enum.ScaleType.Fit
+ToggleBtn.BackgroundTransparency = 0.3
+ToggleBtn.Text = ""
+ToggleBtn.AutoButtonColor = false
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
+-- Borda Azul Neon
 local TStroke = Instance.new("UIStroke", ToggleBtn)
 TStroke.Color = Theme.AccentLight
 TStroke.Thickness = 2
 TStroke.Transparency = 0.2
 
+-- 🌟 A IMAGEM DENTRO DO BOTÃO
+local LogoImage = Instance.new("ImageLabel", ToggleBtn)
+LogoImage.Size = UDim2.new(1, -10, 1, -10)
+LogoImage.Position = UDim2.new(0, 5, 0, 5)
+LogoImage.BackgroundTransparency = 1
+LogoImage.Image = "rbxassetid://118606096609503"
+LogoImage.ScaleType = Enum.ScaleType.Fit
+Instance.new("UICorner", LogoImage).CornerRadius = UDim.new(1, 0)
+
+-- Lógica de Arrastar
 local tDrag, tStart, tPos
 ToggleBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -404,18 +415,21 @@ ToggleBtn.InputBegan:Connect(function(input)
         tPos = ToggleBtn.Position
     end
 end)
+
 UserInputService.InputChanged:Connect(function(input)
     if tDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - tStart
         ToggleBtn.Position = UDim2.new(tPos.X.Scale, tPos.X.Offset + delta.X, tPos.Y.Scale, tPos.Y.Offset + delta.Y)
     end
 end)
+
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         tDrag = false
     end
 end)
 
+-- Abrir/Fechar UI
 ToggleBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
