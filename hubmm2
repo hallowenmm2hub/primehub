@@ -1,6 +1,6 @@
 -- Arkeman Hub | MM2
 -- Colors: Neon Blue & Cyan
--- Added: Fly Farm + Auto-Win + Sniper Crosshair + Custom Logo
+-- Added: Fly Farm + Auto-Win + Sniper Crosshair + Custom Logo + Anti-Void Floor
 
 if not game:IsLoaded() then game.Loaded:Wait() end
 
@@ -137,6 +137,7 @@ local autoFarm = false
 local autoWin = false
 local speed = 30
 local farming = false
+local voidFloorPart = nil
 
 local function createBtn(parent, text, yPos, callback)
     local btn = Instance.new("TextButton", parent)
@@ -221,6 +222,31 @@ end)
 createBtn(PageMisc, "🎯 Mira de Sniper", 120, function()
     Crosshair.Visible = not Crosshair.Visible
     return Crosshair.Visible
+end)
+
+-- // 🧱 CHÃO ANTI-VOID (50 STUDS ABAIXO DO MAPA)
+createBtn(PageMisc, "🧱 Chão Anti-Void (-50)", 170, function()
+    if voidFloorPart then
+        -- Se já existe, apaga
+        voidFloorPart:Destroy()
+        voidFloorPart = nil
+        return false
+    else
+        -- Se não existe, cria
+        local floor = Instance.new("Part")
+        floor.Name = "AntiVoid_Floor"
+        floor.Size = Vector3.new(10000, 10, 10000) -- Chão gigante que cobre o mapa todo
+        floor.Position = Vector3.new(0, -50, 0)    -- 50 studs para baixo
+        floor.Anchored = true                      -- Fixo no ar
+        floor.CanCollide = true                    -- Para você não cair no void
+        floor.Material = Enum.Material.Neon        -- Efeito brilhante
+        floor.Color = Color3.fromRGB(0, 255, 255)  -- Ciano
+        floor.Transparency = 0.7                   -- Quase invisível
+        floor.Parent = workspace
+        
+        voidFloorPart = floor
+        return true
+    end
 end)
 
 -- // LOGIC
@@ -381,7 +407,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- // BOTÃO FLUTUANTE COM A SUA LOGO (ID: 80502648763647)
+-- // BOTÃO FLUTUANTE COM A SUA LOGO
 local ToggleBtn = Instance.new("TextButton", ScreenGui)
 ToggleBtn.Size = UDim2.new(0, 70, 0, 70)
 ToggleBtn.Position = UDim2.new(0, 20, 0, 100)
@@ -399,7 +425,6 @@ TStroke.Color = Theme.AccentLight
 TStroke.Thickness = 2
 TStroke.Transparency = 0.2
 
--- A Imagem
 local LogoImage = Instance.new("ImageLabel", ToggleBtn)
 LogoImage.Size = UDim2.new(1, -10, 1, -10)
 LogoImage.Position = UDim2.new(0, 5, 0, 5)
@@ -408,7 +433,6 @@ LogoImage.Image = "rbxassetid://80502648763647"
 LogoImage.ScaleType = Enum.ScaleType.Fit
 Instance.new("UICorner", LogoImage).CornerRadius = UDim.new(1, 0)
 
--- Lógica de Arrastar
 local tDrag, tStart, tPos
 ToggleBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -431,7 +455,6 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- Abrir/Fechar UI
 ToggleBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
