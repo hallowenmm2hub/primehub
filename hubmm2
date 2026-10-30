@@ -1,6 +1,5 @@
--- Arkeman Hub | MM2
--- Colors: Neon Blue & Cyan
--- Added: Fly Farm + Auto-Win + Sniper Crosshair + Custom Logo + Anti-Void Floor
+-- ARKEMAN HUB | MM2 (Versão Completa & Português)
+-- Baseado nas ideias do BestClient, recriado e consertado.
 
 if not game:IsLoaded() then game.Loaded:Wait() end
 
@@ -9,55 +8,59 @@ local Player = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
 
--- // CORES DO TEMA (Neon Blue)
-local Theme = {
-    Background = Color3.fromRGB(5, 15, 25),
-    Secondary = Color3.fromRGB(10, 25, 40),
-    Element = Color3.fromRGB(15, 40, 60),
-    Accent = Color3.fromRGB(0, 150, 255), 
-    AccentLight = Color3.fromRGB(0, 255, 255), 
-    Text = Color3.fromRGB(240, 240, 240),
-    Off = Color3.fromRGB(30, 50, 70)
+-- // CONFIGURAÇÃO DE TEMAS
+local Temas = {
+    Roxo = { bg = Color3.fromRGB(14, 14, 20), card = Color3.fromRGB(24, 24, 34), accent = Color3.fromRGB(140, 110, 255), text = Color3.fromRGB(240, 240, 250) },
+    Azul = { bg = Color3.fromRGB(5, 15, 25), card = Color3.fromRGB(10, 25, 40), accent = Color3.fromRGB(0, 150, 255), text = Color3.fromRGB(230, 250, 255) },
+    Vermelho = { bg = Color3.fromRGB(18, 10, 12), card = Color3.fromRGB(32, 18, 22), accent = Color3.fromRGB(220, 50, 60), text = Color3.fromRGB(255, 235, 240) },
+    Verde = { bg = Color3.fromRGB(4, 10, 4), card = Color3.fromRGB(12, 26, 12), accent = Color3.fromRGB(0, 255, 80), text = Color3.fromRGB(210, 255, 215) }
 }
 
--- // SERVICES
+local TemaAtual = Temas.Azul
+local UIElements = {} -- Para trocar as cores quando o tema mudar
+
+-- // SERVIÇOS E GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "Arkeman_Hub"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = game.CoreGui
+
+local function AplicarCor(inst, prop, tipo)
+    table.insert(UIElements, {obj = inst, prop = prop, tipo = tipo})
+    inst[prop] = TemaAtual[tipo]
+end
+
+local function TrocarTema(NomeTema)
+    TemaAtual = Temas[NomeTema]
+    for _, item in pairs(UIElements) do
+        if item.obj and item.obj.Parent then
+            item.obj[item.prop] = TemaAtual[item.tipo]
+        end
+    end
+end
 
 -- // MAIN UI
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 500, 0, 360)
+MainFrame.Size = UDim2.new(0, 500, 0, 380)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-MainFrame.BackgroundColor3 = Theme.Background
-MainFrame.BackgroundTransparency = 0.15
+AplicarCor(MainFrame, "BackgroundColor3", "bg")
+MainFrame.BackgroundTransparency = 0.1
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 14)
-
-local Gradient = Instance.new("UIGradient", MainFrame)
-Gradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 50, 100)),
-    ColorSequenceKeypoint.new(1, Theme.Background)
-}
-Gradient.Rotation = 90
-
 local Stroke = Instance.new("UIStroke", MainFrame)
-Stroke.Color = Theme.AccentLight
+AplicarCor(Stroke, "Color", "accent")
 Stroke.Thickness = 2
-Stroke.Transparency = 0.2
 
--- // TITLE
 local Title = Instance.new("TextLabel", MainFrame)
 Title.Position = UDim2.new(0, 20, 0, 15)
 Title.Size = UDim2.new(0, 300, 0, 25)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBlack
 Title.Text = "ARKEMAN HUB"
-Title.TextColor3 = Theme.AccentLight
+AplicarCor(Title, "TextColor3", "accent")
 Title.TextSize = 22
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -66,145 +69,191 @@ SubTitle.Position = UDim2.new(0, 20, 0, 45)
 SubTitle.Size = UDim2.new(0, 300, 0, 15)
 SubTitle.BackgroundTransparency = 1
 SubTitle.Font = Enum.Font.GothamMedium
-SubTitle.Text = "By: sllvzz"
-SubTitle.TextColor3 = Color3.fromRGB(150, 200, 255)
+SubTitle.Text = "Traduzido & Consertado | PT-BR"
+AplicarCor(SubTitle, "TextColor3", "text")
 SubTitle.TextSize = 12
 SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 
--- // TABS
+-- // TABS (Menu Lateral)
 local TabFrame = Instance.new("Frame", MainFrame)
-TabFrame.Size = UDim2.new(0, 130, 0, 180)
+TabFrame.Size = UDim2.new(0, 130, 0, 280)
 TabFrame.Position = UDim2.new(0, 20, 0, 75)
-TabFrame.BackgroundColor3 = Theme.Secondary
+AplicarCor(TabFrame, "BackgroundColor3", "card")
 TabFrame.BackgroundTransparency = 0.2
 Instance.new("UICorner", TabFrame).CornerRadius = UDim.new(0, 10)
-local TabStroke = Instance.new("UIStroke", TabFrame)
-TabStroke.Color = Theme.Accent
-TabStroke.Transparency = 0.5
 
-local BtnMain = Instance.new("TextButton", TabFrame)
-BtnMain.Size = UDim2.new(0, 110, 0, 35)
-BtnMain.Position = UDim2.new(0, 10, 0, 10)
-BtnMain.BackgroundColor3 = Theme.Accent
-BtnMain.Text = "🎯 Main"
-BtnMain.TextColor3 = Color3.fromRGB(255, 255, 255)
-BtnMain.Font = Enum.Font.GothamBold
-Instance.new("UICorner", BtnMain).CornerRadius = UDim.new(0, 6)
+local function CriarAba(texto, yPos)
+    local btn = Instance.new("TextButton", TabFrame)
+    btn.Size = UDim2.new(0, 110, 0, 35)
+    btn.Position = UDim2.new(0, 10, 0, yPos)
+    AplicarCor(btn, "BackgroundColor3", "card")
+    btn.Text = texto
+    AplicarCor(btn, "TextColor3", "accent")
+    btn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    return btn
+end
 
-local BtnMisc = Instance.new("TextButton", TabFrame)
-BtnMisc.Size = UDim2.new(0, 110, 0, 35)
-BtnMisc.Position = UDim2.new(0, 10, 0, 55)
-BtnMisc.BackgroundColor3 = Theme.Secondary
-BtnMisc.Text = "⚙️ Misc"
-BtnMisc.TextColor3 = Theme.Accent
-BtnMisc.Font = Enum.Font.GothamBold
-Instance.new("UICorner", BtnMisc).CornerRadius = UDim.new(0, 6)
+local BtnMain = CriarAba("🎯 Principal", 10)
+local BtnVisual = CriarAba("👁️ Visual", 55)
+local BtnCombat = CriarAba("⚔️ Combate", 100)
+local BtnMisc = CriarAba("⚙️ Diversos", 145)
+local BtnTheme = CriarAba("🎨 Temas", 190)
 
 -- // CONTENT
 local ContentFrame = Instance.new("Frame", MainFrame)
-ContentFrame.Size = UDim2.new(0, 310, 0, 240)
+ContentFrame.Size = UDim2.new(0, 310, 0, 280)
 ContentFrame.Position = UDim2.new(0, 165, 0, 75)
-ContentFrame.BackgroundColor3 = Theme.Secondary
-ContentFrame.BackgroundTransparency = 0.15
+AplicarCor(ContentFrame, "BackgroundColor3", "card")
+ContentFrame.BackgroundTransparency = 0.2
 Instance.new("UICorner", ContentFrame).CornerRadius = UDim.new(0, 10)
-local ContentStroke = Instance.new("UIStroke", ContentFrame)
-ContentStroke.Color = Theme.Accent
-ContentStroke.Transparency = 0.6
 
-local PageMain = Instance.new("Frame", ContentFrame)
-PageMain.Size = UDim2.new(1, 0, 1, 0)
-PageMain.BackgroundTransparency = 1
+local function CriarPagina()
+    local p = Instance.new("ScrollingFrame", ContentFrame)
+    p.Size = UDim2.new(1, -10, 1, -10)
+    p.Position = UDim2.new(0, 5, 0, 5)
+    p.BackgroundTransparency = 1
+    p.ScrollBarThickness = 3
+    AplicarCor(p, "ScrollBarImageColor3", "accent")
+    p.CanvasSize = UDim2.new(0, 0, 0, 0)
+    p.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    p.Visible = false
+    return p
+end
 
-local PageMisc = Instance.new("Frame", ContentFrame)
-PageMisc.Size = UDim2.new(1, 0, 1, 0)
-PageMisc.BackgroundTransparency = 1
-PageMisc.Visible = false
+local PageMain = CriarPagina()
+local PageVisual = CriarPagina()
+local PageCombat = CriarPagina()
+local PageMisc = CriarPagina()
+local PageTheme = CriarPagina()
 
-BtnMain.MouseButton1Click:Connect(function()
-    PageMain.Visible = true; PageMisc.Visible = false
-    BtnMain.BackgroundColor3 = Theme.Accent; BtnMisc.BackgroundColor3 = Theme.Secondary
-    BtnMain.TextColor3 = Color3.fromRGB(255, 255, 255); BtnMisc.TextColor3 = Theme.Accent
-end)
+local function LimparAbas()
+    for _, p in pairs({PageMain, PageVisual, PageCombat, PageMisc, PageTheme}) do
+        p.Visible = false
+    end
+end
 
-BtnMisc.MouseButton1Click:Connect(function()
-    PageMain.Visible = false; PageMisc.Visible = true
-    BtnMain.BackgroundColor3 = Theme.Secondary; BtnMisc.BackgroundColor3 = Theme.Accent
-    BtnMain.TextColor3 = Theme.Accent; BtnMisc.TextColor3 = Color3.fromRGB(255, 255, 255)
-end)
+BtnMain.MouseButton1Click:Connect(function() LimparAbas(); PageMain.Visible = true end)
+BtnVisual.MouseButton1Click:Connect(function() LimparAbas(); PageVisual.Visible = true end)
+BtnCombat.MouseButton1Click:Connect(function() LimparAbas(); PageCombat.Visible = true end)
+BtnMisc.MouseButton1Click:Connect(function() LimparAbas(); PageMisc.Visible = true end)
+BtnTheme.MouseButton1Click:Connect(function() LimparAbas(); PageTheme.Visible = true end)
 
--- // FARM CONFIG
-local autoFarm = false
-local autoWin = false
-local speed = 30
-local farming = false
-local voidFloorPart = nil
+PageMain.Visible = true
 
-local function createBtn(parent, text, yPos, callback)
+-- // LÓGICA DE BOTÕES
+local States = {
+    AutoFarm = false, Fly = false, Noclip = false, ESP = false, KillAura = false, Fullbright = false
+}
+
+local function CriarBotao(parent, texto, yPos, callback)
     local btn = Instance.new("TextButton", parent)
     btn.Size = UDim2.new(0, 280, 0, 40)
     btn.Position = UDim2.new(0, 15, 0, yPos)
-    btn.BackgroundColor3 = Theme.Element
-    btn.Text = "  " .. text
-    btn.TextColor3 = Theme.Text
+    AplicarCor(btn, "BackgroundColor3", "bg")
+    btn.Text = "  " .. texto
+    AplicarCor(btn, "TextColor3", "text")
     btn.Font = Enum.Font.GothamBold
     btn.TextXAlignment = Enum.TextXAlignment.Left
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
     
-    btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Accent}):Play() end)
-    btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Theme.Element}):Play() end)
-
     local c = Instance.new("Frame", btn)
     c.Size = UDim2.new(0, 18, 0, 18)
     c.Position = UDim2.new(0.92, 0, 0.28, 0)
-    c.BackgroundColor3 = Theme.Off
+    c.BackgroundColor3 = Color3.fromRGB(50, 60, 70)
     Instance.new("UICorner", c).CornerRadius = UDim.new(1, 0)
     
     btn.MouseButton1Click:Connect(function()
         local state = callback()
-        c.BackgroundColor3 = state and Theme.AccentLight or Theme.Off
+        c.BackgroundColor3 = state and TemaAtual.accent or Color3.fromRGB(50, 60, 70)
     end)
 end
 
--- // MAIN BUTTONS
-createBtn(PageMain, "🍬 AutoFarm (Fly Mode)", 20, function()
-    autoFarm = not autoFarm
+-- // ABA PRINCIPAL (FARM)
+CriarBotao(PageMain, "🍬 AutoFarm (Fly Mode)", 10, function()
+    States.AutoFarm = not States.AutoFarm
     local char = Player.Character
     if char then
         for _, v in pairs(char:GetDescendants()) do
-            if v:IsA("BasePart") then v.CanCollide = not autoFarm end
+            if v:IsA("BasePart") then v.CanCollide = not States.AutoFarm end
         end
     end
-    return autoFarm
+    return States.AutoFarm
 end)
 
 local SpeedBox = Instance.new("TextBox", PageMain)
 SpeedBox.Size = UDim2.new(0, 60, 0, 35)
-SpeedBox.Position = UDim2.new(0, 80, 0, 75)
-SpeedBox.BackgroundColor3 = Theme.Element
-SpeedBox.Text = tostring(speed)
-SpeedBox.TextColor3 = Theme.AccentLight
+SpeedBox.Position = UDim2.new(0, 80, 0, 60)
+AplicarCor(SpeedBox, "BackgroundColor3", "bg")
+SpeedBox.Text = "30"
+AplicarCor(SpeedBox, "TextColor3", "accent")
 SpeedBox.Font = Enum.Font.GothamBold
 Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 8)
 
-SpeedBox.FocusLost:Connect(function()
-    local v = tonumber(SpeedBox.Text)
-    if v then speed = math.clamp(v, 1, 50) end
-    SpeedBox.Text = tostring(speed)
-end)
-
 local SpdLbl = Instance.new("TextLabel", PageMain)
 SpdLbl.Size = UDim2.new(0, 100, 0, 35)
-SpdLbl.Position = UDim2.new(0, 15, 0, 75)
+SpdLbl.Position = UDim2.new(0, 15, 0, 60)
 SpdLbl.BackgroundTransparency = 1
-SpdLbl.Text = "⚡ Speed:"
-SpdLbl.TextColor3 = Theme.AccentLight
+SpdLbl.Text = "⚡ Velocidade:"
+AplicarCor(SpdLbl, "TextColor3", "text")
 SpdLbl.Font = Enum.Font.GothamBold
 SpdLbl.TextXAlignment = Enum.TextXAlignment.Left
 
--- // MISC BUTTONS
-createBtn(PageMisc, "⏰ Anti-AFK", 20, function()
-    if not _G.afk then
-        _G.afk = true
+-- // ABA VISUAL (ESP e Fullbright)
+CriarBotao(PageVisual, "👁️ ESP de Papéis (Ver Quem é Quem)", 10, function()
+    States.ESP = not States.ESP
+    if not States.ESP then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character and p.Character:FindFirstChild("ArkeESP") then p.Character.ArkeESP:Destroy() end
+        end
+    end
+    return States.ESP
+end)
+
+CriarBotao(PageVisual, "☀️ Fullbright (Mapa Claro)", 60, function()
+    States.Fullbright = not States.Fullbright
+    if States.Fullbright then
+        game.Lighting.Brightness = 2
+        game.Lighting.ClockTime = 14
+        game.Lighting.FogEnd = 100000
+        game.Lighting.GlobalShadows = false
+    else
+        game.Lighting.Brightness = 1
+        game.Lighting.ClockTime = 0
+        game.Lighting.GlobalShadows = true
+    end
+    return States.Fullbright
+end)
+
+-- // ABA COMBATE (KillAura e Anti-Void)
+CriarBotao(PageCombat, "⚔️ KillAura (Matar/Atirar Auto)", 10, function()
+    States.KillAura = not States.KillAura
+    return States.KillAura
+end)
+
+local AntiVoidFloor = nil
+CriarBotao(PageCombat, "🧱 Chão Anti-Void (-50)", 60, function()
+    if AntiVoidFloor then
+        AntiVoidFloor:Destroy()
+        AntiVoidFloor = nil
+        return false
+    else
+        AntiVoidFloor = Instance.new("Part", workspace)
+        AntiVoidFloor.Size = Vector3.new(10000, 10, 10000)
+        AntiVoidFloor.Position = Vector3.new(0, -50, 0)
+        AntiVoidFloor.Anchored = true
+        AntiVoidFloor.CanCollide = true
+        AntiVoidFloor.Transparency = 0.7
+        AntiVoidFloor.Material = Enum.Material.Neon
+        AntiVoidFloor.Color = TemaAtual.accent
+        return true
+    end
+end)
+
+-- // ABA MISC (Noclip, Fly, Anti-Afk)
+CriarBotao(PageMisc, "⏰ Anti-AFK", 10, function()
+    if not _G.AntiAfkAtivo then
+        _G.AntiAfkAtivo = true
         Player.Idled:Connect(function()
             VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
             task.wait(0.5)
@@ -214,49 +263,40 @@ createBtn(PageMisc, "⏰ Anti-AFK", 20, function()
     return true
 end)
 
-createBtn(PageMisc, "🏆 Auto-Win (Bag Cheia)", 70, function()
-    autoWin = not autoWin
-    return autoWin
+CriarBotao(PageMisc, "👻 Noclip (Atravessar Paredes)", 60, function()
+    States.Noclip = not States.Noclip
+    return States.Noclip
 end)
 
-createBtn(PageMisc, "🎯 Mira de Sniper", 120, function()
-    Crosshair.Visible = not Crosshair.Visible
-    return Crosshair.Visible
-end)
+-- // ABA TEMAS
+local function CriarBotaoTema(Nome, Cor, yPos)
+    local btn = Instance.new("TextButton", PageTheme)
+    btn.Size = UDim2.new(0, 130, 0, 40)
+    btn.Position = UDim2.new(0, 15, 0, yPos)
+    btn.BackgroundColor3 = Cor
+    btn.Text = Nome
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    btn.MouseButton1Click:Connect(function()
+        TrocarTema(Nome)
+        if AntiVoidFloor then AntiVoidFloor.Color = TemaAtual.accent end
+    end)
+end
 
--- // 🧱 CHÃO ANTI-VOID (50 STUDS ABAIXO DO MAPA)
-createBtn(PageMisc, "🧱 Chão Anti-Void (-50)", 170, function()
-    if voidFloorPart then
-        -- Se já existe, apaga
-        voidFloorPart:Destroy()
-        voidFloorPart = nil
-        return false
-    else
-        -- Se não existe, cria
-        local floor = Instance.new("Part")
-        floor.Name = "AntiVoid_Floor"
-        floor.Size = Vector3.new(10000, 10, 10000) -- Chão gigante que cobre o mapa todo
-        floor.Position = Vector3.new(0, -50, 0)    -- 50 studs para baixo
-        floor.Anchored = true                      -- Fixo no ar
-        floor.CanCollide = true                    -- Para você não cair no void
-        floor.Material = Enum.Material.Neon        -- Efeito brilhante
-        floor.Color = Color3.fromRGB(0, 255, 255)  -- Ciano
-        floor.Transparency = 0.7                   -- Quase invisível
-        floor.Parent = workspace
-        
-        voidFloorPart = floor
-        return true
-    end
-end)
+CriarBotaoTema("Azul", Temas.Azul.accent, 10)
+CriarBotaoTema("Roxo", Temas.Roxo.accent, 60)
+CriarBotaoTema("Vermelho", Temas.Vermelho.accent, 110)
+CriarBotaoTema("Verde", Temas.Verde.accent, 160)
 
--- // LOGIC
+
+-- // LÓGICA DO SCRIPT (LOOPS)
 local function getHRP() return Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") end
 
 local function getCoin()
     local hrp = getHRP()
     if not hrp then return nil end
     local closest, dist = nil, math.huge
-    
     for _, v in pairs(workspace:GetDescendants()) do
         if v:IsA("BasePart") and v:FindFirstChild("TouchInterest") then
             local name = string.lower(v.Name)
@@ -269,88 +309,38 @@ local function getCoin()
     return closest
 end
 
-Player.CharacterAdded:Connect(function()
-    farming = false
-end)
-
-ReplicatedStorage:WaitForChild("Remotes").Gameplay.RoundStart.OnClientEvent:Connect(function()
-    farming = true
-end)
-
-ReplicatedStorage.Remotes.Gameplay.RoundEndFade.OnClientEvent:Connect(function()
-    farming = false
-end)
-
--- // AUTO WIN
-local function checkRole()
-    local p = Player
+local function getRole()
+    local char = Player.Character
+    local backpack = Player:FindFirstChild("Backpack")
     local roles = ReplicatedStorage:FindFirstChild("Roles")
     if roles then
-        for _, v in pairs(roles:GetChildren()) do
-            if v.Value == p.Name then return v.Name end
-        end
+        local m, s = roles:FindFirstChild("Murderer"), roles:FindFirstChild("Sheriff")
+        if m and m.Value == Player.Name then return "Murderer" end
+        if s and s.Value == Player.Name then return "Sheriff" end
     end
+    if (backpack and backpack:FindFirstChild("Knife")) or (char and char:FindFirstChild("Knife")) then return "Murderer" end
+    if (backpack and backpack:FindFirstChild("Gun")) or (char and char:FindFirstChild("Gun")) then return "Sheriff" end
     return "Innocent"
 end
 
-ReplicatedStorage.Remotes.Gameplay.CoinCollected.OnClientEvent:Connect(function(_, current, max)
-    if current == max and autoWin then
-        task.spawn(function()
-            local role = checkRole()
-            local hrp = getHRP()
-            if role == "Murderer" then
-                local knife = Player.Character:FindFirstChild("Knife") or Player.Backpack:FindFirstChild("Knife")
-                if knife then Player.Character.Humanoid:EquipTool(knife) end
-                for _, p in pairs(Players:GetPlayers()) do
-                    if p ~= Player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character.Humanoid.Health > 0 then
-                        hrp.CFrame = p.Character.HumanoidRootPart.CFrame
-                        task.wait(0.2)
-                    end
-                end
-            elseif role == "Sheriff" then
-                local gun = Player.Character:FindFirstChild("Gun") or Player.Backpack:FindFirstChild("Gun")
-                if gun then Player.Character.Humanoid:EquipTool(gun) end
-                local roles = ReplicatedStorage:FindFirstChild("Roles")
-                if roles then
-                    for _, v in pairs(roles:GetChildren()) do
-                        if v.Name == "Murderer" then
-                            local m = Players:FindFirstChild(v.Value)
-                            if m and m.Character then
-                                hrp.CFrame = m.Character.HumanoidRootPart.CFrame
-                                task.wait(0.2)
-                                if gun then gun:Activate() end
-                            end
-                        end
-                    end
-                end
-            end
-        end)
-    end
-end)
-
--- // FLY LOOP
+-- Loop do Farm
 task.spawn(function()
     while task.wait(0.1) do
-        if autoFarm and farming then
+        if States.AutoFarm then
             local char = Player.Character
             local hum = char and char:FindFirstChild("Humanoid")
-            
             if char and hum and hum.Health > 0 then
                 local coin = getCoin()
                 local hrp = getHRP()
-                
                 if coin and hrp then
                     for _, v in pairs(char:GetDescendants()) do
                         if v:IsA("BasePart") then v.CanCollide = false end
                     end
-                    
                     local dist = (hrp.Position - coin.Position).Magnitude
-                    local tTime = math.max(dist / speed, 0.3)
-                    
+                    local tTime = math.max(dist / tonumber(SpeedBox.Text), 0.3)
                     local tween = TweenService:Create(hrp, TweenInfo.new(tTime, Enum.EasingStyle.Linear), {CFrame = CFrame.new(coin.Position)})
                     tween:Play()
-                    
-                    repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not autoFarm or not farming
+                    repeat task.wait() until not coin:FindFirstChild("TouchInterest") or not States.AutoFarm
                     pcall(function() tween:Cancel() end)
                 end
             end
@@ -358,34 +348,83 @@ task.spawn(function()
     end
 end)
 
--- // MIRA DE SNIPER
-local Crosshair = Instance.new("Frame", ScreenGui)
-Crosshair.Size = UDim2.new(0, 40, 0, 40)
-Crosshair.AnchorPoint = Vector2.new(0.5, 0.5)
-Crosshair.Position = UDim2.new(0.5, 0, 0.5, 0)
-Crosshair.BackgroundTransparency = 1
-Crosshair.Visible = false
+-- Loop do Noclip
+RunService.Stepped:Connect(function()
+    if States.Noclip and Player.Character then
+        for _, v in pairs(Player.Character:GetDescendants()) do
+            if v:IsA("BasePart") then v.CanCollide = false end
+        end
+    end
+end)
 
-local Dot = Instance.new("Frame", Crosshair)
-Dot.Size = UDim2.new(0, 4, 0, 4)
-Dot.Position = UDim2.new(0.5, -2, 0.5, -2)
-Dot.BackgroundColor3 = Theme.AccentLight
-Dot.BorderSizePixel = 0
-Instance.new("UICorner", Dot).CornerRadius = UDim.new(1, 0)
+-- Loop do ESP
+task.spawn(function()
+    while task.wait(1) do
+        if States.ESP then
+            local murdererName, sheriffName
+            local roles = ReplicatedStorage:FindFirstChild("Roles")
+            if roles then
+                murdererName = roles:FindFirstChild("Murderer") and roles.Murderer.Value
+                sheriffName = roles:FindFirstChild("Sheriff") and roles.Sheriff.Value
+            end
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= Player and p.Character then
+                    local char = p.Character
+                    local color = Color3.fromRGB(0, 255, 0)
+                    if p.Name == murdererName then color = Color3.fromRGB(255, 0, 0)
+                    elseif p.Name == sheriffName then color = Color3.fromRGB(0, 100, 255) end
+                    
+                    local esp = char:FindFirstChild("ArkeESP")
+                    if not esp then
+                        esp = Instance.new("Highlight", char)
+                        esp.Name = "ArkeESP"
+                        esp.Adornee = char
+                        esp.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                        esp.FillTransparency = 0.6
+                    end
+                    esp.FillColor = color
+                    esp.OutlineColor = color
+                end
+            end
+        end
+    end
+end)
 
-local LineH = Instance.new("Frame", Crosshair)
-LineH.Size = UDim2.new(0, 30, 0, 2)
-LineH.Position = UDim2.new(0.5, -15, 0.5, -1)
-LineH.BackgroundColor3 = Theme.AccentLight
-LineH.BorderSizePixel = 0
+-- Loop do KillAura
+task.spawn(function()
+    while task.wait(1) do
+        if States.KillAura then
+            local role = getRole()
+            local hrp = getHRP()
+            local char = Player.Character
+            
+            if role == "Murderer" and hrp and char then
+                local knife = char:FindFirstChild("Knife") or Player.Backpack:FindFirstChild("Knife")
+                if knife then char.Humanoid:EquipTool(knife) end
+                for _, p in pairs(Players:GetPlayers()) do
+                    if p ~= Player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character.Humanoid.Health > 0 then
+                        hrp.CFrame = p.Character.HumanoidRootPart.CFrame
+                        task.wait(0.3)
+                    end
+                end
+            elseif role == "Sheriff" and hrp and char then
+                local gun = char:FindFirstChild("Gun") or Player.Backpack:FindFirstChild("Gun")
+                if gun then char.Humanoid:EquipTool(gun) end
+                local roles = ReplicatedStorage:FindFirstChild("Roles")
+                if roles and roles:FindFirstChild("Murderer") then
+                    local m = Players:FindFirstChild(roles.Murderer.Value)
+                    if m and m.Character and m.Character:FindFirstChild("HumanoidRootPart") then
+                        hrp.CFrame = m.Character.HumanoidRootPart.Position
+                        task.wait(0.2)
+                        if gun then gun:Activate() end
+                    end
+                end
+            end
+        end
+    end
+end)
 
-local LineV = Instance.new("Frame", Crosshair)
-LineV.Size = UDim2.new(0, 2, 0, 30)
-LineV.Position = UDim2.new(0.5, -1, 0.5, -15)
-LineV.BackgroundColor3 = Theme.AccentLight
-LineV.BorderSizePixel = 0
-
--- // DRAG UI
+-- // ARRASTAR UI E BOTÃO FLUTUANTE
 local dragging, dragInput, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -407,23 +446,20 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- // BOTÃO FLUTUANTE COM A SUA LOGO
 local ToggleBtn = Instance.new("TextButton", ScreenGui)
 ToggleBtn.Size = UDim2.new(0, 70, 0, 70)
 ToggleBtn.Position = UDim2.new(0, 20, 0, 100)
-ToggleBtn.BackgroundColor3 = Theme.Accent 
+AplicarCor(ToggleBtn, "BackgroundColor3", "accent")
 ToggleBtn.BackgroundTransparency = 0.2
 ToggleBtn.Text = "👑" 
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.TextSize = 30
 ToggleBtn.Font = Enum.Font.GothamBold
-ToggleBtn.AutoButtonColor = false
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 
 local TStroke = Instance.new("UIStroke", ToggleBtn)
-TStroke.Color = Theme.AccentLight
+AplicarCor(TStroke, "Color", "text")
 TStroke.Thickness = 2
-TStroke.Transparency = 0.2
 
 local LogoImage = Instance.new("ImageLabel", ToggleBtn)
 LogoImage.Size = UDim2.new(1, -10, 1, -10)
@@ -436,19 +472,15 @@ Instance.new("UICorner", LogoImage).CornerRadius = UDim.new(1, 0)
 local tDrag, tStart, tPos
 ToggleBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        tDrag = true
-        tStart = input.Position
-        tPos = ToggleBtn.Position
+        tDrag = true; tStart = input.Position; tPos = ToggleBtn.Position
     end
 end)
-
 UserInputService.InputChanged:Connect(function(input)
     if tDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - tStart
         ToggleBtn.Position = UDim2.new(tPos.X.Scale, tPos.X.Offset + delta.X, tPos.Y.Scale, tPos.Y.Offset + delta.Y)
     end
 end)
-
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         tDrag = false
@@ -459,4 +491,4 @@ ToggleBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
-print("ARKEMAN HUB EXECUTADO COM SUCESSO!")
+print("ARKEMAN HUB v2.0 (PT-BR) EXECUTADO COM SUCESSO!")
